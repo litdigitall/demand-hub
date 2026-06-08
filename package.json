@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:demo": "cross-env VITE_DEMO_MODE=true tsc -b && cross-env VITE_DEMO_MODE=true vite build --outDir dist-demo",
+    "build:demo": "cross-env VITE_DEMO_MODE=true vite build --outDir dist-demo",
     "preview:demo": "vite preview --outDir dist-demo",
     "lint": "eslint .",
     "preview": "vite preview"
