@@ -141,11 +141,6 @@ export function LoginPage() {
           </Text>
         </Center>
 
-        <Card mt="md" radius="md" bg="gray.0" padding="sm">
-          <Text size="xs" c="dimmed" ta="center">
-            <strong>Demo</strong> · user: <code>sambini</code> · pass: <code>LIt@2020</code>
-          </Text>
-        </Card>
       </Card>
     </Box>
   );
