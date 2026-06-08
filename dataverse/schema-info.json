@@ -1,0 +1,45 @@
+﻿{
+    "environmentOrgUrl":  "https://org2713c0e4.crm2.dynamics.com",
+    "solution":  "ARDXDemandSystem",
+    "table":  {
+                  "primaryIdAttribute":  "ardx_demandaid",
+                  "logicalName":  "ardx_demanda",
+                  "primaryName":  "ardx_titulo",
+                  "entitySetName":  "ardx_demandas"
+              },
+    "choices":  {
+                    "urgencia":  {
+                                     "Critico":  506970000,
+                                     "Medio":  506970002,
+                                     "Baixo":  506970003,
+                                     "Alto":  506970001
+                                 },
+                    "tipo":  {
+                                 "CorrecaoBug":  506970002,
+                                 "Compliance":  506970003,
+                                 "Infraestrutura":  506970004,
+                                 "MelhoriaSistema":  506970001,
+                                 "Seguranca":  506970005,
+                                 "ProjetoNovo":  506970000,
+                                 "Automacao":  506970006
+                             },
+                    "status":  {
+                                   "Concluida":  506970004,
+                                   "EmExecucao":  506970003,
+                                   "EmAnalise":  506970001,
+                                   "Nova":  506970000,
+                                   "Recusada":  506970005,
+                                   "Priorizada":  506970002
+                               },
+                    "impactoNivel":  {
+                                         "Medio":  506970001,
+                                         "Baixo":  506970002,
+                                         "Alto":  506970000
+                                     },
+                    "esforco":  {
+                                    "Medio":  506970001,
+                                    "Pequeno":  506970000,
+                                    "Grande":  506970002
+                                }
+                }
+}
