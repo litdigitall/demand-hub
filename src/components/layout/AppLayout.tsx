@@ -33,7 +33,6 @@ import { useCurrentUser } from "../../lib/useCurrentUser";
 import { initialsFromName } from "../../lib/format";
 import { useT, type Lang, type TKey } from "../../i18n";
 import { demandService } from "../../data/demandService";
-import abbottLogo from "../../assets/abbott-logo.png";
 import classes from "./AppLayout.module.css";
 
 interface NavItem {
@@ -181,7 +180,8 @@ export function AppLayout() {
         <Stack gap={3} p="md" h="100%">
           <div className={classes.brand}>
             <div className={classes.logoBox}>
-              <img src={abbottLogo} alt="Abbott" className={classes.logoImg} />
+              <div className={classes.logoMark}>LIT</div>
+              <div className={classes.logoTag}>Digitall</div>
             </div>
             <div className={classes.brand1}>{t("appName")}</div>
             <div className={classes.brandSub}>{t("appTag")}</div>

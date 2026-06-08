@@ -16,7 +16,6 @@ import {
 import { IconAlertCircle, IconLock, IconUser } from "@tabler/icons-react";
 import { useAuth } from "../auth/AuthContext";
 import { useT } from "../i18n";
-import abbottLogo from "../assets/abbott-logo.png";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -83,15 +82,29 @@ export function LoginPage() {
             style={{
               background: "#fff",
               borderRadius: 12,
-              padding: "12px 18px",
+              padding: "16px 28px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              textAlign: "center",
             }}
           >
-            <img
-              src={abbottLogo}
-              alt="Abbott"
-              style={{ maxWidth: 140, height: "auto", display: "block" }}
-            />
+            <Box
+              style={{
+                fontSize: 38,
+                fontWeight: 900,
+                letterSpacing: 3,
+                lineHeight: 1,
+                background:
+                  "linear-gradient(135deg, var(--mantine-color-abbott-7), var(--mantine-color-abbott-9))",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              LIT
+            </Box>
+            <Text size="xs" c="dimmed" tt="uppercase" lts={2} fw={700} mt={4}>
+              Digitall
+            </Text>
           </Box>
           <Stack gap={2} align="center">
             <Title order={2} c="abbott.8">

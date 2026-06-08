@@ -1,10 +1,10 @@
 {
   "version": "1.0",
   "appId": "785908fe-958b-43fa-87fc-0ba475bdba81",
-  "appDisplayName": "Pulse",
+  "appDisplayName": "Demand Hub",
   "region": "prod",
   "environmentId": "aa9aa103-53ae-e549-8f11-8e79e2d2bfec",
-  "description": "Pulse - IT Demand Hub - Intake e priorizacao de demandas",
+  "description": "Demand Hub - Intake e priorizacao de demandas - LIT Digitall",
   "buildPath": "./dist",
   "buildEntryPoint": "index.html",
   "localAppUrl": "http://localhost:3000",

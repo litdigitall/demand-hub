@@ -4,8 +4,8 @@ export type Lang = "pt" | "en" | "es";
 
 const PT = {
   /* App */
-  appName: "Pulse",
-  appTag: "IT Demand Hub",
+  appName: "Demand Hub",
+  appTag: "by LIT Digitall",
   appDemoFooter: "Demo para liderança · LIT Digitall",
   loginUser: "Usuário",
   loginPassword: "Senha",
@@ -124,7 +124,7 @@ const PT = {
   cap_internal: "Implantação Interna",
   cap_external: "Implantação Externa",
   cap_support: "Sustentação",
-  cap_team_help: "Equipe interna da Abbott",
+  cap_team_help: "Equipe interna da LIT Digitall",
   cap_team_help_ext: "Consultorias externas",
   cap_team_help_sus: "Tickets recorrentes e melhorias contínuas",
   cap_total_utilization: "Utilização (total)",
@@ -426,8 +426,8 @@ const PT = {
 type Dict = typeof PT;
 
 const EN: Dict = {
-  appName: "Pulse",
-  appTag: "IT Demand Hub",
+  appName: "Demand Hub",
+  appTag: "by LIT Digitall",
   appDemoFooter: "Demo for leadership · LIT Digitall",
   loginUser: "Username",
   loginPassword: "Password",
@@ -541,7 +541,7 @@ const EN: Dict = {
   cap_internal: "Internal Delivery",
   cap_external: "External Delivery",
   cap_support: "Support",
-  cap_team_help: "Internal Abbott team",
+  cap_team_help: "Internal LIT Digitall team",
   cap_team_help_ext: "External consultancies",
   cap_team_help_sus: "Recurring tickets and continuous improvements",
   cap_total_utilization: "Utilization (total)",
@@ -825,8 +825,8 @@ const EN: Dict = {
 };
 
 const ES: Dict = {
-  appName: "Pulse",
-  appTag: "IT Demand Hub",
+  appName: "Demand Hub",
+  appTag: "by LIT Digitall",
   appDemoFooter: "Demo para liderazgo · LIT Digitall",
   loginUser: "Usuario",
   loginPassword: "Contraseña",
@@ -940,7 +940,7 @@ const ES: Dict = {
   cap_internal: "Implementación Interna",
   cap_external: "Implementación Externa",
   cap_support: "Sostenibilidad",
-  cap_team_help: "Equipo interno de Abbott",
+  cap_team_help: "Equipo interno de LIT Digitall",
   cap_team_help_ext: "Consultorías externas",
   cap_team_help_sus: "Tickets recurrentes y mejoras continuas",
   cap_total_utilization: "Utilización (total)",
