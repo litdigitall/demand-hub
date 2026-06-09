@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   Center,
-  Group,
   PasswordInput,
   Stack,
   Text,
@@ -21,7 +20,7 @@ import abbottLogo from "../assets/abbott-logo.png";
 export function LoginPage() {
   const navigate = useNavigate();
   const { signIn, user } = useAuth();
-  const { t, lang, setLang } = useT();
+  const { t } = useT();
   const [u, setU] = useState("");
   const [p, setP] = useState("");
   const [error, setError] = useState(false);
@@ -57,20 +56,6 @@ export function LoginPage() {
         position: "relative",
       }}
     >
-      <Group gap={4} style={{ position: "absolute", top: 18, right: 18 }}>
-        {(["pt", "en", "es"] as const).map((code) => (
-          <Button
-            key={code}
-            size="xs"
-            variant={lang === code ? "white" : "subtle"}
-            color="gray"
-            onClick={() => setLang(code)}
-          >
-            {code.toUpperCase()}
-          </Button>
-        ))}
-      </Group>
-
       <Card
         withBorder
         radius="lg"

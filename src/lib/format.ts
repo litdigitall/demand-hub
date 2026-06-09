@@ -38,9 +38,9 @@ export function formatRelative(iso: string): string {
 
 export function formatCurrency(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return "—";
-  return value.toLocaleString("pt-BR", {
+  return value.toLocaleString("en-US", {
     style: "currency",
-    currency: "BRL",
+    currency: "USD",
     maximumFractionDigits: 0,
   });
 }

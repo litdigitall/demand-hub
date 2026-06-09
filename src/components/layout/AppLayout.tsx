@@ -8,7 +8,6 @@ import {
   Burger,
   Group,
   Indicator,
-  Menu,
   Stack,
   Text,
 } from "@mantine/core";
@@ -18,7 +17,6 @@ import {
   IconChartBar,
   IconClipboardCheck,
   IconClockHour4,
-  IconLanguage,
   IconLayoutDashboard,
   IconLayoutKanban,
   IconListDetails,
@@ -61,7 +59,7 @@ export function AppLayout() {
   const user = useCurrentUser();
   const loc = useLocation();
   const [opened, { toggle, close }] = useDisclosure();
-  const { t, lang, setLang } = useT();
+  const { t } = useT();
   const { signOut } = useAuth();
   const [aprovacoesPendentes, setAprovacoesPendentes] = useState(0);
 
@@ -145,34 +143,6 @@ export function AppLayout() {
                 <IconBell size={18} />
               </ActionIcon>
             </Indicator>
-            <Menu shadow="md" width={170} position="bottom-end">
-              <Menu.Target>
-                <ActionIcon variant="default" size="lg" aria-label={t("language")}>
-                  <IconLanguage size={18} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>{t("language")}</Menu.Label>
-                <Menu.Item
-                  onClick={() => setLang("pt")}
-                  rightSection={lang === "pt" ? "✓" : null}
-                >
-                  Português 🇧🇷
-                </Menu.Item>
-                <Menu.Item
-                  onClick={() => setLang("en")}
-                  rightSection={lang === "en" ? "✓" : null}
-                >
-                  English 🇺🇸
-                </Menu.Item>
-                <Menu.Item
-                  onClick={() => setLang("es")}
-                  rightSection={lang === "es" ? "✓" : null}
-                >
-                  Español 🇪🇸
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
           </Group>
         </Group>
       </AppShell.Header>

@@ -14,16 +14,8 @@ interface I18nCtx {
 const LS_KEY = "pulse.lang";
 
 function detectLang(): Lang {
-  try {
-    const saved = localStorage.getItem(LS_KEY) as Lang | null;
-    if (saved === "pt" || saved === "en" || saved === "es") return saved;
-  } catch {
-    /* ignore */
-  }
-  const browser = navigator.language?.toLowerCase() ?? "";
-  if (browser.startsWith("en")) return "en";
-  if (browser.startsWith("es")) return "es";
-  return "pt";
+  // i18n temporariamente travado em inglês — sem seletor pro usuário.
+  return "en";
 }
 
 const Context = createContext<I18nCtx | null>(null);
