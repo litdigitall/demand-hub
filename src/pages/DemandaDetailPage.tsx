@@ -44,8 +44,10 @@ import { ScoringPanel } from "../components/ScoringPanel";
 import { ApprovalsPanel } from "../components/ApprovalsPanel";
 import { LifecycleTimeline } from "../components/LifecycleTimeline";
 import { NextActionCard } from "../components/NextActionCard";
+import { NotifyButton } from "../components/NotifyButton";
 import { useT } from "../i18n";
 import {
+  abrangenciaLabel,
   weightedScore,
   type Demand,
 } from "../data/types";
@@ -195,6 +197,7 @@ export function DemandaDetailPage() {
           >
             {t("back")}
           </Button>
+          <NotifyButton demand={demand} />
           <Button
             color="red"
             variant="outline"
@@ -329,8 +332,14 @@ export function DemandaDetailPage() {
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card withBorder radius="lg" padding="lg" mb="md">
                 <SectionLabel n={4} title={t("detail_section_impact")} />
+                {demand.impactoAbrangencia ? (
+                  <KV k="Abrangência (score automático)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
+                ) : null}
                 <KV k={t("detail_label_impactLevel")} v={<ImpactoBadge value={demand.impactoNivel} />} />
                 <KV k={t("detail_label_estimatedValue")} v={formatCurrency(demand.valorEstimado)} />
+                {demand.roiEstimado != null && (
+                  <KV k="ROI estimado" v={`${demand.roiEstimado}%`} />
+                )}
                 <Text size="xs" c="dimmed" mt={4}>
                   {t("detail_label_impactTypes")}
                 </Text>

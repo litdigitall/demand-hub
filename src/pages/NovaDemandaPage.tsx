@@ -30,9 +30,12 @@ import {
 } from "@tabler/icons-react";
 import { adminLookupService, demandService } from "../data/demandService";
 import {
+  ABRANGENCIA_SCORE,
   Impacto,
+  ImpactoAbrangencia,
   TipoDemanda,
   Urgencia,
+  abrangenciaOptions,
   esforcoOptions,
   impactoOptions,
   tipoImpactoOptions,
@@ -49,10 +52,12 @@ import { useLabels } from "../i18n/useLabels";
    definido pelo time técnico na etapa de Avaliação. Esforço é opcional. */
 type DraftForm = Omit<
   DemandInput,
-  "valorEstimado" | "esforcoEstimado" | "horasEstimadas" | "time"
+  "valorEstimado" | "esforcoEstimado" | "horasEstimadas" | "time" | "roiEstimado" | "impactoAbrangencia"
 > & {
   valorEstimado: number | "";
   esforcoEstimado: number | null;
+  impactoAbrangencia: number;
+  roiEstimado: number | "";
 };
 
 function emptyDraft(): DraftForm {
@@ -69,8 +74,10 @@ function emptyDraft(): DraftForm {
     consequenciaNaoExecucao: "",
     tipo: TipoDemanda.ProjetoNovo,
     impactoNivel: Impacto.Medio,
+    impactoAbrangencia: ImpactoAbrangencia.Processo,
     tiposImpacto: [],
     valorEstimado: "",
+    roiEstimado: "",
     esforcoEstimado: null,
     urgencia: Urgencia.Medio,
     deadline: "",
@@ -171,6 +178,8 @@ export function NovaDemandaPage() {
         ...form,
         valorEstimado:
           typeof form.valorEstimado === "number" ? form.valorEstimado : null,
+        roiEstimado: typeof form.roiEstimado === "number" ? form.roiEstimado : null,
+        impactoAbrangencia: form.impactoAbrangencia,
         esforcoEstimado: form.esforcoEstimado,
         // Capacity (time/horas) é definido pelo time técnico na Avaliação.
         time: "",
@@ -338,9 +347,25 @@ export function NovaDemandaPage() {
         {step === 2 && (
           <Stack gap="md">
             <SectionTitle index={4} title={t("nova_section4")} />
+            <Select
+              label="Até onde essa demanda impacta?"
+              description="Define automaticamente o critério 'Impacto no Negócio' do score — você não precisa pontuar."
+              withAsterisk
+              data={abrangenciaOptions.map((o) => ({ value: String(o.value), label: o.label }))}
+              allowDeselect={false}
+              value={String(form.impactoAbrangencia)}
+              onChange={(v) => v && set("impactoAbrangencia", Number(v))}
+            />
+            <Alert color="blue" variant="light">
+              <Text size="sm">
+                Impacto no Negócio (automático):{" "}
+                <strong>{ABRANGENCIA_SCORE[form.impactoAbrangencia]} / 5</strong> — peso 25% no score.
+              </Text>
+            </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
               <Select
                 label={t("nova_impactLevel")}
+                description="Percepção qualitativa (não entra no score)"
                 withAsterisk
                 data={impactoOptions.map((o) => ({ value: String(o.value), label: L.impacto[o.value] }))}
                 allowDeselect={false}
@@ -356,17 +381,28 @@ export function NovaDemandaPage() {
                 onChange={(v) => set("valorEstimado", typeof v === "number" ? v : "")}
               />
             </SimpleGrid>
-            <MultiSelect
-              label={t("nova_impactTypes_label")}
-              withAsterisk
-              data={tipoImpactoOptions.map((o) => ({
-                value: String(o.value),
-                label: L.tipoImpacto[o.value],
-              }))}
-              value={form.tiposImpacto.map(String)}
-              error={errors.tiposImpacto}
-              onChange={(v) => set("tiposImpacto", v.map(Number))}
-            />
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <MultiSelect
+                label={t("nova_impactTypes_label")}
+                withAsterisk
+                data={tipoImpactoOptions.map((o) => ({
+                  value: String(o.value),
+                  label: L.tipoImpacto[o.value],
+                }))}
+                value={form.tiposImpacto.map(String)}
+                error={errors.tiposImpacto}
+                onChange={(v) => set("tiposImpacto", v.map(Number))}
+              />
+              <NumberInput
+                label="ROI estimado (%)"
+                description="Retorno esperado do investimento (opcional)"
+                min={0}
+                max={100000}
+                suffix="%"
+                value={form.roiEstimado}
+                onChange={(v) => set("roiEstimado", typeof v === "number" ? v : "")}
+              />
+            </SimpleGrid>
 
             <SectionTitle index={5} title={t("nova_section5")} />
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">

@@ -112,6 +112,56 @@ export const urgenciaOptions = toOptions(urgenciaLabel);
 export const esforcoOptions = toOptions(esforcoLabel);
 export const statusOptions = toOptions(statusLabel);
 
+/* ---------------- Abrangência do impacto (score automático) -----
+   O solicitante escolhe ATÉ ONDE a demanda impacta; o critério
+   "Impacto no Negócio" (businessImpact) é calculado automaticamente
+   a partir disso — o usuário não precisa saber pontuar. */
+export const ImpactoAbrangencia = {
+  Usuario: 1,
+  Processo: 2,
+  Departamento: 3,
+  Infraestrutura: 4,
+} as const;
+export const abrangenciaLabel: Record<number, string> = {
+  [ImpactoAbrangencia.Usuario]: "Usuário (impacto individual)",
+  [ImpactoAbrangencia.Processo]: "Processo (um fluxo de trabalho)",
+  [ImpactoAbrangencia.Departamento]: "Departamento / Organização",
+  [ImpactoAbrangencia.Infraestrutura]: "Infraestrutura (base de TI)",
+};
+export const abrangenciaOptions = toOptions(abrangenciaLabel);
+/** Mapa abrangência → nota 1..5 do critério businessImpact. */
+export const ABRANGENCIA_SCORE: Record<number, number> = {
+  [ImpactoAbrangencia.Usuario]: 2,
+  [ImpactoAbrangencia.Processo]: 3,
+  [ImpactoAbrangencia.Departamento]: 4,
+  [ImpactoAbrangencia.Infraestrutura]: 5,
+};
+export const AUTO_AVALIADOR = "Automático (nível de impacto)";
+
+/* ---------------- Categoria (view por portfólio) ----------------
+   Agrupa os tipos de demanda em duas frentes com donos distintos. */
+export type Categoria = "infra" | "app";
+export const CATEGORIA_TIPO: Record<number, Categoria> = {
+  [TipoDemanda.Infraestrutura]: "infra",
+  [TipoDemanda.Seguranca]: "infra",
+  [TipoDemanda.ProjetoNovo]: "app",
+  [TipoDemanda.MelhoriaSistema]: "app",
+  [TipoDemanda.CorrecaoBug]: "app",
+  [TipoDemanda.Automacao]: "app",
+  [TipoDemanda.Compliance]: "app",
+};
+export const CATEGORIA_VIEW_LABEL: Record<Categoria, string> = {
+  infra: "Infraestrutura",
+  app: "Aplicação",
+};
+export const CATEGORIA_RESPONSAVEL: Record<Categoria, string> = {
+  infra: "Sambini",
+  app: "Gabriela",
+};
+export function categoriaDe(tipo: number): Categoria {
+  return CATEGORIA_TIPO[tipo] ?? "app";
+}
+
 /* ---------------- Score (priorização) ----------------------- */
 /* Cada critério recebe nota 1..5; ponderação fixa abaixo soma 100%. */
 
@@ -492,6 +542,10 @@ export interface Demand {
   impactoNivel: number; // Impacto
   tiposImpacto: number[]; // TipoImpacto[]
   valorEstimado: number | null; // BRL
+  /** Abrangência do impacto (ImpactoAbrangencia) — dirige o score de businessImpact. */
+  impactoAbrangencia?: number;
+  /** ROI estimado (%) — retorno esperado do investimento. */
+  roiEstimado?: number | null;
   /* --- 5. Urgência --- */
   urgencia: number;
   deadline: string; // ISO ou ""

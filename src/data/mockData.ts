@@ -23,6 +23,7 @@ const AREAS = [
   "Regulatory",
   "Legal",
   "IT",
+  "Facilities",
 ];
 
 const SPONSORS = [

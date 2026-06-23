@@ -25,6 +25,7 @@ import {
   IconCalculator,
   IconChevronDown,
   IconChevronUp,
+  IconFlame,
   IconInfoCircle,
   IconRefresh,
   IconSparkles,
@@ -63,6 +64,7 @@ export function ScoreBoardPage() {
   const { t } = useT();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Demand[]>([]);
+  const [soTop, setSoTop] = useState(false); // portfólio: só score alto (≥4,5)
 
   useEffect(() => {
     refresh();
@@ -136,6 +138,7 @@ export function ScoreBoardPage() {
   const totalPriorizadas = items.filter((d) => d.finalPriority != null).length;
   const avgScore =
     items.reduce((acc, d) => acc + weightedScore(d.score), 0) / Math.max(items.length, 1);
+  const visiveis = soTop ? items.filter((d) => weightedScore(d.score) >= 4.5) : items;
 
   return (
     <Stack gap="lg">
@@ -152,6 +155,14 @@ export function ScoreBoardPage() {
               <IconRefresh size={18} />
             </ActionIcon>
           </Tooltip>
+          <Button
+            variant={soTop ? "filled" : "default"}
+            color="red"
+            leftSection={<IconFlame size={16} />}
+            onClick={() => setSoTop((v) => !v)}
+          >
+            Portfólio top score (≥4,5)
+          </Button>
           <Button
             variant="default"
             leftSection={<IconSparkles size={16} />}
@@ -204,7 +215,7 @@ export function ScoreBoardPage() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {items.map((d, i) => {
+              {visiveis.map((d, i) => {
                 const wScore = weightedScore(d.score);
                 return (
                   <Table.Tr key={d.id}>

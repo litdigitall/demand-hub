@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ActionIcon,
   Anchor,
+  Badge,
   Box,
   Button,
   Card,
@@ -10,6 +11,7 @@ import {
   Group,
   Loader,
   MultiSelect,
+  SegmentedControl,
   Select,
   Stack,
   Table,
@@ -26,10 +28,14 @@ import {
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
 import {
+  CATEGORIA_RESPONSAVEL,
+  CATEGORIA_VIEW_LABEL,
+  categoriaDe,
   statusOptions,
   tipoOptions,
   urgenciaOptions,
   weightedScore,
+  type Categoria,
   type Demand,
 } from "../data/types";
 import {
@@ -51,6 +57,7 @@ export function DemandasPage() {
   const [tipoFiltro, setTipoFiltro] = useState<string[]>([]);
   const [statusFiltro, setStatusFiltro] = useState<string[]>([]);
   const [urgenciaFiltro, setUrgenciaFiltro] = useState<string | null>(null);
+  const [view, setView] = useState<Categoria | "todas">("todas");
 
   useEffect(() => {
     refresh();
@@ -72,18 +79,20 @@ export function DemandasPage() {
         const hay = `${d.numero} ${d.titulo} ${d.descricao} ${d.areaSolicitante} ${d.solicitante} ${d.sponsor}`.toLowerCase();
         if (!hay.includes(qn)) return false;
       }
+      if (view !== "todas" && categoriaDe(d.tipo) !== view) return false;
       if (tipoFiltro.length > 0 && !tipoFiltro.includes(String(d.tipo))) return false;
       if (statusFiltro.length > 0 && !statusFiltro.includes(String(d.status))) return false;
       if (urgenciaFiltro && String(d.urgencia) !== urgenciaFiltro) return false;
       return true;
     });
-  }, [items, q, tipoFiltro, statusFiltro, urgenciaFiltro]);
+  }, [items, q, view, tipoFiltro, statusFiltro, urgenciaFiltro]);
 
   function clearFilters() {
     setQ("");
     setTipoFiltro([]);
     setStatusFiltro([]);
     setUrgenciaFiltro(null);
+    setView("todas");
   }
 
   const hasFilter =
@@ -109,6 +118,16 @@ export function DemandasPage() {
           </Button>
         </Group>
       </Group>
+
+      <SegmentedControl
+        value={view}
+        onChange={(v) => setView(v as Categoria | "todas")}
+        data={[
+          { label: "Todas", value: "todas" },
+          { label: `${CATEGORIA_VIEW_LABEL.infra} · ${CATEGORIA_RESPONSAVEL.infra}`, value: "infra" },
+          { label: `${CATEGORIA_VIEW_LABEL.app} · ${CATEGORIA_RESPONSAVEL.app}`, value: "app" },
+        ]}
+      />
 
       <Card withBorder radius="lg" padding="md">
         <Group gap="sm" wrap="wrap">
@@ -178,6 +197,7 @@ export function DemandasPage() {
                 <Table.Tr>
                   <Table.Th>{t("list_demand")}</Table.Th>
                   <Table.Th>{t("list_area")}</Table.Th>
+                  <Table.Th>Categoria</Table.Th>
                   <Table.Th>{t("list_type")}</Table.Th>
                   <Table.Th>{t("list_impact")}</Table.Th>
                   <Table.Th>{t("list_urgency")}</Table.Th>
@@ -200,6 +220,15 @@ export function DemandasPage() {
                       </Text>
                     </Table.Td>
                     <Table.Td>{d.areaSolicitante}</Table.Td>
+                    <Table.Td>
+                      <Badge
+                        variant="light"
+                        color={categoriaDe(d.tipo) === "infra" ? "gray" : "cyan"}
+                        radius="sm"
+                      >
+                        {CATEGORIA_VIEW_LABEL[categoriaDe(d.tipo)]}
+                      </Badge>
+                    </Table.Td>
                     <Table.Td>
                       <TipoBadge value={d.tipo} />
                     </Table.Td>

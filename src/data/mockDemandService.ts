@@ -5,10 +5,13 @@
 import {
   aprovacoesPadrao,
   emptyScore,
+  ABRANGENCIA_SCORE,
+  AUTO_AVALIADOR,
   StatusDemanda,
   type Demand,
   type DemandInput,
   type DemandService,
+  type AvaliacaoCriterio,
 } from "./types";
 import { seedDemands } from "./mockData";
 
@@ -57,19 +60,33 @@ export const mockDemandService: DemandService = {
   },
   async create(input: DemandInput) {
     const now = new Date().toISOString();
+    // Score de "Impacto no Negócio" calculado automaticamente pela abrangência
+    // escolhida pelo solicitante — e já validado (não exige avaliador manual).
+    const score = emptyScore();
+    const avaliacoes: AvaliacaoCriterio[] = [];
+    const abr = input.impactoAbrangencia;
+    if (abr && ABRANGENCIA_SCORE[abr]) {
+      score.businessImpact = ABRANGENCIA_SCORE[abr];
+      avaliacoes.push({
+        criterio: "businessImpact",
+        validadoPor: AUTO_AVALIADOR,
+        validadoEm: now,
+        comentario: "Calculado automaticamente pelo nível de impacto informado no intake.",
+      });
+    }
     const novo: Demand = {
       ...input,
       id: uid("dem"),
       numero: nextNumero(),
       dataSolicitacao: now,
       status: StatusDemanda.Nova,
-      score: emptyScore(),
+      score,
       scoreFlags: [],
       projectStage: "Discovery",
       finalPriority: null,
       comentarios: [],
       anexos: [],
-      avaliacoes: [],
+      avaliacoes,
       stackValidadaPor: "",
       stackValidadaEm: "",
       aprovacoes: aprovacoesPadrao(input.sponsor),

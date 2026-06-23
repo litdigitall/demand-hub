@@ -44,6 +44,7 @@ import {
   CATEGORIA_DESCRICAO,
   CATEGORIA_LABEL,
   CRITERIO_CATEGORIA,
+  AUTO_AVALIADOR,
   SCORE_LABELS,
   SCORE_WEIGHTS,
   weightedScore,
@@ -516,7 +517,11 @@ function CriterioRow({
             {valor}
           </Badge>
           {avaliacao ? (
-            canScore ? (
+            avaliacao.validadoPor === AUTO_AVALIADOR ? (
+              <Badge color="blue" variant="light" size="sm">
+                automático
+              </Badge>
+            ) : canScore ? (
               <Tooltip label="Reabrir critério">
                 <ActionIcon variant="subtle" color="gray" onClick={onReabrir}>
                   <IconArrowBackUp size={16} />

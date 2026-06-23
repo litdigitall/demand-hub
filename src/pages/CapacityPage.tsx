@@ -18,11 +18,14 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
+import { Button } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconBuildingFactory2,
   IconCheck,
   IconClock,
+  IconCloudComputing,
   IconExchange,
   IconUsersGroup,
 } from "@tabler/icons-react";
@@ -73,6 +76,8 @@ export function CapacityPage() {
   const { t } = useT();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Demand[]>([]);
+  const [syncEm, setSyncEm] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     demandService
@@ -80,6 +85,21 @@ export function CapacityPage() {
       .then(setItems)
       .finally(() => setLoading(false));
   }, []);
+
+  function syncServiceNow() {
+    setSyncing(true);
+    // Simulação: numa versão real isso chamaria a API do ServiceNow para
+    // trazer horas alocadas/realizadas por time.
+    setTimeout(() => {
+      setSyncing(false);
+      setSyncEm(new Date().toLocaleString("pt-BR"));
+      notifications.show({
+        color: "teal",
+        title: "Capacity sincronizado",
+        message: "Dados atualizados via ServiceNow API (simulado).",
+      });
+    }, 900);
+  }
 
   const stats: TeamStats[] = useMemo(() => {
     return TIMES_IMPLANTACAO.map((time) => {
@@ -123,6 +143,20 @@ export function CapacityPage() {
           <Text c="dimmed" mt={4}>
             {t("cap_subtitle")}
           </Text>
+          <Group gap="xs" mt={6}>
+            <Button
+              size="xs"
+              variant="light"
+              leftSection={<IconCloudComputing size={14} />}
+              loading={syncing}
+              onClick={syncServiceNow}
+            >
+              Sincronizar com ServiceNow
+            </Button>
+            <Badge variant="dot" color={syncEm ? "teal" : "gray"}>
+              {syncEm ? `Fonte: ServiceNow (simulado) · ${syncEm}` : "Fonte: estimativas do app"}
+            </Badge>
+          </Group>
         </div>
         <Card withBorder radius="lg" padding="md">
           <Group gap="md">
