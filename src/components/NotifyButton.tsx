@@ -32,21 +32,21 @@ export function NotifyButton({ demand }: { demand: Demand }) {
   const [open, setOpen] = useState(false);
   const wScore = weightedScore(demand.score);
 
-  function enviar(canal: "e-mail" | "Teams") {
+  function enviar(canal: "correo" | "Teams") {
     notifications.show({
       color: "teal",
-      title: `Notificação enviada (${canal})`,
+      title: `Notificación enviada (${canal})`,
       message: `${demand.numero} — ${demand.titulo} · simulado`,
     });
     setOpen(false);
   }
 
   const perguntas: { q: string; a: string }[] = [
-    { q: "Problema/oportunidade", a: demand.problemaResolve || "—" },
+    { q: "Problema/oportunidad", a: demand.problemaResolve || "—" },
     { q: "Objetivo principal", a: demand.objetivoPrincipal || "—" },
-    { q: "Consequência de não executar", a: demand.consequenciaNaoExecucao || "—" },
+    { q: "Consecuencia de no ejecutar", a: demand.consequenciaNaoExecucao || "—" },
     {
-      q: "Abrangência do impacto",
+      q: "Alcance del impacto",
       a: demand.impactoAbrangencia ? abrangenciaLabel[demand.impactoAbrangencia] : "—",
     },
     {
@@ -65,32 +65,32 @@ export function NotifyButton({ demand }: { demand: Demand }) {
         Notificar
       </Button>
 
-      <Modal opened={open} onClose={() => setOpen(false)} title="Notificar comitê / stakeholders" size="lg">
+      <Modal opened={open} onClose={() => setOpen(false)} title="Notificar al comité / stakeholders" size="lg">
         <Stack>
           <Group gap="xs">
             <Badge color="grape" variant="light">
-              DMC · Comitê Hub IT
+              DMC · Comité Hub IT
             </Badge>
             <Badge variant="light" color="gray">
               {statusLabel[demand.status]}
             </Badge>
           </Group>
 
-          {/* Preview do e-mail formatado */}
+          {/* Preview del correo formateado */}
           <Paper withBorder radius="md" p="md" bg="gray.0">
             <Text size="xs" c="dimmed" tt="uppercase" fw={700} lts={1}>
-              Assunto
+              Asunto
             </Text>
             <Text fw={700} mb="sm">
               [Demand Hub] {demand.numero} — {demand.titulo} (score {wScore.toFixed(2)})
             </Text>
 
             <Text size="sm" mb="xs">
-              Prezado(a) comitê, segue a demanda para apreciação. Respostas do solicitante
-              e detalhamento do score abaixo.
+              Estimado comité, sigue la solicitud para su evaluación. Respuestas del
+              solicitante y desglose del score a continuación.
             </Text>
 
-            <Divider my="sm" label="Respostas do intake" labelPosition="left" />
+            <Divider my="sm" label="Respuestas del intake" labelPosition="left" />
             <Stack gap={6}>
               {perguntas.map((p) => (
                 <div key={p.q}>
@@ -104,7 +104,7 @@ export function NotifyButton({ demand }: { demand: Demand }) {
               ))}
             </Stack>
 
-            <Divider my="sm" label="Score ponderado (100% = 5,00)" labelPosition="left" />
+            <Divider my="sm" label="Score ponderado (100 % = 5,00)" labelPosition="left" />
             <Table verticalSpacing={4} fz="sm">
               <Table.Tbody>
                 {(Object.keys(SCORE_LABELS) as (keyof Score)[]).map((k) => (
@@ -133,8 +133,8 @@ export function NotifyButton({ demand }: { demand: Demand }) {
           </Paper>
 
           <Text size="xs" c="dimmed">
-            Envio simulado — na versão integrada, dispara no canal do Teams e por e-mail
-            (Microsoft Graph). O conteúdo acima é o template real.
+            Envío simulado — en la versión integrada, se dispara en el canal de Teams y por
+            correo (Microsoft Graph). El contenido de arriba es la plantilla real.
           </Text>
 
           <Group justify="flex-end">
@@ -144,14 +144,14 @@ export function NotifyButton({ demand }: { demand: Demand }) {
               leftSection={<IconBrandTeams size={16} />}
               onClick={() => enviar("Teams")}
             >
-              Notificar no Teams
+              Notificar en Teams
             </Button>
             <Button
               color="abbott"
               leftSection={<IconMail size={16} />}
-              onClick={() => enviar("e-mail")}
+              onClick={() => enviar("correo")}
             >
-              Enviar e-mail
+              Enviar correo
             </Button>
           </Group>
         </Stack>

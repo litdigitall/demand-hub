@@ -92,11 +92,11 @@ export function CapacityPage() {
     // trazer horas alocadas/realizadas por time.
     setTimeout(() => {
       setSyncing(false);
-      setSyncEm(new Date().toLocaleString("pt-BR"));
+      setSyncEm(new Date().toLocaleString("es-ES"));
       notifications.show({
         color: "teal",
         title: "Capacity sincronizado",
-        message: "Dados atualizados via ServiceNow API (simulado).",
+        message: "Datos actualizados vía ServiceNow API (simulado).",
       });
     }, 900);
   }
@@ -151,10 +151,10 @@ export function CapacityPage() {
               loading={syncing}
               onClick={syncServiceNow}
             >
-              Sincronizar com ServiceNow
+              Sincronizar con ServiceNow
             </Button>
             <Badge variant="dot" color={syncEm ? "teal" : "gray"}>
-              {syncEm ? `Fonte: ServiceNow (simulado) · ${syncEm}` : "Fonte: estimativas do app"}
+              {syncEm ? `Fuente: ServiceNow (simulado) · ${syncEm}` : "Fuente: estimaciones del app"}
             </Badge>
           </Group>
         </div>

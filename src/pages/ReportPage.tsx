@@ -58,34 +58,34 @@ export function ReportPage() {
       await generateMonthlyReport(items);
       notifications.show({
         color: "teal",
-        title: "Relatório gerado",
-        message: "O download do PPTX foi iniciado.",
+        title: "Informe generado",
+        message: "La descarga del PPTX ha comenzado.",
       });
     } catch (err) {
-      notifications.show({ color: "red", title: "Erro", message: (err as Error).message });
+      notifications.show({ color: "red", title: "Error", message: (err as Error).message });
     } finally {
       setGerando(false);
     }
   }
 
   const cards: { label: string; value: number; color: string }[] = [
-    { label: "Ideias inseridas no mês", value: stats.ideiasNoMes, color: "blue" },
-    { label: "Em avaliação", value: stats.emAvaliacao, color: "orange" },
-    { label: "Em aprovação", value: stats.emAprovacao, color: "orange" },
+    { label: "Ideas registradas en el mes", value: stats.ideiasNoMes, color: "blue" },
+    { label: "En evaluación", value: stats.emAvaliacao, color: "orange" },
+    { label: "En aprobación", value: stats.emAprovacao, color: "orange" },
     { label: "Priorizadas", value: stats.priorizadas, color: "cyan" },
-    { label: "Em execução", value: stats.emExecucao, color: "teal" },
-    { label: "Concluídas", value: stats.concluidas, color: "green" },
-    { label: "Recusadas", value: stats.recusadas, color: "red" },
-    { label: "Total na base", value: stats.total, color: "dark" },
+    { label: "En ejecución", value: stats.emExecucao, color: "teal" },
+    { label: "Concluidas", value: stats.concluidas, color: "green" },
+    { label: "Rechazadas", value: stats.recusadas, color: "red" },
+    { label: "Total en la base", value: stats.total, color: "dark" },
   ];
 
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="flex-end" wrap="wrap">
         <div>
-          <Title order={2}>Relatório mensal</Title>
+          <Title order={2}>Informe mensual</Title>
           <Text c="dimmed" mt={4}>
-            {stats.mesLabel} · resultados do funil de demandas para apresentação.
+            {stats.mesLabel} · resultados del funnel de solicitudes para presentación.
           </Text>
         </div>
         <Button
@@ -95,7 +95,7 @@ export function ReportPage() {
           loading={gerando}
           onClick={gerar}
         >
-          Gerar PPTX
+          Generar PPTX
         </Button>
       </Group>
 
@@ -114,13 +114,13 @@ export function ReportPage() {
 
       <Alert color="abbott" variant="light" icon={<IconInfoCircle size={18} />}>
         <Text size="sm" fw={600} mb={4}>
-          O que entra no deck
+          Qué incluye el deck
         </Text>
         <Text size="sm">
-          Capa, resumo executivo (KPIs acima), <strong>ideias inseridas no mês</strong>,{" "}
-          <strong>projetos em desenvolvimento</strong> (com time, horas e nº do ServiceNow),{" "}
-          <strong>backlog priorizado</strong> por score e <strong>capacity por time</strong>.
-          Disponível apenas para administradores neste momento.
+          Portada, resumen ejecutivo (KPIs de arriba), <strong>ideas registradas en el mes</strong>,{" "}
+          <strong>proyectos en desarrollo</strong> (con equipo, horas y nº de ServiceNow),{" "}
+          <strong>backlog priorizado</strong> por score y <strong>capacity por equipo</strong>.
+          Disponible solo para administradores por ahora.
         </Text>
       </Alert>
 
@@ -129,7 +129,7 @@ export function ReportPage() {
           <IconFileTypeXls size={14} />
         </ThemeIcon>
         <Text size="xs">
-          Arquivo gerado no navegador (PowerPoint .pptx) — nenhum dado sai do app.
+          Archivo generado en el navegador (PowerPoint .pptx) — ningún dato sale del app.
         </Text>
       </Group>
     </Stack>

@@ -243,7 +243,7 @@ export function DemandaDetailPage() {
                 {demand.finalPriority != null && demand.finalPriority > 0 && (
                   <div>
                     <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                      Prioridade
+                      Prioridad
                     </Text>
                     <Text fw={700}>#{demand.finalPriority}</Text>
                   </div>
@@ -333,7 +333,7 @@ export function DemandaDetailPage() {
               <Card withBorder radius="lg" padding="lg" mb="md">
                 <SectionLabel n={4} title={t("detail_section_impact")} />
                 {demand.impactoAbrangencia ? (
-                  <KV k="Abrangência (score automático)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
+                  <KV k="Alcance (score automático)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
                 ) : null}
                 <KV k={t("detail_label_impactLevel")} v={<ImpactoBadge value={demand.impactoNivel} />} />
                 <KV k={t("detail_label_estimatedValue")} v={formatCurrency(demand.valorEstimado)} />
@@ -347,14 +347,14 @@ export function DemandaDetailPage() {
                   {demand.tiposImpacto.map((t) => (
                     <Badge key={t} variant="dot" color="cyan">
                       {t === 1
-                        ? "Receita"
+                        ? "Ingresos"
                         : t === 2
-                          ? "Redução de custos"
+                          ? "Reducción de costes"
                           : t === 3
-                            ? "Eficiência"
+                            ? "Eficiencia"
                             : t === 4
-                              ? "Risco / compliance"
-                              : "Experiência do cliente"}
+                              ? "Riesgo / compliance"
+                              : "Experiencia del cliente"}
                     </Badge>
                   ))}
                   {demand.tiposImpacto.length === 0 && (

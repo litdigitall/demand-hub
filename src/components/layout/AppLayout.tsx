@@ -129,7 +129,7 @@ export function AppLayout() {
                 size="lg"
                 component="a"
                 href="#/aprovacoes"
-                aria-label="Caixa de entrada"
+                aria-label="Bandeja de entrada"
               >
                 <IconBell size={18} />
               </ActionIcon>
@@ -138,7 +138,7 @@ export function AppLayout() {
             {/* Switcher de persona — troca de papel sem deslogar (demo) */}
             <Menu position="bottom-end" width={300} shadow="md">
               <Menu.Target>
-                <ActionIcon variant="default" size="lg" aria-label="Trocar persona">
+                <ActionIcon variant="default" size="lg" aria-label="Cambiar persona">
                   <IconChevronDown size={16} />
                 </ActionIcon>
               </Menu.Target>
@@ -219,7 +219,7 @@ export function AppLayout() {
                 }
               >
                 <IconPresentation size={19} stroke={1.7} />
-                <span>Relatório mensal</span>
+                <span>Informe mensual</span>
               </RouterNavLink>
               <RouterNavLink
                 to="/admin"
@@ -263,8 +263,8 @@ export function AppLayout() {
                 signOut();
                 window.location.hash = "#/login";
               }}
-              title="Sair"
-              aria-label="Sair"
+              title="Salir"
+              aria-label="Salir"
               style={{ color: "rgba(255,255,255,0.7)" }}
             >
               <IconLogout size={16} />

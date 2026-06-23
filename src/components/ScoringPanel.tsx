@@ -135,7 +135,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
       });
       notifications.show({
         color: "teal",
-        title: "Stack validada",
+        title: "Stack validado",
         message: `Validado por ${modal.avaliador}`,
       });
     } else {
@@ -151,7 +151,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
       await onSave({ avaliacoes: [...restantes, nova] });
       notifications.show({
         color: "teal",
-        title: "Critério validado",
+        title: "Criterio validado",
         message: `${SCORE_LABELS[modal.criterio]} por ${modal.avaliador}`,
       });
     }
@@ -164,7 +164,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
     });
     notifications.show({
       color: "yellow",
-      title: "Critério reaberto",
+      title: "Criterio reabierto",
       message: SCORE_LABELS[criterio],
     });
   }
@@ -200,16 +200,16 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
             />
             <div>
               <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                Status da avaliação
+                Estado de la evaluación
               </Text>
               <Text fw={700} fz="lg">
                 {validados === total
-                  ? "Avaliação concluída"
-                  : `${total - validados} critério(s) pendentes`}
+                  ? "Evaluación concluida"
+                  : `${total - validados} criterio(s) pendientes`}
               </Text>
               <Text size="sm" c="dimmed">
-                Cada critério precisa ser validado por um avaliador antes do
-                score entrar no Score Board oficial.
+                Cada criterio debe ser validado por un evaluador antes de que el
+                score entre en el Score Board oficial.
               </Text>
             </div>
           </Group>
@@ -221,7 +221,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
               {wScore.toFixed(2)}
             </Text>
             <Text size="xs" c="dimmed">
-              / 5,00
+              / 5,00 (100 %)
             </Text>
           </Box>
         </Group>
@@ -251,13 +251,13 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
                 </div>
               </Group>
               <Badge color={color} variant="light" size="lg" radius="sm">
-                {validadosCat}/{criterios.length} validados
+                {validadosCat}/{criterios.length} validados {/* es */}
               </Badge>
             </Group>
 
             {!canScore(cat) && (
               <Text size="xs" c="dimmed" mt="xs">
-                Somente {ROLE_LABEL[CATEGORIA_PAPEL[cat]]} (ou Admin) pontua esta estação.
+                Solo {ROLE_LABEL[CATEGORIA_PAPEL[cat]]} (o Admin) puntúa esta estación.
               </Text>
             )}
             <Stack gap="md" mt="md">
@@ -293,19 +293,19 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
               <IconCpu size={20} />
             </ThemeIcon>
             <div>
-              <Text fw={700}>Validação da Stack Tecnológica</Text>
+              <Text fw={700}>Validación del Stack Tecnológico</Text>
               <Text size="xs" c="dimmed">
-                O Tech Lead aprova os sistemas, integrações e tecnologias propostas
+                El Tech Lead aprueba los sistemas, integraciones y tecnologías propuestas
               </Text>
             </div>
           </Group>
           {stackValidada ? (
             <Badge color="teal" variant="light" size="lg" radius="sm">
-              Aprovada
+              Aprobada
             </Badge>
           ) : (
             <Badge color="orange" variant="light" size="lg" radius="sm">
-              Pendente
+              Pendiente
             </Badge>
           )}
         </Group>
@@ -313,7 +313,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mt="sm">
           <Paper withBorder radius="md" p="sm" bg="gray.0">
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Sistemas envolvidos
+              Sistemas involucrados
             </Text>
             <Text size="sm" mt={2} style={{ whiteSpace: "pre-wrap" }}>
               {demand.sistemasEnvolvidos || "—"}
@@ -321,7 +321,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
           </Paper>
           <Paper withBorder radius="md" p="sm" bg="gray.0">
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Integrações
+              Integraciones
             </Text>
             <Text size="sm" mt={2} style={{ whiteSpace: "pre-wrap" }}>
               {demand.integracoesNecessarias || "—"}
@@ -329,7 +329,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
           </Paper>
           <Paper withBorder radius="md" p="sm" bg="gray.0">
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Solução proposta
+              Solución propuesta
             </Text>
             <Text size="sm" mt={2} style={{ whiteSpace: "pre-wrap" }}>
               {demand.solucaoProposta || "—"}
@@ -337,7 +337,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
           </Paper>
           <Paper withBorder radius="md" p="sm" bg="gray.0">
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Requisitos principais
+              Requisitos principales
             </Text>
             <Text size="sm" mt={2} style={{ whiteSpace: "pre-wrap" }}>
               {demand.requisitosPrincipais || "—"}
@@ -352,13 +352,13 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
                 <IconCheck size={12} />
               </ThemeIcon>
               <Text size="sm">
-                Aprovada por <strong>{demand.stackValidadaPor}</strong>
-                {demand.stackValidadaEm && ` em ${formatDate(demand.stackValidadaEm)}`}
+                Aprobada por <strong>{demand.stackValidadaPor}</strong>
+                {demand.stackValidadaEm && ` el ${formatDate(demand.stackValidadaEm)}`}
               </Text>
             </Group>
           ) : (
             <Text size="sm" c="dimmed">
-              Aguardando validação do Tech Lead.
+              Esperando validación del Tech Lead.
             </Text>
           )}
           {stackValidada ? (
@@ -380,11 +380,11 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
               leftSection={<IconUserCheck size={16} />}
               onClick={() => openValidar("stack")}
             >
-              Validar stack
+              Validar stack {/* es */}
             </Button>
           ) : (
             <Badge color="gray" variant="light">
-              Aguardando Tech Lead
+              Esperando Tech Lead
             </Badge>
           )}
         </Group>
@@ -393,13 +393,13 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
       {/* ---------- Caixa explicativa ---------- */}
       <Alert color="abbott" variant="light" icon={<IconInfoCircle size={18} />}>
         <Text size="sm" fw={600} mb={4}>
-          Como funciona
+          Cómo funciona
         </Text>
         <Text size="sm">
-          Os 7 critérios são divididos em <strong>3 estações de avaliação</strong>.
-          Cada avaliador valida apenas os critérios sob sua alçada. Notas só são
-          consideradas no Score Board quando os 7 critérios estiverem validados.
-          Para incluir avaliadores, vá em <em>Administração → Avaliadores</em>.
+          Los 7 criterios se dividen en <strong>3 estaciones de evaluación</strong>.
+          Cada evaluador valida solo los criterios bajo su responsabilidad. Las notas solo
+          se consideran en el Score Board cuando los 7 criterios estén validados.
+          Para añadir evaluadores, ve a <em>Administración → Evaluadores</em>.
         </Text>
       </Alert>
 
@@ -408,7 +408,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
         onClose={() => setModal(null)}
         title={
           modal?.criterio === "stack"
-            ? "Validar stack tecnológica"
+            ? "Validar stack tecnológico"
             : modal
               ? `Validar: ${SCORE_LABELS[modal.criterio]}`
               : ""
@@ -417,25 +417,25 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
         {modal && (
           <Stack>
             <Select
-              label="Avaliador"
+              label="Evaluador"
               withAsterisk
               data={avaliadores.map((a) => a.nome)}
               value={modal.avaliador || null}
               onChange={(v) => setModal({ ...modal, avaliador: v ?? "" })}
               searchable
-              nothingFoundMessage="Cadastre em Administração → Avaliadores"
+              nothingFoundMessage="Regístralo en Administración → Evaluadores"
             />
             <DateInput
-              label="Data da validação"
+              label="Fecha de validación"
               valueFormat="DD/MM/YYYY"
               value={modal.data}
               onChange={(v) => v && setModal({ ...modal, data: v })}
             />
             <Textarea
-              label="Comentário (opcional)"
+              label="Comentario (opcional)"
               autosize
               minRows={2}
-              placeholder="Justifique a nota ou registre observações..."
+              placeholder="Justifica la nota o registra observaciones..."
               value={modal.comentario}
               onChange={(e) => setModal({ ...modal, comentario: e.currentTarget.value })}
             />
@@ -449,7 +449,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
                 disabled={!modal.avaliador.trim()}
                 onClick={confirmarValidacao}
               >
-                Confirmar validação
+                Confirmar validación
               </Button>
             </Group>
           </Stack>
@@ -506,7 +506,7 @@ function CriterioRow({
             </ThemeIcon>
           )}
           <Text fw={600}>{SCORE_LABELS[criterio]}</Text>
-          <Tooltip label={`Peso ${(peso * 100).toFixed(0)}% no score final`}>
+          <Tooltip label={`Peso ${(peso * 100).toFixed(0)}% en el score final`}>
             <Badge variant="outline" color="gray" size="sm">
               {(peso * 100).toFixed(0)}%
             </Badge>
@@ -522,7 +522,7 @@ function CriterioRow({
                 automático
               </Badge>
             ) : canScore ? (
-              <Tooltip label="Reabrir critério">
+              <Tooltip label="Reabrir criterio">
                 <ActionIcon variant="subtle" color="gray" onClick={onReabrir}>
                   <IconArrowBackUp size={16} />
                 </ActionIcon>
@@ -539,7 +539,7 @@ function CriterioRow({
             </Button>
           ) : (
             <Badge color="gray" variant="light" size="sm">
-              aguardando
+              esperando
             </Badge>
           )}
         </Group>
@@ -567,7 +567,7 @@ function CriterioRow({
               <Text component="span" fw={600} c="dark">
                 {avaliacao.validadoPor}
               </Text>{" "}
-              em {formatDate(avaliacao.validadoEm)}
+              el {formatDate(avaliacao.validadoEm)}
             </Text>
             {avaliacao.comentario && (
               <Text size="sm" mt={2} style={{ whiteSpace: "pre-wrap" }}>

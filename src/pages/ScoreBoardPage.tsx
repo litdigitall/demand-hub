@@ -161,7 +161,7 @@ export function ScoreBoardPage() {
             leftSection={<IconFlame size={16} />}
             onClick={() => setSoTop((v) => !v)}
           >
-            Portfólio top score (≥4,5)
+            Portafolio top score (≥4,5)
           </Button>
           <Button
             variant="default"

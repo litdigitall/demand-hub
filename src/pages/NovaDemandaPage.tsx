@@ -348,8 +348,8 @@ export function NovaDemandaPage() {
           <Stack gap="md">
             <SectionTitle index={4} title={t("nova_section4")} />
             <Select
-              label="Até onde essa demanda impacta?"
-              description="Define automaticamente o critério 'Impacto no Negócio' do score — você não precisa pontuar."
+              label="¿Hasta dónde impacta esta solicitud?"
+              description="Define automáticamente el criterio 'Impacto en el Negocio' del score — no necesitas puntuar."
               withAsterisk
               data={abrangenciaOptions.map((o) => ({ value: String(o.value), label: o.label }))}
               allowDeselect={false}
@@ -358,14 +358,14 @@ export function NovaDemandaPage() {
             />
             <Alert color="blue" variant="light">
               <Text size="sm">
-                Impacto no Negócio (automático):{" "}
-                <strong>{ABRANGENCIA_SCORE[form.impactoAbrangencia]} / 5</strong> — peso 25% no score.
+                Impacto en el Negocio (automático):{" "}
+                <strong>{ABRANGENCIA_SCORE[form.impactoAbrangencia]} / 5</strong> — peso 25 % en el score.
               </Text>
             </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
               <Select
                 label={t("nova_impactLevel")}
-                description="Percepção qualitativa (não entra no score)"
+                description="Percepción cualitativa (no entra en el score)"
                 withAsterisk
                 data={impactoOptions.map((o) => ({ value: String(o.value), label: L.impacto[o.value] }))}
                 allowDeselect={false}
@@ -395,7 +395,7 @@ export function NovaDemandaPage() {
               />
               <NumberInput
                 label="ROI estimado (%)"
-                description="Retorno esperado do investimento (opcional)"
+                description="Retorno esperado de la inversión (opcional)"
                 min={0}
                 max={100000}
                 suffix="%"
@@ -427,13 +427,13 @@ export function NovaDemandaPage() {
             <SectionTitle index={9} title={t("nova_section9")} />
             <Alert color="gray" variant="light" mb="xs">
               <Text size="sm">
-                Esforço, time e horas (capacity) são definidos pelo time técnico na
-                etapa de Avaliação. Aqui é opcional — preencha só se tiver uma noção.
+                Esfuerzo, equipo y horas (capacity) los define el equipo técnico en la
+                etapa de Evaluación. Aquí es opcional — complétalo solo si tienes una idea.
               </Text>
             </Alert>
             <Select
               label={t("nova_effort")}
-              description="Opcional — estimativa do solicitante"
+              description="Opcional — estimación del solicitante"
               clearable
               maw={340}
               data={esforcoOptions.map((o) => ({ value: String(o.value), label: L.esforco[o.value] }))}
@@ -449,8 +449,8 @@ export function NovaDemandaPage() {
             <SectionTitle index={6} title={t("nova_section6")} />
             <Alert color="gray" variant="light">
               <Text size="sm">
-                Esta seção é opcional. Se você não conhece os detalhes técnicos,
-                deixe em branco — o time técnico complementa durante a Avaliação.
+                Esta sección es opcional. Si no conoces los detalles técnicos,
+                déjala en blanco — el equipo técnico la completa durante la Evaluación.
               </Text>
             </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">

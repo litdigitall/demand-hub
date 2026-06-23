@@ -63,10 +63,10 @@ export function AprovacoesPage() {
   return (
     <Stack gap="lg">
       <div>
-        <Title order={2}>Minha caixa</Title>
+        <Title order={2}>Mi bandeja</Title>
         <Text c="dimmed" mt={4}>
           {user.name} · {roles.map((r) => ROLE_LABEL[r]).join(" · ")} —{" "}
-          <strong>{pendentes.length} demanda(s) aguardando você</strong>
+          <strong>{pendentes.length} solicitud(es) esperando por ti</strong>
         </Text>
       </div>
 
@@ -77,9 +77,9 @@ export function AprovacoesPage() {
               <ThemeIcon size={60} radius="xl" variant="light" color="teal">
                 <IconChecks size={30} />
               </ThemeIcon>
-              <Text fw={600}>Nada pendente para você</Text>
+              <Text fw={600}>Nada pendiente para ti</Text>
               <Text size="sm" c="dimmed">
-                Quando uma demanda precisar de uma ação dos seus papéis, ela aparece aqui.
+                Cuando una solicitud necesite una acción de tus roles, aparecerá aquí.
               </Text>
             </Stack>
           </Center>
@@ -135,7 +135,7 @@ export function AprovacoesPage() {
         <Group gap="xs">
           <IconInbox size={16} />
           <Text size="sm" c="dimmed">
-            Troque de persona no topo (menu ▾) para ver a caixa de cada papel do fluxo.
+            Cambia de persona arriba (menú ▾) para ver la bandeja de cada rol del flujo.
           </Text>
         </Group>
       </Paper>

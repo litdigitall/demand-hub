@@ -205,7 +205,7 @@ export function AdminPage() {
     } catch (err) {
       notifications.show({
         color: "red",
-        title: "Erro ao popular",
+        title: "Error al poblar",
         message: (err as Error).message,
       });
       setSeeding(null);

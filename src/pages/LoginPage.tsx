@@ -54,7 +54,7 @@ export function LoginPage() {
             {t("appName")}
           </Title>
           <Text size="sm" c="dimmed">
-            Escolha um perfil para entrar (demo). Cada perfil enxerga o que é dele no fluxo.
+            Elige un perfil para entrar (demo). Cada perfil ve lo que le corresponde en el flujo.
           </Text>
         </Stack>
 

@@ -127,6 +127,7 @@ export function DemandasPage() {
           { label: `${CATEGORIA_VIEW_LABEL.infra} · ${CATEGORIA_RESPONSAVEL.infra}`, value: "infra" },
           { label: `${CATEGORIA_VIEW_LABEL.app} · ${CATEGORIA_RESPONSAVEL.app}`, value: "app" },
         ]}
+        // vistas guardadas: Infraestructura·Sambini / Aplicación·Gabriela
       />
 
       <Card withBorder radius="lg" padding="md">
@@ -197,7 +198,7 @@ export function DemandasPage() {
                 <Table.Tr>
                   <Table.Th>{t("list_demand")}</Table.Th>
                   <Table.Th>{t("list_area")}</Table.Th>
-                  <Table.Th>Categoria</Table.Th>
+                  <Table.Th>Categoría</Table.Th>
                   <Table.Th>{t("list_type")}</Table.Th>
                   <Table.Th>{t("list_impact")}</Table.Th>
                   <Table.Th>{t("list_urgency")}</Table.Th>

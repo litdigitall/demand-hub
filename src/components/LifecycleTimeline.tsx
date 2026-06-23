@@ -25,6 +25,7 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
           {aguardando(demand)}
         </Badge>
       </Group>
+      {/* (textos abaixo em español) */}
 
       {(devolvida || recusada) && (
         <Group
@@ -41,8 +42,8 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
           </ThemeIcon>
           <Text size="sm" fw={500}>
             {recusada
-              ? "Demanda recusada — fora do fluxo."
-              : "Devolvida ao solicitante para complementar e reenviar."}
+              ? "Solicitud rechazada — fuera del flujo."
+              : "Devuelta al solicitante para completar y reenviar."}
           </Text>
         </Group>
       )}
@@ -82,7 +83,7 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
                   </Text>
                   {atual && (
                     <Badge size="xs" color="abbott" variant="filled">
-                      atual
+                      actual
                     </Badge>
                   )}
                 </Group>

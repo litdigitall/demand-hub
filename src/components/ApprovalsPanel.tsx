@@ -118,12 +118,12 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
           <ThemeIcon size={60} radius="xl" color="abbott" variant="light">
             <IconInfoCircle size={28} />
           </ThemeIcon>
-          <Text fw={700}>Workflow de aprovação não inicializado</Text>
+          <Text fw={700}>Workflow de aprobación no inicializado</Text>
           <Text size="sm" c="dimmed" ta="center" maw={460}>
-            Demandas criadas no app já vêm com a sequência padrão (Sponsor → Tech Lead →
-            Diretor). Para inicializar nesta demanda existente, clique abaixo.
+            Las solicitudes creadas en el app ya vienen con la secuencia estándar (Sponsor →
+            Tech Lead → Director). Para inicializarla en esta solicitud existente, haz clic abajo.
           </Text>
-          <Button onClick={inicializar}>Inicializar fluxo de aprovação</Button>
+          <Button onClick={inicializar}>Inicializar flujo de aprobación</Button>
         </Stack>
       </Card>
     );
@@ -139,8 +139,8 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
               {t("apr_workflow")}
             </Text>
             <Text fw={700} fz="xl">
-              {aprovados}/{steps.length} aprovados
-              {recusados > 0 && ` · ${recusados} recusado`}
+              {aprovados}/{steps.length} aprobados
+              {recusados > 0 && ` · ${recusados} rechazado`}
             </Text>
             <Text size="sm" c="dimmed">
               {t("apr_workflow_help")}
@@ -148,17 +148,17 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
           </div>
           {nextStep && (
             <Badge color="orange" variant="light" size="lg">
-              Próximo: {labelNivel[nextStep.nivel]}
+              Siguiente: {labelNivel[nextStep.nivel]}
             </Badge>
           )}
           {!nextStep && recusados === 0 && (
             <Badge color="teal" variant="filled" size="lg" leftSection={<IconCheck size={12} />}>
-              Concluído
+              Concluido
             </Badge>
           )}
           {recusados > 0 && (
             <Badge color="red" variant="filled" size="lg">
-              Recusada
+              Rechazada
             </Badge>
           )}
         </Group>
@@ -233,7 +233,7 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
                         </Badge>
                         {isNext && (
                           <Badge color="orange" variant="filled" size="sm">
-                            {isCurrentUser ? t("apr_youAreNext") : "Pendente"}
+                            {isCurrentUser ? t("apr_youAreNext") : "Pendiente"}
                           </Badge>
                         )}
                       </Group>
@@ -306,10 +306,10 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
 
       <Alert color="abbott" variant="light" icon={<IconInfoCircle size={18} />}>
         <Text size="sm">
-          <strong>Regra:</strong> qualquer recusa joga a demanda para o status{" "}
-          <em>Recusada</em>. Os 3 aprovados liberam para <em>Priorizada</em>. Demandas em
-          aprovação aparecem em <strong>Minhas Aprovações</strong> do aprovador atual e
-          contam no badge do sininho no topo.
+          <strong>Regla:</strong> cualquier rechazo lleva la solicitud al estado{" "}
+          <em>Rechazada</em>. Los 3 aprobados la liberan a <em>Priorizada</em>. Las solicitudes
+          en aprobación aparecen en <strong>Mi bandeja</strong> del aprobador actual y
+          cuentan en el badge de la campana arriba.
         </Text>
       </Alert>
 

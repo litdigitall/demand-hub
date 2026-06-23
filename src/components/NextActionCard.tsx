@@ -38,7 +38,7 @@ import {
   type Acao,
   type AcaoContexto,
 } from "../domain/workflow";
-import type { Role } from "../domain/roles";
+import { ROLE_LABEL, type Role } from "../domain/roles";
 
 interface Props {
   demand: Demand;
@@ -71,7 +71,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
   async function aplicar(acao: Acao, ctx: AcaoContexto) {
     const changes = acao.apply(demand, ator, ctx);
     await onSave(changes);
-    notifications.show({ color: "teal", title: "Ação aplicada", message: acao.label });
+    notifications.show({ color: "teal", title: "Acción aplicada", message: acao.label });
     setModal(null);
   }
 
@@ -89,7 +89,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
           </ThemeIcon>
           <div>
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Etapa atual
+              Etapa actual
             </Text>
             <Text fw={700}>{statusLabel[demand.status]}</Text>
           </div>
@@ -102,7 +102,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
       {minhas.length > 0 ? (
         <Stack gap="xs">
           <Text size="sm" c="dimmed">
-            Como <strong>{rolesAtuantes(minhas)}</strong>, você pode:
+            Como <strong>{rolesAtuantes(minhas)}</strong>, puedes:
           </Text>
           <Group gap="sm">
             {minhas.map((acao) => {
@@ -134,10 +134,10 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
       ) : (
         <Alert color="gray" variant="light" icon={<IconInfoCircle size={16} />}>
           {terminal
-            ? `Demanda ${statusLabel[demand.status].toLowerCase()} — sem ações pendentes.`
+            ? `Solicitud ${statusLabel[demand.status].toLowerCase()} — sin acciones pendientes.`
             : haEstado
-              ? `Nenhuma ação sua nesta etapa. ${aguardando(demand)}.`
-              : "Sem ações configuradas para esta etapa."}
+              ? `Ninguna acción tuya en esta etapa. ${aguardando(demand)}.`
+              : "Sin acciones configuradas para esta etapa."}
         </Alert>
       )}
 
@@ -152,11 +152,11 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
           <Stack>
             {modal.acao.exigeComentario && (
               <Textarea
-                label="Justificativa"
+                label="Justificación"
                 withAsterisk
                 autosize
                 minRows={2}
-                placeholder="Registre o motivo desta decisão..."
+                placeholder="Registra el motivo de esta decisión..."
                 value={modal.ctx.comentario ?? ""}
                 onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, comentario: e.currentTarget.value } })}
               />
@@ -165,7 +165,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
             {modal.acao.campos?.includes("capacity") && (
               <>
                 <Select
-                  label="Time de implantação"
+                  label="Equipo de implantación"
                   withAsterisk
                   data={[...TIMES_IMPLANTACAO]}
                   value={modal.ctx.time || null}
@@ -173,7 +173,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
                 />
                 <NumberInput
                   label="Horas estimadas"
-                  description="Alimenta o painel de Capacity do time"
+                  description="Alimenta el panel de Capacity del equipo"
                   min={0}
                   max={10000}
                   value={modal.ctx.horasEstimadas || undefined}
@@ -184,8 +184,8 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
 
             {modal.acao.campos?.includes("prioridade") && (
               <NumberInput
-                label="Posição no ranking (prioridade final)"
-                description="1 = mais prioritária"
+                label="Posición en el ranking (prioridad final)"
+                description="1 = más prioritaria"
                 min={1}
                 max={999}
                 value={modal.ctx.finalPriority ?? undefined}
@@ -196,13 +196,13 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
             {modal.acao.campos?.includes("serviceNow") && (
               <>
                 <TextInput
-                  label="Nº do projeto (ServiceNow)"
-                  placeholder="ex.: PRJ0012345"
+                  label="Nº del proyecto (ServiceNow)"
+                  placeholder="ej.: PRJ0012345"
                   value={modal.ctx.idServiceNow ?? ""}
                   onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, idServiceNow: e.currentTarget.value } })}
                 />
                 <TextInput
-                  label="ID do projeto interno (opcional)"
+                  label="ID del proyecto interno (opcional)"
                   value={modal.ctx.idProjeto ?? ""}
                   onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, idProjeto: e.currentTarget.value } })}
                 />
@@ -230,5 +230,5 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
 
 function rolesAtuantes(acoes: Acao[]): string {
   const set = new Set(acoes.flatMap((a) => a.papeis));
-  return [...set].join(" / ");
+  return [...set].map((p) => ROLE_LABEL[p]).join(" / ");
 }

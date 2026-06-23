@@ -90,15 +90,15 @@ export const StatusDemanda = {
   Devolvida: 506970008, // devolvida ao solicitante para complementar
 } as const;
 export const statusLabel: Record<number, string> = {
-  [StatusDemanda.Rascunho]: "Rascunho",
-  [StatusDemanda.Nova]: "Em triagem",
-  [StatusDemanda.EmAnalise]: "Em avaliação",
-  [StatusDemanda.EmAprovacao]: "Em aprovação",
+  [StatusDemanda.Rascunho]: "Borrador",
+  [StatusDemanda.Nova]: "En triaje",
+  [StatusDemanda.EmAnalise]: "En evaluación",
+  [StatusDemanda.EmAprovacao]: "En aprobación",
   [StatusDemanda.Priorizada]: "Priorizada",
-  [StatusDemanda.EmExecucao]: "Em execução",
-  [StatusDemanda.Concluida]: "Concluída",
-  [StatusDemanda.Devolvida]: "Devolvida",
-  [StatusDemanda.Recusada]: "Recusada",
+  [StatusDemanda.EmExecucao]: "En ejecución",
+  [StatusDemanda.Concluida]: "Concluida",
+  [StatusDemanda.Devolvida]: "Devuelta",
+  [StatusDemanda.Recusada]: "Rechazada",
 };
 
 type Option = { value: number; label: string };
@@ -123,10 +123,10 @@ export const ImpactoAbrangencia = {
   Infraestrutura: 4,
 } as const;
 export const abrangenciaLabel: Record<number, string> = {
-  [ImpactoAbrangencia.Usuario]: "Usuário (impacto individual)",
-  [ImpactoAbrangencia.Processo]: "Processo (um fluxo de trabalho)",
-  [ImpactoAbrangencia.Departamento]: "Departamento / Organização",
-  [ImpactoAbrangencia.Infraestrutura]: "Infraestrutura (base de TI)",
+  [ImpactoAbrangencia.Usuario]: "Usuario (impacto individual)",
+  [ImpactoAbrangencia.Processo]: "Proceso (un flujo de trabajo)",
+  [ImpactoAbrangencia.Departamento]: "Departamento / Organización",
+  [ImpactoAbrangencia.Infraestrutura]: "Infraestructura (base de TI)",
 };
 export const abrangenciaOptions = toOptions(abrangenciaLabel);
 /** Mapa abrangência → nota 1..5 do critério businessImpact. */
@@ -136,7 +136,7 @@ export const ABRANGENCIA_SCORE: Record<number, number> = {
   [ImpactoAbrangencia.Departamento]: 4,
   [ImpactoAbrangencia.Infraestrutura]: 5,
 };
-export const AUTO_AVALIADOR = "Automático (nível de impacto)";
+export const AUTO_AVALIADOR = "Automático (nivel de impacto)";
 
 /* ---------------- Categoria (view por portfólio) ----------------
    Agrupa os tipos de demanda em duas frentes com donos distintos. */
@@ -151,8 +151,8 @@ export const CATEGORIA_TIPO: Record<number, Categoria> = {
   [TipoDemanda.Compliance]: "app",
 };
 export const CATEGORIA_VIEW_LABEL: Record<Categoria, string> = {
-  infra: "Infraestrutura",
-  app: "Aplicação",
+  infra: "Infraestructura",
+  app: "Aplicación",
 };
 export const CATEGORIA_RESPONSAVEL: Record<Categoria, string> = {
   infra: "Sambini",
