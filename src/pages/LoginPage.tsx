@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Badge,
@@ -24,10 +25,10 @@ export function LoginPage() {
   const { signInAs, user, personas } = useAuth();
   const { t } = useT();
 
-  if (user) {
-    navigate("/", { replace: true });
-    return null;
-  }
+  // Redireciona via efeito (nunca durante o render — evita setState-in-render).
+  useEffect(() => {
+    if (user) navigate("/", { replace: true });
+  }, [user, navigate]);
 
   function entrar(p: Persona) {
     if (signInAs(p.id)) navigate("/", { replace: true });

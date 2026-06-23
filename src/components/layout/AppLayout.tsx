@@ -32,6 +32,7 @@ import {
 } from "@tabler/icons-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useCurrentUser } from "../../lib/useCurrentUser";
+import { ErrorBoundary } from "../ErrorBoundary";
 import { initialsFromName } from "../../lib/format";
 import { useT, type Lang, type TKey } from "../../i18n";
 import { demandService } from "../../data/demandService";
@@ -275,7 +276,9 @@ export function AppLayout() {
 
       <AppShell.Main bg="gray.0">
         <div className="page-fade" key={loc.pathname}>
-          <Outlet />
+          <ErrorBoundary key={loc.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </div>
       </AppShell.Main>
     </AppShell>
