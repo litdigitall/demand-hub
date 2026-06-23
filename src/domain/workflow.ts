@@ -89,6 +89,7 @@ export interface AcaoContexto {
   finalPriority?: number | null;
   idServiceNow?: string;
   idProjeto?: string;
+  rce?: string;
 }
 
 export interface Acao {
@@ -255,6 +256,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
           changes.dmcComentario = eraDiretor ? (ctx.comentario ?? "") : d.dmcComentario;
           if (ctx.idServiceNow) changes.idServiceNow = ctx.idServiceNow;
           if (ctx.idProjeto) changes.idProjeto = ctx.idProjeto;
+          if (ctx.rce) changes.rce = ctx.rce;
         }
         return changes;
       },

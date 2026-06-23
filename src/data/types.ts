@@ -589,8 +589,58 @@ export interface Demand {
   dmcComentario: string;
   idServiceNow: string;
   idProjeto: string;
+  /** RCE — nº do projeto aprovado pela Gestão (obrigatório no aceite). */
+  rce?: string;
+  /** APP ID — código da aplicação (demandas de sistema). */
+  appId?: string;
   criadoEm: string;
   modificadoEm: string;
+}
+
+/* ---------------- Stakeholder por área (auto) ----------------
+   Ao escolher a Área solicitante, o stakeholder/sponsor responsável
+   é preenchido automaticamente. */
+export const AREA_STAKEHOLDER: Record<string, string> = {
+  Facilities: "Sambini",
+  IT: "Sambini",
+  Infraestructura: "Sambini",
+  Sales: "Carlos Mendes",
+  Comercial: "Carlos Mendes",
+  Marketing: "Carlos Mendes",
+  Finance: "Patricia Lima",
+  "Human Resources": "Juliana Costa",
+  "Supply Chain": "Roberto Almeida",
+  Production: "Roberto Almeida",
+  Quality: "Ana Beatriz Souza",
+  Regulatory: "Ana Beatriz Souza",
+  Legal: "Patricia Lima",
+};
+export function stakeholderDaArea(area: string): string {
+  return AREA_STAKEHOLDER[area] ?? "";
+}
+
+/* ---------------- Modelo de entrega / esforço ---------------- */
+export const TIME_DESCRICAO: Record<TimeImplantacao, string> = {
+  "Internal Delivery": "Wipro / Abbott",
+  "External Delivery": "Terceros / contratistas independientes",
+  Support: "Soporte / sustentación",
+};
+
+/** Classifica o porte da demanda (esforço): enhancement vs grande projeto. */
+export function classificaEsforco(d: {
+  horasEstimadas: number;
+  valorEstimado: number | null;
+}): { label: string; color: string } {
+  if ((d.valorEstimado ?? 0) >= 500_000) {
+    return { label: "Gran proyecto (>500k USD)", color: "red" };
+  }
+  if (d.horasEstimadas > 0 && d.horasEstimadas <= 80) {
+    return { label: "Minor enhancement (≤80h)", color: "teal" };
+  }
+  if (d.horasEstimadas > 0) {
+    return { label: "Proyecto", color: "blue" };
+  }
+  return { label: "Sin estimar", color: "gray" };
 }
 
 /* Tudo que pode ser preenchido ao criar uma demanda (sem campos de sistema). */

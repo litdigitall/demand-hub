@@ -28,8 +28,10 @@ import { IconBolt, IconInfoCircle, IconLock } from "@tabler/icons-react";
 import {
   StatusDemanda,
   TIMES_IMPLANTACAO,
+  TIME_DESCRICAO,
   statusLabel,
   type Demand,
+  type TimeImplantacao,
 } from "../data/types";
 import {
   acoesDoEstado,
@@ -63,6 +65,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
       finalPriority: demand.finalPriority,
       idServiceNow: demand.idServiceNow,
       idProjeto: demand.idProjeto,
+      rce: demand.rce ?? "",
     };
     if (precisaCampos) setModal({ acao, ctx: ctx0 });
     else aplicar(acao, ctx0);
@@ -167,7 +170,10 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
                 <Select
                   label="Equipo de implantación"
                   withAsterisk
-                  data={[...TIMES_IMPLANTACAO]}
+                  data={TIMES_IMPLANTACAO.map((tm) => ({
+                    value: tm,
+                    label: `${tm} — ${TIME_DESCRICAO[tm as TimeImplantacao]}`,
+                  }))}
                   value={modal.ctx.time || null}
                   onChange={(v) => setModal({ ...modal, ctx: { ...modal.ctx, time: v ?? "" } })}
                 />
@@ -195,6 +201,13 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
 
             {modal.acao.campos?.includes("serviceNow") && (
               <>
+                <TextInput
+                  label="RCE — nº del proyecto aprobado por Gestión"
+                  description="Identificador obligatorio en la aceptación"
+                  placeholder="ej.: RCE-2026-0099"
+                  value={modal.ctx.rce ?? ""}
+                  onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, rce: e.currentTarget.value } })}
+                />
                 <TextInput
                   label="Nº del proyecto (ServiceNow)"
                   placeholder="ej.: PRJ0012345"

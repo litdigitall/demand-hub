@@ -48,8 +48,11 @@ import { NotifyButton } from "../components/NotifyButton";
 import { useT } from "../i18n";
 import {
   abrangenciaLabel,
+  classificaEsforco,
   weightedScore,
+  TIME_DESCRICAO,
   type Demand,
+  type TimeImplantacao,
 } from "../data/types";
 import {
   EsforcoBadge,
@@ -248,12 +251,28 @@ export function DemandaDetailPage() {
                     <Text fw={700}>#{demand.finalPriority}</Text>
                   </div>
                 )}
+                {demand.rce && (
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                      RCE
+                    </Text>
+                    <Text fw={700}>{demand.rce}</Text>
+                  </div>
+                )}
                 {demand.idServiceNow && (
                   <div>
                     <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                       ServiceNow
                     </Text>
                     <Text fw={700}>{demand.idServiceNow}</Text>
+                  </div>
+                )}
+                {demand.appId && (
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                      APP ID
+                    </Text>
+                    <Text fw={700}>{demand.appId}</Text>
                   </div>
                 )}
               </Group>
@@ -370,6 +389,16 @@ export function DemandaDetailPage() {
                 <KV k={t("detail_label_urgency")} v={<UrgenciaBadge value={demand.urgencia} />} />
                 <KV k={t("detail_label_deadline")} v={demand.deadline ? formatDate(demand.deadline) : "—"} />
                 <KV k={t("detail_label_effort")} v={<EsforcoBadge value={demand.esforcoEstimado} />} />
+                {(() => {
+                  const c = classificaEsforco(demand);
+                  return <KV k="Clasificación" v={<Badge color={c.color} variant="light">{c.label}</Badge>} />;
+                })()}
+                {demand.time && (
+                  <KV
+                    k="Equipo (capacity)"
+                    v={`${demand.time} · ${TIME_DESCRICAO[demand.time as TimeImplantacao]}${demand.horasEstimadas ? ` · ${demand.horasEstimadas}h` : ""}`}
+                  />
+                )}
               </Card>
 
               <Card withBorder radius="lg" padding="lg" mb="md">

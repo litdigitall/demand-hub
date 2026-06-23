@@ -38,6 +38,7 @@ import {
   abrangenciaOptions,
   esforcoOptions,
   impactoOptions,
+  stakeholderDaArea,
   tipoImpactoOptions,
   tipoOptions,
   urgenciaOptions,
@@ -58,6 +59,7 @@ type DraftForm = Omit<
   esforcoEstimado: number | null;
   impactoAbrangencia: number;
   roiEstimado: number | "";
+  appId: string;
 };
 
 function emptyDraft(): DraftForm {
@@ -85,6 +87,7 @@ function emptyDraft(): DraftForm {
     integracoesNecessarias: "",
     requisitosPrincipais: "",
     solucaoProposta: "",
+    appId: "",
     sponsor: "",
     donoProcesso: "",
     areasEnvolvidas: "",
@@ -180,6 +183,7 @@ export function NovaDemandaPage() {
           typeof form.valorEstimado === "number" ? form.valorEstimado : null,
         roiEstimado: typeof form.roiEstimado === "number" ? form.roiEstimado : null,
         impactoAbrangencia: form.impactoAbrangencia,
+        appId: form.appId,
         esforcoEstimado: form.esforcoEstimado,
         // Capacity (time/horas) é definido pelo time técnico na Avaliação.
         time: "",
@@ -264,7 +268,14 @@ export function NovaDemandaPage() {
                 searchable
                 value={form.areaSolicitante || null}
                 error={errors.areaSolicitante}
-                onChange={(v) => set("areaSolicitante", v ?? "")}
+                onChange={(v) =>
+                  setForm((f) => {
+                    const area = v ?? "";
+                    const auto = stakeholderDaArea(area);
+                    // Preenche o stakeholder/sponsor automaticamente pela área
+                    return { ...f, areaSolicitante: area, sponsor: auto || f.sponsor };
+                  })
+                }
                 nothingFoundMessage={t("nova_area_notFound")}
               />
               <TextInput
@@ -485,10 +496,20 @@ export function NovaDemandaPage() {
               />
             </SimpleGrid>
 
+            <TextInput
+              label="APP ID (código de la aplicación)"
+              description="Para demandas de sistema — busca/identificación de la app (opcional)"
+              placeholder="ej.: APP-0456"
+              maw={360}
+              value={form.appId}
+              onChange={(e) => set("appId", e.currentTarget.value)}
+            />
+
             <SectionTitle index={7} title={t("nova_section7")} />
             <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
               <Select
                 label={t("nova_sponsor")}
+                description="Se completa automáticamente según el área"
                 withAsterisk
                 data={sponsorOptions}
                 searchable
