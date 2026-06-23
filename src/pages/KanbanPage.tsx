@@ -39,6 +39,7 @@ import {
 import { demandService } from "../data/demandService";
 import {
   StatusDemanda,
+  statusLabel,
   tipoOptions,
   weightedScore,
   type Demand,
@@ -52,17 +53,21 @@ import { useLabels } from "../i18n/useLabels";
 const COL_COLORS: Record<number, string> = {
   [StatusDemanda.Nova]: "gray",
   [StatusDemanda.EmAnalise]: "blue",
+  [StatusDemanda.EmAprovacao]: "grape",
   [StatusDemanda.Priorizada]: "indigo",
   [StatusDemanda.EmExecucao]: "yellow",
   [StatusDemanda.Concluida]: "teal",
+  [StatusDemanda.Devolvida]: "orange",
   [StatusDemanda.Recusada]: "red",
 };
 const COL_ORDER = [
   StatusDemanda.Nova,
   StatusDemanda.EmAnalise,
+  StatusDemanda.EmAprovacao,
   StatusDemanda.Priorizada,
   StatusDemanda.EmExecucao,
   StatusDemanda.Concluida,
+  StatusDemanda.Devolvida,
   StatusDemanda.Recusada,
 ];
 
@@ -138,7 +143,7 @@ export function KanbanPage() {
       notifications.show({
         color: "abbott",
         title: t("kanban_status_changed"),
-        message: `${atual.numero} → ${L.status[newStatus]}`,
+        message: `${atual.numero} → ${L.status[newStatus] ?? statusLabel[newStatus]}`,
       });
     } catch (err) {
       notifications.show({
@@ -204,7 +209,7 @@ export function KanbanPage() {
               <KanbanColumn
                 key={s}
                 status={s}
-                titulo={L.status[s]}
+                titulo={L.status[s] ?? statusLabel[s]}
                 cor={COL_COLORS[s]}
                 items={byStatus.get(s) ?? []}
                 dropLabel={t("kanban_drop")}

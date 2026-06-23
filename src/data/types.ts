@@ -77,19 +77,27 @@ export const esforcoLabel: Record<number, string> = {
 };
 
 export const StatusDemanda = {
-  Nova: 506970000,
-  EmAnalise: 506970001,
-  Priorizada: 506970002,
+  /* Valores 506970000..5 batem com o option set original do Dataverse;
+     506970006..8 foram adicionados para o ciclo de vida unificado. */
+  Nova: 506970000, // submetida, aguardando triagem do PMO
+  EmAnalise: 506970001, // em avaliação (scoring por papel + capacity)
+  Priorizada: 506970002, // aprovada e priorizada no ranking
   EmExecucao: 506970003,
   Concluida: 506970004,
-  Recusada: 506970005,
+  Recusada: 506970005, // terminal
+  Rascunho: 506970006, // solicitante ainda editando, não submeteu
+  EmAprovacao: 506970007, // gates sponsor → tech lead → diretor (DMC)
+  Devolvida: 506970008, // devolvida ao solicitante para complementar
 } as const;
 export const statusLabel: Record<number, string> = {
-  [StatusDemanda.Nova]: "Nova",
-  [StatusDemanda.EmAnalise]: "Em análise",
+  [StatusDemanda.Rascunho]: "Rascunho",
+  [StatusDemanda.Nova]: "Em triagem",
+  [StatusDemanda.EmAnalise]: "Em avaliação",
+  [StatusDemanda.EmAprovacao]: "Em aprovação",
   [StatusDemanda.Priorizada]: "Priorizada",
   [StatusDemanda.EmExecucao]: "Em execução",
   [StatusDemanda.Concluida]: "Concluída",
+  [StatusDemanda.Devolvida]: "Devolvida",
   [StatusDemanda.Recusada]: "Recusada",
 };
 

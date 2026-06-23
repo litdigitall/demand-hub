@@ -5,6 +5,7 @@ import {
   StatusDemanda,
   TipoDemanda,
   Urgencia,
+  statusLabel,
 } from "../data/types";
 import { useLabels } from "../i18n/useLabels";
 
@@ -12,18 +13,21 @@ import { useLabels } from "../i18n/useLabels";
    Status (estilo "farol") — cor por etapa do ciclo de vida
    =========================================================== */
 const STATUS_COLOR: Record<number, string> = {
+  [StatusDemanda.Rascunho]: "gray",
   [StatusDemanda.Nova]: "gray",
   [StatusDemanda.EmAnalise]: "blue",
+  [StatusDemanda.EmAprovacao]: "grape",
   [StatusDemanda.Priorizada]: "indigo",
   [StatusDemanda.EmExecucao]: "yellow",
   [StatusDemanda.Concluida]: "teal",
+  [StatusDemanda.Devolvida]: "orange",
   [StatusDemanda.Recusada]: "red",
 };
 export function StatusBadge({ value }: { value: number }) {
   const L = useLabels();
   return (
     <Badge variant="dot" color={STATUS_COLOR[value] ?? "gray"} radius="sm">
-      {L.status[value] ?? "—"}
+      {L.status[value] ?? statusLabel[value] ?? "—"}
     </Badge>
   );
 }

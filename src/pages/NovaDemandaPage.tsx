@@ -31,7 +31,6 @@ import {
 import { adminLookupService, demandService } from "../data/demandService";
 import {
   Impacto,
-  TIMES_IMPLANTACAO,
   TipoDemanda,
   Urgencia,
   esforcoOptions,
@@ -42,16 +41,18 @@ import {
   type AdminLookup,
   type DemandInput,
 } from "../data/types";
+import { useCurrentUser } from "../lib/useCurrentUser";
 import { useT } from "../i18n";
 import { useLabels } from "../i18n/useLabels";
 
+/* O formulário do solicitante NÃO coleta time/horas (capacity) — isso é
+   definido pelo time técnico na etapa de Avaliação. Esforço é opcional. */
 type DraftForm = Omit<
   DemandInput,
-  "valorEstimado" | "esforcoEstimado" | "horasEstimadas"
+  "valorEstimado" | "esforcoEstimado" | "horasEstimadas" | "time"
 > & {
   valorEstimado: number | "";
   esforcoEstimado: number | null;
-  horasEstimadas: number | "";
 };
 
 function emptyDraft(): DraftForm {
@@ -71,8 +72,6 @@ function emptyDraft(): DraftForm {
     tiposImpacto: [],
     valorEstimado: "",
     esforcoEstimado: null,
-    horasEstimadas: "",
-    time: "",
     urgencia: Urgencia.Medio,
     deadline: "",
     sistemasEnvolvidos: "",
@@ -118,6 +117,7 @@ export function NovaDemandaPage() {
   const navigate = useNavigate();
   const { t } = useT();
   const L = useLabels();
+  const me = useCurrentUser();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<DraftForm>(emptyDraft());
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -129,6 +129,15 @@ export function NovaDemandaPage() {
     adminLookupService.listAreas().then(setAreas);
     adminLookupService.listSponsors().then(setSponsors);
   }, []);
+
+  // Pré-preenche solicitante/email com a persona logada (quem abre a demanda).
+  useEffect(() => {
+    setForm((f) =>
+      f.solicitante || f.email
+        ? f
+        : { ...f, solicitante: me.name, email: me.email },
+    );
+  }, [me.name, me.email]);
 
   const set = <K extends keyof DraftForm>(k: K, v: DraftForm[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -163,8 +172,9 @@ export function NovaDemandaPage() {
         valorEstimado:
           typeof form.valorEstimado === "number" ? form.valorEstimado : null,
         esforcoEstimado: form.esforcoEstimado,
-        horasEstimadas:
-          typeof form.horasEstimadas === "number" ? form.horasEstimadas : 0,
+        // Capacity (time/horas) é definido pelo time técnico na Avaliação.
+        time: "",
+        horasEstimadas: 0,
       };
       const created = await demandService.create(payload);
       notifications.show({
@@ -379,33 +389,21 @@ export function NovaDemandaPage() {
             </SimpleGrid>
 
             <SectionTitle index={9} title={t("nova_section9")} />
-            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
-              <Select
-                label={t("nova_effort")}
-                clearable
-                data={esforcoOptions.map((o) => ({ value: String(o.value), label: L.esforco[o.value] }))}
-                value={form.esforcoEstimado != null ? String(form.esforcoEstimado) : null}
-                onChange={(v) => set("esforcoEstimado", v ? Number(v) : null)}
-              />
-              <Select
-                label={t("nova_team_label")}
-                placeholder={t("nova_area_placeholder")}
-                data={[...TIMES_IMPLANTACAO]}
-                value={form.time || null}
-                onChange={(v) => set("time", v ?? "")}
-                description={t("nova_team_desc")}
-              />
-              <NumberInput
-                label={t("nova_hours_label")}
-                min={0}
-                max={10000}
-                value={form.horasEstimadas}
-                onChange={(v) =>
-                  set("horasEstimadas", typeof v === "number" ? v : "")
-                }
-                description={t("nova_hours_desc")}
-              />
-            </SimpleGrid>
+            <Alert color="gray" variant="light" mb="xs">
+              <Text size="sm">
+                Esforço, time e horas (capacity) são definidos pelo time técnico na
+                etapa de Avaliação. Aqui é opcional — preencha só se tiver uma noção.
+              </Text>
+            </Alert>
+            <Select
+              label={t("nova_effort")}
+              description="Opcional — estimativa do solicitante"
+              clearable
+              maw={340}
+              data={esforcoOptions.map((o) => ({ value: String(o.value), label: L.esforco[o.value] }))}
+              value={form.esforcoEstimado != null ? String(form.esforcoEstimado) : null}
+              onChange={(v) => set("esforcoEstimado", v ? Number(v) : null)}
+            />
           </Stack>
         )}
 
@@ -413,6 +411,12 @@ export function NovaDemandaPage() {
         {step === 3 && (
           <Stack gap="md">
             <SectionTitle index={6} title={t("nova_section6")} />
+            <Alert color="gray" variant="light">
+              <Text size="sm">
+                Esta seção é opcional. Se você não conhece os detalhes técnicos,
+                deixe em branco — o time técnico complementa durante a Avaliação.
+              </Text>
+            </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
               <Textarea
                 label={t("nova_systems_label")}

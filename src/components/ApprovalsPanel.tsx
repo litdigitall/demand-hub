@@ -44,6 +44,8 @@ import { formatDateTime, initialsFromName } from "../lib/format";
 interface Props {
   demand: Demand;
   onSave: (changes: Partial<Demand>) => Promise<void> | void;
+  /** Se false, o painel é apenas visual (decisões passam pelo motor de ações). */
+  interactive?: boolean;
 }
 
 const NIVEL_COLOR = {
@@ -52,7 +54,7 @@ const NIVEL_COLOR = {
   diretor: "teal",
 } as const;
 
-export function ApprovalsPanel({ demand, onSave }: Props) {
+export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
   const { t, lang } = useT();
   const user = useCurrentUser();
   const labelNivel = lang === "en" ? nivelAprovacaoLabelEN : nivelAprovacaoLabel;
@@ -262,7 +264,7 @@ export function ApprovalsPanel({ demand, onSave }: Props) {
                           ? t("approved")
                           : t("rejected")}
                     </Badge>
-                    {s.status === "pendente" && isCurrentUser && isNext && (
+                    {interactive && s.status === "pendente" && isCurrentUser && isNext && (
                       <>
                         <Button
                           size="xs"
@@ -283,7 +285,7 @@ export function ApprovalsPanel({ demand, onSave }: Props) {
                         </Button>
                       </>
                     )}
-                    {s.status !== "pendente" && (
+                    {interactive && s.status !== "pendente" && (
                       <Button
                         size="xs"
                         variant="subtle"

@@ -15,7 +15,6 @@ import {
   Loader,
   Modal,
   Paper,
-  Select,
   SimpleGrid,
   Stack,
   Table,
@@ -43,11 +42,10 @@ import { demandService } from "../data/demandService";
 import { useCurrentUser } from "../lib/useCurrentUser";
 import { ScoringPanel } from "../components/ScoringPanel";
 import { ApprovalsPanel } from "../components/ApprovalsPanel";
-import { WorkflowTimeline } from "../components/WorkflowTimeline";
-import { FluxoPanel } from "../components/FluxoPanel";
+import { LifecycleTimeline } from "../components/LifecycleTimeline";
+import { NextActionCard } from "../components/NextActionCard";
 import { useT } from "../i18n";
 import {
-  statusOptions,
   weightedScore,
   type Demand,
 } from "../data/types";
@@ -64,8 +62,6 @@ import {
   formatDateTime,
   initialsFromName,
 } from "../lib/format";
-
-const STAGE_OPTIONS = ["Discovery", "Build", "UAT", "Go-Live", "On-Hold"];
 
 function fmtBytes(b: number): string {
   if (b < 1024) return `${b} B`;
@@ -210,50 +206,66 @@ export function DemandaDetailPage() {
         </Group>
       </Group>
 
-      {/* Banner do score ponderado */}
-      <Paper withBorder radius="lg" p="md" bg="abbott.0">
-        <Group justify="space-between" wrap="wrap">
-          <Group gap="sm">
-            <IconShieldCheck size={26} color="var(--mantine-color-abbott-7)" />
-            <div>
-              <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                {t("detail_score_label")}
-              </Text>
-              <Text fz={28} fw={800}>
-                {wScore.toFixed(2)} <Text component="span" size="sm" c="dimmed">/ 5,00</Text>
-              </Text>
-            </div>
-          </Group>
-          <Group gap="sm">
-            <Select
-              label={t("status")}
-              data={statusOptions.map((o) => ({ value: String(o.value), label: o.label }))}
-              value={String(demand.status)}
-              allowDeselect={false}
-              onChange={(v) => v && persist({ status: Number(v) })}
-              w={180}
-            />
-            <Select
-              label={t("detail_project_stage")}
-              data={STAGE_OPTIONS}
-              value={demand.projectStage}
-              allowDeselect={false}
-              onChange={(v) => v && persist({ projectStage: v })}
-              w={160}
-            />
-          </Group>
-        </Group>
-      </Paper>
+      {/* CTA: o que precisa de mim agora (motor de ciclo de vida) */}
+      <NextActionCard
+        demand={demand}
+        roles={user.roles}
+        ator={user.name}
+        onSave={(changes) => persist(changes, { silent: true })}
+      />
 
-      <WorkflowTimeline demand={demand} />
+      <Grid>
+        <Grid.Col span={{ base: 12, md: 8 }}>
+          {/* Banner do score ponderado */}
+          <Paper withBorder radius="lg" p="md" bg="abbott.0" h="100%">
+            <Group justify="space-between" wrap="wrap" h="100%">
+              <Group gap="sm">
+                <IconShieldCheck size={26} color="var(--mantine-color-abbott-7)" />
+                <div>
+                  <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                    {t("detail_score_label")}
+                  </Text>
+                  <Text fz={28} fw={800}>
+                    {wScore.toFixed(2)} <Text component="span" size="sm" c="dimmed">/ 5,00</Text>
+                  </Text>
+                </div>
+              </Group>
+              <Group gap="lg">
+                <div>
+                  <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                    {t("detail_project_stage")}
+                  </Text>
+                  <Text fw={700}>{demand.projectStage || "—"}</Text>
+                </div>
+                {demand.finalPriority != null && demand.finalPriority > 0 && (
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                      Prioridade
+                    </Text>
+                    <Text fw={700}>#{demand.finalPriority}</Text>
+                  </div>
+                )}
+                {demand.idServiceNow && (
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                      ServiceNow
+                    </Text>
+                    <Text fw={700}>{demand.idServiceNow}</Text>
+                  </div>
+                )}
+              </Group>
+            </Group>
+          </Paper>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <LifecycleTimeline demand={demand} />
+        </Grid.Col>
+      </Grid>
 
       <Tabs value={activeTab} onChange={setActiveTab} variant="pills" radius="md">
         <Tabs.List>
           <Tabs.Tab value="overview" leftSection={<IconNotebook size={16} />}>
             {t("detail_overview")}
-          </Tabs.Tab>
-          <Tabs.Tab value="fluxo" leftSection={<IconShieldCheck size={16} />}>
-            {t("detail_fluxo")}
           </Tabs.Tab>
           <Tabs.Tab value="scoring" leftSection={<IconStar size={16} />}>
             {t("detail_scoring")}
@@ -370,26 +382,21 @@ export function DemandaDetailPage() {
           </Grid>
         </Tabs.Panel>
 
-        {/* ---------- Fluxo (edição dos campos end-to-end) ---------- */}
-        <Tabs.Panel value="fluxo" pt="lg">
-          <FluxoPanel
-            demand={demand}
-            onSave={(changes) => persist(changes, { silent: true })}
-          />
-        </Tabs.Panel>
-
         {/* ---------- Scoring (workflow de validação) ---------- */}
         <Tabs.Panel value="scoring" pt="lg">
           <ScoringPanel
             demand={demand}
+            roles={user.roles}
+            ator={user.name}
             onSave={(changes) => persist(changes, { silent: true })}
           />
         </Tabs.Panel>
 
-        {/* ---------- Aprovações (workflow 3 níveis) ---------- */}
+        {/* ---------- Aprovações (somente leitura; decisões via motor) ---------- */}
         <Tabs.Panel value="approvals" pt="lg">
           <ApprovalsPanel
             demand={demand}
+            interactive={false}
             onSave={(changes) => persist(changes, { silent: true })}
           />
         </Tabs.Panel>

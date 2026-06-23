@@ -1,46 +1,36 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Alert,
+  Badge,
   Box,
-  Button,
   Card,
   Center,
-  PasswordInput,
+  Group,
+  SimpleGrid,
   Stack,
   Text,
-  TextInput,
   Title,
+  UnstyledButton,
+  Avatar,
 } from "@mantine/core";
-import { IconAlertCircle, IconLock, IconUser } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { useAuth } from "../auth/AuthContext";
 import { useT } from "../i18n";
+import { ROLE_LABEL, ROLE_COLOR, type Persona } from "../domain/roles";
+import { initialsFromName } from "../lib/format";
 import abbottLogo from "../assets/abbott-logo.png";
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, user } = useAuth();
+  const { signInAs, user, personas } = useAuth();
   const { t } = useT();
-  const [u, setU] = useState("");
-  const [p, setP] = useState("");
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   if (user) {
     navigate("/", { replace: true });
     return null;
   }
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(false);
-    setTimeout(() => {
-      const ok = signIn(u, p);
-      setLoading(false);
-      if (ok) navigate("/", { replace: true });
-      else setError(true);
-    }, 400);
+  function entrar(p: Persona) {
+    if (signInAs(p.id)) navigate("/", { replace: true });
   }
 
   return (
@@ -52,80 +42,79 @@ export function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "1rem",
-        position: "relative",
+        padding: "1.5rem",
       }}
     >
-      <Card
-        withBorder
-        radius="lg"
-        padding="xl"
-        shadow="xl"
-        style={{ width: "100%", maxWidth: 420 }}
-      >
-        <Stack align="center" gap="md" mb="lg">
-          <Box
-            style={{
-              background: "#fff",
-              borderRadius: 12,
-              padding: "12px 18px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            }}
-          >
-            <img
-              src={abbottLogo}
-              alt="Abbott"
-              style={{ maxWidth: 140, height: "auto", display: "block" }}
-            />
+      <Card withBorder radius="lg" padding="xl" shadow="xl" style={{ width: "100%", maxWidth: 760 }}>
+        <Stack align="center" gap="xs" mb="lg">
+          <Box style={{ background: "#fff", borderRadius: 12, padding: "10px 16px" }}>
+            <img src={abbottLogo} alt="Abbott" style={{ maxWidth: 130, display: "block" }} />
           </Box>
-          <Stack gap={2} align="center">
-            <Title order={2} c="abbott.8">
-              {t("appName")}
-            </Title>
-            <Text size="sm" c="dimmed" tt="uppercase" lts={2} fw={600}>
-              {t("appTag")}
-            </Text>
-          </Stack>
+          <Title order={2} c="abbott.8">
+            {t("appName")}
+          </Title>
+          <Text size="sm" c="dimmed">
+            Escolha um perfil para entrar (demo). Cada perfil enxerga o que é dele no fluxo.
+          </Text>
         </Stack>
 
-        <form onSubmit={submit}>
-          <Stack gap="md">
-            <TextInput
-              label={t("loginUser")}
-              placeholder="sambini"
-              leftSection={<IconUser size={16} />}
-              value={u}
-              onChange={(e) => setU(e.currentTarget.value)}
-              required
-              autoFocus
-            />
-            <PasswordInput
-              label={t("loginPassword")}
-              placeholder="••••••••"
-              leftSection={<IconLock size={16} />}
-              value={p}
-              onChange={(e) => setP(e.currentTarget.value)}
-              required
-            />
-
-            {error && (
-              <Alert color="red" icon={<IconAlertCircle size={16} />} radius="md">
-                {t("loginInvalid")}
-              </Alert>
-            )}
-
-            <Button type="submit" fullWidth size="md" loading={loading}>
-              {t("loginSignIn")}
-            </Button>
-          </Stack>
-        </form>
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+          {personas.map((p) => (
+            <UnstyledButton
+              key={p.id}
+              onClick={() => entrar(p)}
+              style={{
+                border: "1px solid var(--mantine-color-gray-3)",
+                borderRadius: 12,
+                padding: "14px 16px",
+                transition: "all .15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--mantine-color-abbott-5)";
+                e.currentTarget.style.background = "var(--mantine-color-gray-0)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--mantine-color-gray-3)";
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              <Group wrap="nowrap" gap="sm">
+                <Avatar radius="xl" size={44} color="abbott.6" variant="filled">
+                  {initialsFromName(p.nome)}
+                </Avatar>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap={6} justify="space-between" wrap="nowrap">
+                    <Text fw={600} truncate>
+                      {p.nome}
+                    </Text>
+                    <IconArrowRight size={16} color="var(--mantine-color-gray-5)" />
+                  </Group>
+                  <Text size="xs" c="dimmed" truncate>
+                    {p.cargo}
+                  </Text>
+                  <Group gap={4} mt={6}>
+                    {p.roles.slice(0, 3).map((r) => (
+                      <Badge key={r} size="xs" variant="light" color={ROLE_COLOR[r]}>
+                        {ROLE_LABEL[r]}
+                      </Badge>
+                    ))}
+                    {p.roles.length > 3 && (
+                      <Badge size="xs" variant="light" color="gray">
+                        +{p.roles.length - 3}
+                      </Badge>
+                    )}
+                  </Group>
+                </div>
+              </Group>
+            </UnstyledButton>
+          ))}
+        </SimpleGrid>
 
         <Center mt="lg">
           <Text size="xs" c="dimmed">
             {t("appDemoFooter")}
           </Text>
         </Center>
-
       </Card>
     </Box>
   );

@@ -54,6 +54,7 @@ import {
   type Score,
 } from "../data/types";
 import { adminLookupService } from "../data/adminLookupService";
+import { Role, ROLE_LABEL } from "../domain/roles";
 import { formatDate } from "../lib/format";
 
 const CATEGORIA_ICON: Record<CategoriaAvaliacao, typeof IconRocket> = {
@@ -62,12 +63,24 @@ const CATEGORIA_ICON: Record<CategoriaAvaliacao, typeof IconRocket> = {
   pmo: IconShieldCheck,
 };
 
+/* Quem pode pontuar cada estação de avaliação. */
+const CATEGORIA_PAPEL: Record<CategoriaAvaliacao, Role> = {
+  negocio: Role.Sponsor,
+  tecnico: Role.TechLead,
+  pmo: Role.PMO,
+};
+
 interface Props {
   demand: Demand;
+  roles: Role[];
+  ator: string;
   onSave: (changes: Partial<Demand>) => Promise<void> | void;
 }
 
-export function ScoringPanel({ demand, onSave }: Props) {
+export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
+  const isAdmin = roles.includes(Role.Admin);
+  const canScore = (cat: CategoriaAvaliacao) => isAdmin || roles.includes(CATEGORIA_PAPEL[cat]);
+  const canScoreStack = isAdmin || roles.includes(Role.TechLead);
   const [avaliadores, setAvaliadores] = useState<AdminLookup[]>([]);
   const [modal, setModal] = useState<{
     criterio: keyof Score | "stack";
@@ -106,7 +119,7 @@ export function ScoringPanel({ demand, onSave }: Props) {
   function openValidar(criterio: keyof Score | "stack") {
     setModal({
       criterio,
-      avaliador: avaliadores[0]?.nome ?? "",
+      avaliador: ator || avaliadores[0]?.nome || "",
       comentario: "",
       data: new Date().toISOString().slice(0, 10),
     });
@@ -241,6 +254,11 @@ export function ScoringPanel({ demand, onSave }: Props) {
               </Badge>
             </Group>
 
+            {!canScore(cat) && (
+              <Text size="xs" c="dimmed" mt="xs">
+                Somente {ROLE_LABEL[CATEGORIA_PAPEL[cat]]} (ou Admin) pontua esta estação.
+              </Text>
+            )}
             <Stack gap="md" mt="md">
               {criterios.map((k) => {
                 const avaliacao = avaliacoesPorCriterio.get(k);
@@ -253,10 +271,11 @@ export function ScoringPanel({ demand, onSave }: Props) {
                     peso={SCORE_WEIGHTS[k]}
                     avaliacao={avaliacao}
                     color={color}
+                    canScore={canScore(cat)}
                     onValorChange={(v) => atualizarNota(k, v)}
                     onValidar={() => openValidar(k)}
                     onReabrir={() => reabrir(k)}
-                    disabled={isValidado}
+                    disabled={isValidado || !canScore(cat)}
                   />
                 );
               })}
@@ -342,16 +361,18 @@ export function ScoringPanel({ demand, onSave }: Props) {
             </Text>
           )}
           {stackValidada ? (
-            <Button
-              variant="subtle"
-              color="gray"
-              size="xs"
-              leftSection={<IconArrowBackUp size={14} />}
-              onClick={reabrirStack}
-            >
-              Reabrir
-            </Button>
-          ) : (
+            canScoreStack ? (
+              <Button
+                variant="subtle"
+                color="gray"
+                size="xs"
+                leftSection={<IconArrowBackUp size={14} />}
+                onClick={reabrirStack}
+              >
+                Reabrir
+              </Button>
+            ) : null
+          ) : canScoreStack ? (
             <Button
               variant="filled"
               color="grape"
@@ -360,6 +381,10 @@ export function ScoringPanel({ demand, onSave }: Props) {
             >
               Validar stack
             </Button>
+          ) : (
+            <Badge color="gray" variant="light">
+              Aguardando Tech Lead
+            </Badge>
           )}
         </Group>
       </Card>
@@ -441,6 +466,7 @@ interface CritProps {
   valor: number;
   peso: number;
   color: string;
+  canScore: boolean;
   avaliacao: AvaliacaoCriterio | undefined;
   onValorChange: (v: number) => void;
   onValidar: () => void;
@@ -453,6 +479,7 @@ function CriterioRow({
   valor,
   peso,
   color,
+  canScore,
   avaliacao,
   onValorChange,
   onValidar,
@@ -489,12 +516,14 @@ function CriterioRow({
             {valor}
           </Badge>
           {avaliacao ? (
-            <Tooltip label="Reabrir critério (admin)">
-              <ActionIcon variant="subtle" color="gray" onClick={onReabrir}>
-                <IconArrowBackUp size={16} />
-              </ActionIcon>
-            </Tooltip>
-          ) : (
+            canScore ? (
+              <Tooltip label="Reabrir critério">
+                <ActionIcon variant="subtle" color="gray" onClick={onReabrir}>
+                  <IconArrowBackUp size={16} />
+                </ActionIcon>
+              </Tooltip>
+            ) : null
+          ) : canScore ? (
             <Button
               size="xs"
               color={color}
@@ -503,6 +532,10 @@ function CriterioRow({
             >
               Validar
             </Button>
+          ) : (
+            <Badge color="gray" variant="light" size="sm">
+              aguardando
+            </Badge>
           )}
         </Group>
       </Group>

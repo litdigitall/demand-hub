@@ -1,38 +1,60 @@
 /* ============================================================
-   Auth mockado — usuário fixo: sambini / LIt@2020.
-   Persiste em localStorage e protege rotas.
+   Auth demo baseado em PERSONAS multi-papel.
+
+   Em vez de usuário/senha, o login escolhe uma persona (cada uma
+   com 1+ papéis RBAC). Um "switcher" permite trocar de persona
+   sem deslogar — ideal para demonstrar o fluxo de ponta a ponta.
+   Persiste a persona ativa em localStorage.
    ============================================================ */
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { PERSONAS, personaById, type Persona, type Role } from "../domain/roles";
 
-const LS_KEY = "pulse.auth.v1";
+const LS_KEY = "demand-system.persona.v1";
 
-const MOCK_CREDS = {
-  username: "sambini",
-  password: "LIt@2020",
-  displayName: "Sambini",
-  email: "sambini@litdigitall.com.br",
-};
-
-interface AuthSession {
+export interface AuthSession {
+  personaId: string;
+  /** Mantido por compatibilidade (= personaId). */
   username: string;
   displayName: string;
   email: string;
+  area: string;
+  cargo: string;
+  roles: Role[];
   signedAt: string;
 }
 
 interface AuthCtx {
   user: AuthSession | null;
-  signIn: (u: string, p: string) => boolean;
+  roles: Role[];
+  personas: Persona[];
+  signInAs: (personaId: string) => boolean;
+  switchPersona: (personaId: string) => void;
   signOut: () => void;
+  hasRole: (role: Role) => boolean;
 }
 
 const Context = createContext<AuthCtx | null>(null);
+
+function sessionFromPersona(p: Persona): AuthSession {
+  return {
+    personaId: p.id,
+    username: p.id,
+    displayName: p.nome,
+    email: p.email,
+    area: p.area,
+    cargo: p.cargo,
+    roles: p.roles,
+    signedAt: new Date().toISOString(),
+  };
+}
 
 function loadSession(): AuthSession | null {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as AuthSession;
+    const saved = JSON.parse(raw) as { personaId?: string };
+    const p = saved.personaId ? personaById(saved.personaId) : undefined;
+    return p ? sessionFromPersona(p) : null;
   } catch {
     return null;
   }
@@ -42,29 +64,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthSession | null>(() => loadSession());
 
   useEffect(() => {
-    if (user) localStorage.setItem(LS_KEY, JSON.stringify(user));
+    if (user) localStorage.setItem(LS_KEY, JSON.stringify({ personaId: user.personaId }));
     else localStorage.removeItem(LS_KEY);
   }, [user]);
 
-  function signIn(u: string, p: string): boolean {
-    if (u.trim().toLowerCase() === MOCK_CREDS.username && p === MOCK_CREDS.password) {
-      setUser({
-        username: MOCK_CREDS.username,
-        displayName: MOCK_CREDS.displayName,
-        email: MOCK_CREDS.email,
-        signedAt: new Date().toISOString(),
-      });
-      return true;
-    }
-    return false;
+  function signInAs(personaId: string): boolean {
+    const p = personaById(personaId);
+    if (!p) return false;
+    setUser(sessionFromPersona(p));
+    return true;
+  }
+
+  function switchPersona(personaId: string) {
+    const p = personaById(personaId);
+    if (p) setUser(sessionFromPersona(p));
   }
 
   function signOut() {
     setUser(null);
   }
 
+  const roles = user?.roles ?? [];
+
   return (
-    <Context.Provider value={{ user, signIn, signOut }}>{children}</Context.Provider>
+    <Context.Provider
+      value={{
+        user,
+        roles,
+        personas: PERSONAS,
+        signInAs,
+        switchPersona,
+        signOut,
+        hasRole: (role) => roles.includes(role),
+      }}
+    >
+      {children}
+    </Context.Provider>
   );
 }
 
