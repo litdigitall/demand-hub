@@ -593,6 +593,10 @@ export interface Demand {
   rce?: string;
   /** APP ID — código da aplicação (demandas de sistema). */
   appId?: string;
+  /** Classificação SPM: Category (strategic/operational). */
+  category?: string;
+  /** Abbott Project Type (Project/Phase 0/Rapid/Operations/Minor Enhancement). */
+  abbottProjectType?: string;
   criadoEm: string;
   modificadoEm: string;
 }
@@ -626,21 +630,65 @@ export const TIME_DESCRICAO: Record<TimeImplantacao, string> = {
   Support: "Soporte / sustentación",
 };
 
-/** Classifica o porte da demanda (esforço): enhancement vs grande projeto. */
+/* ---------------- Classificação SPM (Abbott) ----------------
+   Category: Strategic / Operational. Type: sempre Project.
+   Abbott Project Type derivado do esforço/valor (processo). */
+export const Category = {
+  Strategic: "strategic",
+  Operational: "operational",
+} as const;
+export const categoryLabel: Record<string, string> = {
+  strategic: "Strategic",
+  operational: "Operational",
+};
+export const categoryOptions = Object.entries(categoryLabel).map(([value, label]) => ({ value, label }));
+
+/** Opções do "Abbott Project Type" (derivado, mas selecionável). */
+export const ABBOTT_PROJECT_TYPES = [
+  "Project",
+  "Phase 0",
+  "Rapid",
+  "Operations",
+  "Minor Enhancement",
+] as const;
+
+/* Limiares do roteamento de processo (ajustáveis). */
+export const LIMITE_ME_HORAS = 80; // < 80h → Minor Enhancement
+export const LIMITE_FASE0_USD = 500_000; // > US$500k → Phase 0
+
+export interface ProcessoInfo {
+  /** Processo de entrega recomendado. */
+  processo: string;
+  /** Abbott Project Type correspondente. */
+  projectType: (typeof ABBOTT_PROJECT_TYPES)[number];
+  color: string;
+  motivo: string;
+}
+
+/** Decide o processo/Abbott Project Type pelo esforço (horas) e valor (USD). */
+export function processoRecomendado(d: {
+  horasEstimadas: number;
+  valorEstimado: number | null;
+}): ProcessoInfo {
+  if (d.horasEstimadas > 0 && d.horasEstimadas < LIMITE_ME_HORAS) {
+    return { processo: "Minor Enhancement (ME)", projectType: "Minor Enhancement", color: "teal", motivo: "< 80 horas" };
+  }
+  if ((d.valorEstimado ?? 0) > LIMITE_FASE0_USD) {
+    return { processo: "Phase 0", projectType: "Phase 0", color: "red", motivo: "> US$ 500k" };
+  }
+  return { processo: "RAPID / Sprint Planning", projectType: "Rapid", color: "blue", motivo: "< US$ 500k (Major Enhancement)" };
+}
+
+/** Classificação curta de porte (badge) — usa o processo recomendado. */
 export function classificaEsforco(d: {
   horasEstimadas: number;
   valorEstimado: number | null;
 }): { label: string; color: string } {
-  if ((d.valorEstimado ?? 0) >= 500_000) {
-    return { label: "Gran proyecto (>500k USD)", color: "red" };
+  if (d.horasEstimadas <= 0 && (d.valorEstimado ?? 0) <= 0) {
+    return { label: "Sin estimar", color: "gray" };
   }
-  if (d.horasEstimadas > 0 && d.horasEstimadas <= 80) {
-    return { label: "Minor enhancement (≤80h)", color: "teal" };
-  }
-  if (d.horasEstimadas > 0) {
-    return { label: "Proyecto", color: "blue" };
-  }
-  return { label: "Sin estimar", color: "gray" };
+  const p = processoRecomendado(d);
+  return { label: p.projectType, color: p.color };
 }
 
 /* Tudo que pode ser preenchido ao criar uma demanda (sem campos de sistema). */

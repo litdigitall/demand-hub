@@ -48,7 +48,8 @@ import { NotifyButton } from "../components/NotifyButton";
 import { useT } from "../i18n";
 import {
   abrangenciaLabel,
-  classificaEsforco,
+  categoryLabel,
+  processoRecomendado,
   weightedScore,
   TIME_DESCRICAO,
   type Demand,
@@ -179,7 +180,17 @@ export function DemandaDetailPage() {
               {demand.numero}
             </Badge>
             <StatusBadge value={demand.status} />
+            {demand.category && (
+              <Badge variant="outline" color="indigo" radius="sm">
+                {categoryLabel[demand.category] ?? demand.category}
+              </Badge>
+            )}
             <TipoBadge value={demand.tipo} />
+            {demand.abbottProjectType && (
+              <Badge variant="dot" color="grape" radius="sm">
+                {demand.abbottProjectType}
+              </Badge>
+            )}
             <UrgenciaBadge value={demand.urgencia} />
             <ImpactoBadge value={demand.impactoNivel} />
           </Group>
@@ -390,8 +401,17 @@ export function DemandaDetailPage() {
                 <KV k={t("detail_label_deadline")} v={demand.deadline ? formatDate(demand.deadline) : "—"} />
                 <KV k={t("detail_label_effort")} v={<EsforcoBadge value={demand.esforcoEstimado} />} />
                 {(() => {
-                  const c = classificaEsforco(demand);
-                  return <KV k="Clasificación" v={<Badge color={c.color} variant="light">{c.label}</Badge>} />;
+                  const p = processoRecomendado(demand);
+                  return (
+                    <KV
+                      k="Proceso recomendado"
+                      v={
+                        <Badge color={p.color} variant="light" radius="sm">
+                          {p.processo} · {p.motivo}
+                        </Badge>
+                      }
+                    />
+                  );
                 })()}
                 {demand.time && (
                   <KV

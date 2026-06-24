@@ -18,6 +18,7 @@ import {
   StatusDemanda,
   CRITERIO_CATEGORIA,
   aprovacoesPadrao,
+  processoRecomendado,
   type Demand,
   type Score,
   type AprovacaoStep,
@@ -201,10 +202,16 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       cor: "violet",
       campos: ["capacity"],
       guarda: () => true,
-      apply: (_d, _ator, ctx) => ({
-        time: ctx.time ?? _d.time,
-        horasEstimadas: ctx.horasEstimadas ?? _d.horasEstimadas,
-      }),
+      apply: (_d, _ator, ctx) => {
+        const horasEstimadas = ctx.horasEstimadas ?? _d.horasEstimadas;
+        // Abbott Project Type derivado automaticamente do esforço/valor.
+        const proc = processoRecomendado({ horasEstimadas, valorEstimado: _d.valorEstimado });
+        return {
+          time: ctx.time ?? _d.time,
+          horasEstimadas,
+          abbottProjectType: proc.projectType,
+        };
+      },
     },
     {
       id: "enviarParaAprovacao",

@@ -36,6 +36,7 @@ import {
   TipoDemanda,
   Urgencia,
   abrangenciaOptions,
+  categoryOptions,
   esforcoOptions,
   impactoOptions,
   stakeholderDaArea,
@@ -60,6 +61,7 @@ type DraftForm = Omit<
   impactoAbrangencia: number;
   roiEstimado: number | "";
   appId: string;
+  category: string;
 };
 
 function emptyDraft(): DraftForm {
@@ -75,6 +77,7 @@ function emptyDraft(): DraftForm {
     processosImpactados: "",
     consequenciaNaoExecucao: "",
     tipo: TipoDemanda.ProjetoNovo,
+    category: "strategic",
     impactoNivel: Impacto.Medio,
     impactoAbrangencia: ImpactoAbrangencia.Processo,
     tiposImpacto: [],
@@ -184,6 +187,7 @@ export function NovaDemandaPage() {
         roiEstimado: typeof form.roiEstimado === "number" ? form.roiEstimado : null,
         impactoAbrangencia: form.impactoAbrangencia,
         appId: form.appId,
+        category: form.category,
         esforcoEstimado: form.esforcoEstimado,
         // Capacity (time/horas) é definido pelo time técnico na Avaliação.
         time: "",
@@ -343,14 +347,26 @@ export function NovaDemandaPage() {
             </SimpleGrid>
 
             <SectionTitle index={3} title={t("nova_section3")} />
-            <Select
-              label={t("nova_category")}
-              withAsterisk
-              data={tipoOptions.map((o) => ({ value: String(o.value), label: L.tipo[o.value] }))}
-              allowDeselect={false}
-              value={String(form.tipo)}
-              onChange={(v) => v && set("tipo", Number(v))}
-            />
+            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
+              <Select
+                label="Category"
+                description="Clasificación SPM"
+                withAsterisk
+                data={categoryOptions}
+                allowDeselect={false}
+                value={form.category}
+                onChange={(v) => v && set("category", v)}
+              />
+              <TextInput label="Type" value="Project" readOnly description="Toda demanda es un Project" />
+              <Select
+                label={t("nova_category")}
+                withAsterisk
+                data={tipoOptions.map((o) => ({ value: String(o.value), label: L.tipo[o.value] }))}
+                allowDeselect={false}
+                value={String(form.tipo)}
+                onChange={(v) => v && set("tipo", Number(v))}
+              />
+            </SimpleGrid>
           </Stack>
         )}
 
