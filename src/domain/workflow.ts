@@ -17,6 +17,7 @@
 import {
   StatusDemanda,
   CRITERIO_CATEGORIA,
+  aprovacoesPadrao,
   type Demand,
   type Score,
   type AprovacaoStep,
@@ -208,15 +209,21 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     {
       id: "enviarParaAprovacao",
       label: "Concluir evaluación → enviar a aprobación",
-      papeis: [Role.PMO],
+      // PMO orquestra, mas o Tech Lead que definiu o capacity também pode empurrar.
+      papeis: [Role.PMO, Role.TechLead],
       cor: "teal",
-      guarda: (d) => {
-        const cob = avaliacaoCobertura(d);
-        if (!cob.completo) return `Faltan criterios: ${cob.validados}/${cob.total} validados.`;
-        if (!capacityDefinido(d)) return "El Tech Lead debe definir equipo y horas antes de aprobar.";
-        return true;
-      },
-      apply: () => ({ status: StatusDemanda.EmAprovacao }),
+      // Requisito para avançar: capacity definido. O scoring é recomendado
+      // (alimenta a prioridade) mas NÃO bloqueia — evita beco sem saída.
+      guarda: (d) =>
+        capacityDefinido(d)
+          ? true
+          : "Defina equipo y horas (capacity) antes de enviar a aprobación.",
+      // Reinicia a sequência de gates como PENDENTE ao entrar na aprovação
+      // (garante que sempre há um gate para decidir — sem becos sem saída).
+      apply: (d) => ({
+        status: StatusDemanda.EmAprovacao,
+        aprovacoes: aprovacoesPadrao(d.sponsor),
+      }),
     },
     {
       id: "devolverAvaliacao",
