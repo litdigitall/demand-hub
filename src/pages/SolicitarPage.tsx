@@ -63,6 +63,7 @@ export function SolicitarPage() {
     descricao: "",
     category: "strategic",
     clasificacion: "app",
+    clasificacionOtro: "",
     tipo: TipoDemanda.ProjetoNovo as number,
     problemaResolve: "",
     objetivoPrincipal: "",
@@ -112,6 +113,7 @@ export function SolicitarPage() {
         tipo: f.tipo,
         category: f.category,
         clasificacion: f.clasificacion,
+        clasificacionOtro: f.clasificacion === "otro" ? f.clasificacionOtro : "",
         impactoNivel: f.impactoNivel,
         impactoAbrangencia: f.impactoAbrangencia,
         tiposImpacto: f.tiposImpacto,
@@ -213,14 +215,18 @@ export function SolicitarPage() {
                 <Select label="Category" data={categoryOptions} allowDeselect={false} value={f.category} onChange={(v) => v && set("category", v)} />
                 <Select label="Tipo de demanda" data={tipoOptions.map((o) => ({ value: String(o.value), label: o.label }))} allowDeselect={false} value={String(f.tipo)} onChange={(v) => v && set("tipo", Number(v))} />
               </Group>
-              <Select
-                label="Clasificación de proyecto"
-                mt="sm"
-                data={clasificacionOptions}
-                allowDeselect={false}
-                value={f.clasificacion}
-                onChange={(v) => v && set("clasificacion", v)}
-              />
+              <Group grow mt="sm">
+                <Select
+                  label="Clasificación de proyecto"
+                  data={clasificacionOptions}
+                  allowDeselect={false}
+                  value={f.clasificacion}
+                  onChange={(v) => v && set("clasificacion", v)}
+                />
+                {f.clasificacion === "otro" && (
+                  <TextInput label="Especificar" value={f.clasificacionOtro} onChange={(e) => set("clasificacionOtro", e.currentTarget.value)} />
+                )}
+              </Group>
             </FormCard>
 
             <FormCard title="3. Objetivo">

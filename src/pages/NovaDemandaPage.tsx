@@ -65,6 +65,7 @@ type DraftForm = Omit<
   appId: string;
   category: string;
   clasificacion: string;
+  clasificacionOtro: string;
   temSolucaoProposta: boolean;
 };
 
@@ -83,6 +84,7 @@ function emptyDraft(): DraftForm {
     tipo: TipoDemanda.ProjetoNovo,
     category: "strategic",
     clasificacion: "app",
+    clasificacionOtro: "",
     impactoNivel: Impacto.Medio,
     impactoAbrangencia: ImpactoAbrangencia.Processo,
     tiposImpacto: [],
@@ -195,6 +197,7 @@ export function NovaDemandaPage() {
         appId: form.appId,
         category: form.category,
         clasificacion: form.clasificacion,
+        clasificacionOtro: form.clasificacion === "otro" ? form.clasificacionOtro : "",
         temSolucaoProposta: form.temSolucaoProposta,
         appName: appName(form.appId),
         esforcoEstimado: form.esforcoEstimado,
@@ -376,16 +379,25 @@ export function NovaDemandaPage() {
                 onChange={(v) => v && set("tipo", Number(v))}
               />
             </SimpleGrid>
-            <Select
-              label="Clasificación de proyecto"
-              description="Portafolio: Infraestructura (Sambini) · Inteligencia Artificial · Aplicaciones (Gabriela)"
-              withAsterisk
-              maw={420}
-              data={clasificacionOptions}
-              allowDeselect={false}
-              value={form.clasificacion}
-              onChange={(v) => v && set("clasificacion", v)}
-            />
+            <Group align="flex-end" grow>
+              <Select
+                label="Clasificación de proyecto"
+                description="Infraestructura (Sambini) · Inteligencia Artificial · Aplicaciones (Gabriela) · Otro"
+                withAsterisk
+                data={clasificacionOptions}
+                allowDeselect={false}
+                value={form.clasificacion}
+                onChange={(v) => v && set("clasificacion", v)}
+              />
+              {form.clasificacion === "otro" && (
+                <TextInput
+                  label="Especificar"
+                  placeholder="Clasificación no listada"
+                  value={form.clasificacionOtro}
+                  onChange={(e) => set("clasificacionOtro", e.currentTarget.value)}
+                />
+              )}
+            </Group>
           </Stack>
         )}
 

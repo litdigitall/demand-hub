@@ -138,10 +138,18 @@ export const ABRANGENCIA_SCORE: Record<number, number> = {
 };
 export const AUTO_AVALIADOR = "Automático (nivel de impacto)";
 
+/** Criticidad (qualification) derivada de la urgencia. */
+export function criticidad(urgencia: number): { label: string; color: string } {
+  if (urgencia === Urgencia.Critico) return { label: "Crítica", color: "red" };
+  if (urgencia === Urgencia.Alto) return { label: "Alta", color: "orange" };
+  if (urgencia === Urgencia.Medio) return { label: "Media", color: "yellow" };
+  return { label: "Baja", color: "gray" };
+}
+
 /* ---------------- Clasificación de proyecto (view por portfólio) ----
    Tres frentes con dueños distintos. Es un campo explícito de la demanda
    (`clasificacion`); si no se informa, se deriva del Demand Type. */
-export type Categoria = "infra" | "ia" | "app";
+export type Categoria = "infra" | "ia" | "app" | "otro";
 export const CATEGORIA_TIPO: Record<number, Categoria> = {
   [TipoDemanda.Infraestrutura]: "infra",
   [TipoDemanda.Seguranca]: "infra",
@@ -155,16 +163,19 @@ export const CATEGORIA_VIEW_LABEL: Record<Categoria, string> = {
   infra: "Infraestructura",
   ia: "Inteligencia Artificial",
   app: "Aplicaciones",
+  otro: "Otro",
 };
 export const CATEGORIA_RESPONSAVEL: Record<Categoria, string> = {
   infra: "Sambini",
   ia: "Equipo de IA",
   app: "Gabriela",
+  otro: "—",
 };
 export const CATEGORIA_COR_VIEW: Record<Categoria, string> = {
   infra: "gray",
   ia: "violet",
   app: "cyan",
+  otro: "orange",
 };
 export const clasificacionOptions = (Object.keys(CATEGORIA_VIEW_LABEL) as Categoria[]).map(
   (v) => ({ value: v, label: CATEGORIA_VIEW_LABEL[v] }),
@@ -175,8 +186,12 @@ export function categoriaDe(tipo: number): Categoria {
 /** Clasificación efectiva: campo explícito o, si falta, derivado del tipo. */
 export function clasificacionEfetiva(d: { clasificacion?: string; tipo: number }): Categoria {
   const c = d.clasificacion as Categoria | undefined;
-  return c === "infra" || c === "ia" || c === "app" ? c : categoriaDe(d.tipo);
+  return c === "infra" || c === "ia" || c === "app" || c === "otro" ? c : categoriaDe(d.tipo);
 }
+
+/** Nota del disparador de conteo de esfuerzo. */
+export const ESFUERZO_TRIGGER_NOTA =
+  "El esfuerzo (horas/FTE) se cuenta desde la evaluación técnica (Phase 0), definido por el equipo técnico.";
 
 /* ---------------- Score (priorização) ----------------------- */
 /* Cada critério recebe nota 1..5; ponderação fixa abaixo soma 100%. */
@@ -613,8 +628,10 @@ export interface Demand {
   category?: string;
   /** Abbott Project Type (Project/Phase 0/Rapid/Operations/Minor Enhancement). */
   abbottProjectType?: string;
-  /** Clasificación de proyecto: infra / ia / app (portfólio Sambini/IA/Gabriela). */
+  /** Clasificación de proyecto: infra / ia / app / otro. */
   clasificacion?: string;
+  /** Texto libre cuando clasificacion = "otro". */
+  clasificacionOtro?: string;
   /** ¿Ya hay una solución propuesta? (si sí, detalles en solucaoProposta). */
   temSolucaoProposta?: boolean;
   /** Nombre de la app (auto por APP ID). */

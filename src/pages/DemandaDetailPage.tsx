@@ -53,6 +53,7 @@ import {
   CATEGORIA_COR_VIEW,
   CATEGORIA_VIEW_LABEL,
   clasificacionEfetiva,
+  criticidad,
   processoRecomendado,
   weightedScore,
   TIME_DESCRICAO,
@@ -198,8 +199,18 @@ export function DemandaDetailPage() {
               </Badge>
             )}
             <Badge variant="light" color={CATEGORIA_COR_VIEW[clasificacionEfetiva(demand)]} radius="sm">
-              {CATEGORIA_VIEW_LABEL[clasificacionEfetiva(demand)]}
+              {clasificacionEfetiva(demand) === "otro" && demand.clasificacionOtro
+                ? demand.clasificacionOtro
+                : CATEGORIA_VIEW_LABEL[clasificacionEfetiva(demand)]}
             </Badge>
+            {(() => {
+              const c = criticidad(demand.urgencia);
+              return (
+                <Badge variant="filled" color={c.color} radius="sm">
+                  Criticidad: {c.label}
+                </Badge>
+              );
+            })()}
             <TipoBadge value={demand.tipo} />
             {demand.abbottProjectType && (
               <Badge variant="dot" color="grape" radius="sm">
@@ -586,13 +597,16 @@ export function DemandaDetailPage() {
           <Card withBorder radius="lg" padding="lg">
             <Group justify="space-between" mb="md">
               <Text fw={700}>{t("detail_files_count", { n: demand.anexos.length })}</Text>
-              <FileButton onChange={handleUpload}>
-                {(props) => (
-                  <Button leftSection={<IconUpload size={16} />} {...props}>
-                    {t("upload")}
-                  </Button>
-                )}
-              </FileButton>
+              <Group gap="xs">
+                <Text size="xs" c="dimmed">máx. 10 MB</Text>
+                <FileButton onChange={handleUpload}>
+                  {(props) => (
+                    <Button leftSection={<IconUpload size={16} />} {...props}>
+                      {t("upload")}
+                    </Button>
+                  )}
+                </FileButton>
+              </Group>
             </Group>
             {demand.anexos.length === 0 ? (
               <Center py="xl">

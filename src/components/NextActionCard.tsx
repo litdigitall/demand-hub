@@ -29,6 +29,7 @@ import {
   StatusDemanda,
   TIMES_IMPLANTACAO,
   TIME_DESCRICAO,
+  ESFUERZO_TRIGGER_NOTA,
   statusLabel,
   type Demand,
   type TimeImplantacao,
@@ -179,7 +180,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
                 />
                 <NumberInput
                   label="Horas estimadas"
-                  description="Alimenta el panel de Capacity del equipo"
+                  description={ESFUERZO_TRIGGER_NOTA}
                   min={0}
                   max={10000}
                   value={modal.ctx.horasEstimadas || undefined}
