@@ -37,6 +37,7 @@ import {
   Urgencia,
   abrangenciaOptions,
   categoryOptions,
+  clasificacionOptions,
   esforcoOptions,
   impactoOptions,
   stakeholderDaArea,
@@ -62,6 +63,7 @@ type DraftForm = Omit<
   roiEstimado: number | "";
   appId: string;
   category: string;
+  clasificacion: string;
 };
 
 function emptyDraft(): DraftForm {
@@ -78,6 +80,7 @@ function emptyDraft(): DraftForm {
     consequenciaNaoExecucao: "",
     tipo: TipoDemanda.ProjetoNovo,
     category: "strategic",
+    clasificacion: "app",
     impactoNivel: Impacto.Medio,
     impactoAbrangencia: ImpactoAbrangencia.Processo,
     tiposImpacto: [],
@@ -188,6 +191,7 @@ export function NovaDemandaPage() {
         impactoAbrangencia: form.impactoAbrangencia,
         appId: form.appId,
         category: form.category,
+        clasificacion: form.clasificacion,
         esforcoEstimado: form.esforcoEstimado,
         // Capacity (time/horas) é definido pelo time técnico na Avaliação.
         time: "",
@@ -367,6 +371,16 @@ export function NovaDemandaPage() {
                 onChange={(v) => v && set("tipo", Number(v))}
               />
             </SimpleGrid>
+            <Select
+              label="Clasificación de proyecto"
+              description="Portafolio: Infraestructura (Sambini) · Inteligencia Artificial · Aplicaciones (Gabriela)"
+              withAsterisk
+              maw={420}
+              data={clasificacionOptions}
+              allowDeselect={false}
+              value={form.clasificacion}
+              onChange={(v) => v && set("clasificacion", v)}
+            />
           </Stack>
         )}
 

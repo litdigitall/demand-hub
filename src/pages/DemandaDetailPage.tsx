@@ -49,6 +49,9 @@ import { useT } from "../i18n";
 import {
   abrangenciaLabel,
   categoryLabel,
+  CATEGORIA_COR_VIEW,
+  CATEGORIA_VIEW_LABEL,
+  clasificacionEfetiva,
   processoRecomendado,
   weightedScore,
   TIME_DESCRICAO,
@@ -185,6 +188,9 @@ export function DemandaDetailPage() {
                 {categoryLabel[demand.category] ?? demand.category}
               </Badge>
             )}
+            <Badge variant="light" color={CATEGORIA_COR_VIEW[clasificacionEfetiva(demand)]} radius="sm">
+              {CATEGORIA_VIEW_LABEL[clasificacionEfetiva(demand)]}
+            </Badge>
             <TipoBadge value={demand.tipo} />
             {demand.abbottProjectType && (
               <Badge variant="dot" color="grape" radius="sm">

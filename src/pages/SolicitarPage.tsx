@@ -35,6 +35,7 @@ import {
   Urgencia,
   abrangenciaOptions,
   categoryOptions,
+  clasificacionOptions,
   impactoOptions,
   stakeholderDaArea,
   tipoImpactoOptions,
@@ -61,6 +62,7 @@ export function SolicitarPage() {
     titulo: "",
     descricao: "",
     category: "strategic",
+    clasificacion: "app",
     tipo: TipoDemanda.ProjetoNovo as number,
     problemaResolve: "",
     objetivoPrincipal: "",
@@ -109,6 +111,7 @@ export function SolicitarPage() {
         consequenciaNaoExecucao: f.consequenciaNaoExecucao,
         tipo: f.tipo,
         category: f.category,
+        clasificacion: f.clasificacion,
         impactoNivel: f.impactoNivel,
         impactoAbrangencia: f.impactoAbrangencia,
         tiposImpacto: f.tiposImpacto,
@@ -210,6 +213,14 @@ export function SolicitarPage() {
                 <Select label="Category" data={categoryOptions} allowDeselect={false} value={f.category} onChange={(v) => v && set("category", v)} />
                 <Select label="Tipo de demanda" data={tipoOptions.map((o) => ({ value: String(o.value), label: o.label }))} allowDeselect={false} value={String(f.tipo)} onChange={(v) => v && set("tipo", Number(v))} />
               </Group>
+              <Select
+                label="Clasificación de proyecto"
+                mt="sm"
+                data={clasificacionOptions}
+                allowDeselect={false}
+                value={f.clasificacion}
+                onChange={(v) => v && set("clasificacion", v)}
+              />
             </FormCard>
 
             <FormCard title="3. Objetivo">

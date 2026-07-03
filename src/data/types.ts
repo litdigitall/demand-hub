@@ -138,9 +138,10 @@ export const ABRANGENCIA_SCORE: Record<number, number> = {
 };
 export const AUTO_AVALIADOR = "Automático (nivel de impacto)";
 
-/* ---------------- Categoria (view por portfólio) ----------------
-   Agrupa os tipos de demanda em duas frentes com donos distintos. */
-export type Categoria = "infra" | "app";
+/* ---------------- Clasificación de proyecto (view por portfólio) ----
+   Tres frentes con dueños distintos. Es un campo explícito de la demanda
+   (`clasificacion`); si no se informa, se deriva del Demand Type. */
+export type Categoria = "infra" | "ia" | "app";
 export const CATEGORIA_TIPO: Record<number, Categoria> = {
   [TipoDemanda.Infraestrutura]: "infra",
   [TipoDemanda.Seguranca]: "infra",
@@ -152,14 +153,29 @@ export const CATEGORIA_TIPO: Record<number, Categoria> = {
 };
 export const CATEGORIA_VIEW_LABEL: Record<Categoria, string> = {
   infra: "Infraestructura",
-  app: "Aplicación",
+  ia: "Inteligencia Artificial",
+  app: "Aplicaciones",
 };
 export const CATEGORIA_RESPONSAVEL: Record<Categoria, string> = {
   infra: "Sambini",
+  ia: "Equipo de IA",
   app: "Gabriela",
 };
+export const CATEGORIA_COR_VIEW: Record<Categoria, string> = {
+  infra: "gray",
+  ia: "violet",
+  app: "cyan",
+};
+export const clasificacionOptions = (Object.keys(CATEGORIA_VIEW_LABEL) as Categoria[]).map(
+  (v) => ({ value: v, label: CATEGORIA_VIEW_LABEL[v] }),
+);
 export function categoriaDe(tipo: number): Categoria {
   return CATEGORIA_TIPO[tipo] ?? "app";
+}
+/** Clasificación efectiva: campo explícito o, si falta, derivado del tipo. */
+export function clasificacionEfetiva(d: { clasificacion?: string; tipo: number }): Categoria {
+  const c = d.clasificacion as Categoria | undefined;
+  return c === "infra" || c === "ia" || c === "app" ? c : categoriaDe(d.tipo);
 }
 
 /* ---------------- Score (priorização) ----------------------- */
@@ -597,6 +613,8 @@ export interface Demand {
   category?: string;
   /** Abbott Project Type (Project/Phase 0/Rapid/Operations/Minor Enhancement). */
   abbottProjectType?: string;
+  /** Clasificación de proyecto: infra / ia / app (portfólio Sambini/IA/Gabriela). */
+  clasificacion?: string;
   criadoEm: string;
   modificadoEm: string;
 }
