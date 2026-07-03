@@ -30,6 +30,7 @@ import {
   IconUsersGroup,
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
+import { getFteAvailability } from "../integrations/serviceNow";
 import {
   CAPACIDADE_PADRAO_HORAS,
   StatusDemanda,
@@ -88,17 +89,17 @@ export function CapacityPage() {
 
   function syncServiceNow() {
     setSyncing(true);
-    // Simulação: numa versão real isso chamaria a API do ServiceNow para
-    // trazer horas alocadas/realizadas por time.
-    setTimeout(() => {
-      setSyncing(false);
-      setSyncEm(new Date().toLocaleString("es-ES"));
-      notifications.show({
-        color: "teal",
-        title: "Capacity sincronizado",
-        message: "Datos actualizados vía ServiceNow API (simulado).",
-      });
-    }, 900);
+    // Usa a camada de integração isolada (src/integrations/serviceNow.ts).
+    getFteAvailability()
+      .then(() => {
+        setSyncEm(new Date().toLocaleString("es-ES"));
+        notifications.show({
+          color: "teal",
+          title: "Capacity sincronizado",
+          message: "FTE actualizado vía ServiceNow API (simulado).",
+        });
+      })
+      .finally(() => setSyncing(false));
   }
 
   const stats: TeamStats[] = useMemo(() => {

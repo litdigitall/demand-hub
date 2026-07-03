@@ -4,6 +4,7 @@ import { Center, Loader } from "@mantine/core";
 import { AppLayout } from "./components/layout/AppLayout";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { LoginPage } from "./pages/LoginPage";
+import { SolicitarPage } from "./pages/SolicitarPage";
 
 /* Cada rota carrega o próprio chunk sob demanda. Reduz drasticamente o
    tempo do primeiro paint. */
@@ -40,6 +41,9 @@ const AdminPage = lazy(() =>
 const ReportPage = lazy(() =>
   import("./pages/ReportPage").then((m) => ({ default: m.ReportPage })),
 );
+const IntegrationsPage = lazy(() =>
+  import("./pages/IntegrationsPage").then((m) => ({ default: m.IntegrationsPage })),
+);
 
 function PageLoader() {
   return (
@@ -68,6 +72,7 @@ export default function App() {
       <HashRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/solicitar" element={<SolicitarPage />} />
           <Route
             element={
               <RequireAuth>
@@ -85,6 +90,7 @@ export default function App() {
             <Route path="aprovacoes" element={<L><AprovacoesPage /></L>} />
             <Route path="capacity" element={<L><CapacityPage /></L>} />
             <Route path="relatorio" element={<L><ReportPage /></L>} />
+            <Route path="integraciones" element={<L><IntegrationsPage /></L>} />
             <Route path="admin" element={<L><AdminPage /></L>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

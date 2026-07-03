@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
+  Anchor,
   Badge,
   Box,
   Card,
@@ -112,6 +113,14 @@ export function LoginPage() {
         </SimpleGrid>
 
         <Center mt="lg">
+          <Text size="sm">
+            ¿Solo querés enviar una solicitud?{" "}
+            <Anchor component={Link} to="/solicitar" fw={600}>
+              Formulario público →
+            </Anchor>
+          </Text>
+        </Center>
+        <Center mt={4}>
           <Text size="xs" c="dimmed">
             {t("appDemoFooter")}
           </Text>

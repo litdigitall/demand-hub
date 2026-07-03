@@ -578,6 +578,22 @@ export function NovaDemandaPage() {
               </Text>
             </Paper>
 
+            {/* ---- Resumen antes de enviar ---- */}
+            <SectionTitle index={11} title="Resumen" />
+            <Paper withBorder radius="md" p="md">
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" verticalSpacing={6}>
+                <Resumo k="Solicitante" v={`${form.solicitante || "—"} · ${form.email || "—"}`} />
+                <Resumo k="Área" v={form.areaSolicitante || "—"} />
+                <Resumo k="Título" v={form.titulo || "—"} />
+                <Resumo k="Category / Tipo" v={`${categoryOptions.find((o) => o.value === form.category)?.label ?? "—"} · ${L.tipo[form.tipo]}`} />
+                <Resumo k="Alcance (impacto)" v={`${abrangenciaOptions.find((o) => String(o.value) === String(form.impactoAbrangencia))?.label ?? "—"} → ${ABRANGENCIA_SCORE[form.impactoAbrangencia]}/5`} />
+                <Resumo k="Urgencia / Impacto" v={`${L.urgencia[form.urgencia]} · ${L.impacto[form.impactoNivel]}`} />
+                <Resumo k="Sponsor (auto)" v={form.sponsor || "—"} />
+                <Resumo k="APP ID" v={form.appId || "—"} />
+                <Resumo k="Valor / ROI" v={`${typeof form.valorEstimado === "number" ? `US$ ${form.valorEstimado.toLocaleString()}` : "—"} · ${typeof form.roiEstimado === "number" ? `${form.roiEstimado}%` : "—"}`} />
+              </SimpleGrid>
+            </Paper>
+
             <Alert color="abbott" icon={<IconRocket size={18} />}>
               <Text fw={600} mb={4}>
                 {t("nova_ready_title")}
@@ -622,6 +638,17 @@ export function NovaDemandaPage() {
         </Alert>
       )}
     </Stack>
+  );
+}
+
+function Resumo({ k, v }: { k: string; v: string }) {
+  return (
+    <div>
+      <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={0.5}>
+        {k}
+      </Text>
+      <Text size="sm">{v}</Text>
+    </div>
   );
 }
 

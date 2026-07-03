@@ -231,6 +231,43 @@ export function DemandaDetailPage() {
         onSave={(changes) => persist(changes, { silent: true })}
       />
 
+      {/* Faixa do fluxo de aprovação (Sponsor → Tech Lead → Director/DMC) */}
+      {demand.aprovacoes.length > 0 && (
+        <Card withBorder radius="lg" padding="md">
+          <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} mb="xs">
+            Flujo de aprobación (DMC · Comité Hub IT)
+          </Text>
+          <Group gap={0} wrap="wrap">
+            {demand.aprovacoes.map((a, i) => {
+              const label =
+                a.nivel === "sponsor" ? "Sponsor" : a.nivel === "techlead" ? "Tech Lead" : "Director (DMC)";
+              const color =
+                a.status === "aprovado" ? "teal" : a.status === "recusado" ? "red" : "gray";
+              const icon =
+                a.status === "aprovado" ? "✓" : a.status === "recusado" ? "✗" : (i + 1).toString();
+              return (
+                <Group key={a.nivel} gap={6} wrap="nowrap">
+                  <Badge
+                    size="lg"
+                    radius="sm"
+                    variant={a.status === "pendente" ? "outline" : "filled"}
+                    color={color}
+                    leftSection={<span style={{ fontWeight: 800 }}>{icon}</span>}
+                  >
+                    {label}
+                  </Badge>
+                  {i < demand.aprovacoes.length - 1 && (
+                    <Text c="dimmed" px={4}>
+                      →
+                    </Text>
+                  )}
+                </Group>
+              );
+            })}
+          </Group>
+        </Card>
+      )}
+
       <Grid>
         <Grid.Col span={{ base: 12, md: 8 }}>
           {/* Banner do score ponderado */}

@@ -24,6 +24,7 @@ import {
   IconLayoutKanban,
   IconListDetails,
   IconLogout,
+  IconPlugConnected,
   IconPlus,
   IconPresentation,
   IconSettings,
@@ -221,6 +222,16 @@ export function AppLayout() {
               >
                 <IconPresentation size={19} stroke={1.7} />
                 <span>Informe mensual</span>
+              </RouterNavLink>
+              <RouterNavLink
+                to="/integraciones"
+                onClick={close}
+                className={({ isActive }) =>
+                  isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem
+                }
+              >
+                <IconPlugConnected size={19} stroke={1.7} />
+                <span>Integración ServiceNow</span>
               </RouterNavLink>
               <RouterNavLink
                 to="/admin"
