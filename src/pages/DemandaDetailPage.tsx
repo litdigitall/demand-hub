@@ -48,6 +48,7 @@ import { NotifyButton } from "../components/NotifyButton";
 import { useT } from "../i18n";
 import {
   abrangenciaLabel,
+  appName,
   categoryLabel,
   CATEGORIA_COR_VIEW,
   CATEGORIA_VIEW_LABEL,
@@ -156,6 +157,14 @@ export function DemandaDetailPage() {
 
   async function handleUpload(file: File | null) {
     if (!file || !demand) return;
+    if (file.size > 10 * 1024 * 1024) {
+      notifications.show({
+        color: "red",
+        title: "Archivo demasiado grande",
+        message: `${file.name} supera el límite de 10 MB.`,
+      });
+      return;
+    }
     const updated = await demandService.addAnexo(demand.id, file.name, file.size);
     setDemand(updated);
     notifications.show({
@@ -326,7 +335,14 @@ export function DemandaDetailPage() {
                     <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                       APP ID
                     </Text>
-                    <Text fw={700}>{demand.appId}</Text>
+                    <Text fw={700}>
+                      {demand.appId}
+                      {(demand.appName || appName(demand.appId)) && (
+                        <Text component="span" c="dimmed" fw={500}>
+                          {" "}· {demand.appName || appName(demand.appId)}
+                        </Text>
+                      )}
+                    </Text>
                   </div>
                 )}
               </Group>

@@ -32,11 +32,13 @@ export function NotifyButton({ demand }: { demand: Demand }) {
   const [open, setOpen] = useState(false);
   const wScore = weightedScore(demand.score);
 
+  const linkDemanda = `${window.location.origin}${window.location.pathname}#/demandas/${demand.id}`;
+
   function enviar(canal: "correo" | "Teams") {
     notifications.show({
       color: "teal",
-      title: `Notificación enviada (${canal})`,
-      message: `${demand.numero} — ${demand.titulo} · simulado`,
+      title: `Notificación enviada a los aprobadores (${canal})`,
+      message: `${demand.numero} — con enlace a la demanda · simulado`,
     });
     setOpen(false);
   }
@@ -88,6 +90,12 @@ export function NotifyButton({ demand }: { demand: Demand }) {
             <Text size="sm" mb="xs">
               Estimado comité, sigue la solicitud para su evaluación. Respuestas del
               solicitante y desglose del score a continuación.
+            </Text>
+            <Text size="sm" mb="xs">
+              Acceder a la demanda:{" "}
+              <a href={linkDemanda} target="_blank" rel="noreferrer">
+                {demand.numero} — {demand.titulo}
+              </a>
             </Text>
 
             <Divider my="sm" label="Respuestas del intake" labelPosition="left" />

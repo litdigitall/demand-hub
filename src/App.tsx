@@ -44,6 +44,9 @@ const ReportPage = lazy(() =>
 const IntegrationsPage = lazy(() =>
   import("./pages/IntegrationsPage").then((m) => ({ default: m.IntegrationsPage })),
 );
+const ApproversStatusPage = lazy(() =>
+  import("./pages/ApproversStatusPage").then((m) => ({ default: m.ApproversStatusPage })),
+);
 
 function PageLoader() {
   return (
@@ -88,6 +91,7 @@ export default function App() {
             <Route path="scoreboard" element={<L><ScoreBoardPage /></L>} />
             <Route path="sponsors" element={<L><SponsorsPage /></L>} />
             <Route path="aprovacoes" element={<L><AprovacoesPage /></L>} />
+            <Route path="approvers" element={<L><ApproversStatusPage /></L>} />
             <Route path="capacity" element={<L><CapacityPage /></L>} />
             <Route path="relatorio" element={<L><ReportPage /></L>} />
             <Route path="integraciones" element={<L><IntegrationsPage /></L>} />

@@ -615,6 +615,10 @@ export interface Demand {
   abbottProjectType?: string;
   /** Clasificación de proyecto: infra / ia / app (portfólio Sambini/IA/Gabriela). */
   clasificacion?: string;
+  /** ¿Ya hay una solución propuesta? (si sí, detalles en solucaoProposta). */
+  temSolucaoProposta?: boolean;
+  /** Nombre de la app (auto por APP ID). */
+  appName?: string;
   criadoEm: string;
   modificadoEm: string;
 }
@@ -639,6 +643,21 @@ export const AREA_STAKEHOLDER: Record<string, string> = {
 };
 export function stakeholderDaArea(area: string): string {
   return AREA_STAKEHOLDER[area] ?? "";
+}
+
+/* ---------------- Registro de aplicaciones (APP ID → nombre) ---
+   Al informar el APP ID, el nombre aparece automáticamente. */
+export const APP_REGISTRY: Record<string, string> = {
+  "APP-0456": "SAP S/4HANA",
+  "APP-0123": "Salesforce CRM",
+  "APP-0789": "ServiceNow ITSM",
+  "APP-0321": "Workday HCM",
+  "APP-0654": "Adobe Creative Cloud",
+  "APP-0987": "Power BI",
+};
+export function appName(appId: string): string {
+  const k = appId.trim().toUpperCase();
+  return APP_REGISTRY[k] ?? "";
 }
 
 /* ---------------- Modelo de entrega / esforço ---------------- */

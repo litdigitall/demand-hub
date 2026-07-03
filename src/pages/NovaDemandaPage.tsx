@@ -36,6 +36,7 @@ import {
   TipoDemanda,
   Urgencia,
   abrangenciaOptions,
+  appName,
   categoryOptions,
   clasificacionOptions,
   esforcoOptions,
@@ -64,6 +65,7 @@ type DraftForm = Omit<
   appId: string;
   category: string;
   clasificacion: string;
+  temSolucaoProposta: boolean;
 };
 
 function emptyDraft(): DraftForm {
@@ -93,6 +95,7 @@ function emptyDraft(): DraftForm {
     integracoesNecessarias: "",
     requisitosPrincipais: "",
     solucaoProposta: "",
+    temSolucaoProposta: false,
     appId: "",
     sponsor: "",
     donoProcesso: "",
@@ -192,6 +195,8 @@ export function NovaDemandaPage() {
         appId: form.appId,
         category: form.category,
         clasificacion: form.clasificacion,
+        temSolucaoProposta: form.temSolucaoProposta,
+        appName: appName(form.appId),
         esforcoEstimado: form.esforcoEstimado,
         // Capacity (time/horas) é definido pelo time técnico na Avaliação.
         time: "",
@@ -516,19 +521,33 @@ export function NovaDemandaPage() {
                 value={form.requisitosPrincipais}
                 onChange={(e) => set("requisitosPrincipais", e.currentTarget.value)}
               />
-              <Textarea
-                label={t("nova_solution_label")}
-                autosize
-                minRows={2}
-                placeholder={t("nova_solution_placeholder")}
-                value={form.solucaoProposta}
-                onChange={(e) => set("solucaoProposta", e.currentTarget.value)}
-              />
+              <div>
+                <Checkbox
+                  label="¿Ya hay una solución propuesta?"
+                  checked={form.temSolucaoProposta}
+                  onChange={(e) => set("temSolucaoProposta", e.currentTarget.checked)}
+                />
+                {form.temSolucaoProposta && (
+                  <Textarea
+                    mt="xs"
+                    label={t("nova_solution_label")}
+                    autosize
+                    minRows={2}
+                    placeholder="Describí la solución propuesta..."
+                    value={form.solucaoProposta}
+                    onChange={(e) => set("solucaoProposta", e.currentTarget.value)}
+                  />
+                )}
+              </div>
             </SimpleGrid>
 
             <TextInput
               label="APP ID (código de la aplicación)"
-              description="Para demandas de sistema — busca/identificación de la app (opcional)"
+              description={
+                appName(form.appId)
+                  ? `Aplicación: ${appName(form.appId)}`
+                  : "Para demandas de sistema — el nombre aparece solo (ej.: APP-0456)"
+              }
               placeholder="ej.: APP-0456"
               maw={360}
               value={form.appId}

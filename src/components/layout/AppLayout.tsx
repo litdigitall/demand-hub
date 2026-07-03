@@ -45,6 +45,8 @@ import classes from "./AppLayout.module.css";
 interface NavItem {
   to: string;
   labelKey: TKey;
+  /** Rótulo literal (sobrepõe labelKey quando não há chave i18n). */
+  label?: string;
   icon: Icon;
   end?: boolean;
   badge?: number;
@@ -103,6 +105,7 @@ export function AppLayout() {
     { to: "/aprovacoes", labelKey: "nav_aprovacoes", icon: IconInbox, badge: pendentes },
     { to: "/demandas", labelKey: "nav_demandas", icon: IconListDetails },
     { to: "/kanban", labelKey: "nav_kanban", icon: IconLayoutKanban },
+    { to: "/approvers", labelKey: "nav_scoreboard", label: "Approvers Status", icon: IconChecks, roles: [Role.PMO, Role.Diretor, Role.Sponsor, Role.Admin] },
     { to: "/scoreboard", labelKey: "nav_scoreboard", icon: IconChartBar, roles: [Role.PMO, Role.Diretor, Role.Sponsor, Role.Admin] },
     { to: "/sponsors", labelKey: "nav_sponsors", icon: IconUsers, roles: [Role.Sponsor, Role.PMO, Role.Diretor, Role.Admin] },
     { to: "/capacity", labelKey: "nav_capacity", icon: IconClockHour4, roles: [Role.TechLead, Role.PMO, Role.Admin] },
@@ -201,7 +204,7 @@ export function AppLayout() {
               }
             >
               <n.icon size={19} stroke={1.7} />
-              <span>{t(n.labelKey)}</span>
+              <span>{n.label ?? t(n.labelKey)}</span>
               {(n.badge ?? 0) > 0 && (
                 <Badge size="sm" color="red" variant="filled" ml="auto">
                   {n.badge}
