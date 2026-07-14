@@ -92,11 +92,11 @@ export function CapacityPage() {
     // Usa a camada de integração isolada (src/integrations/serviceNow.ts).
     getFteAvailability()
       .then(() => {
-        setSyncEm(new Date().toLocaleString("es-ES"));
+        setSyncEm(new Date().toLocaleString("en-US"));
         notifications.show({
           color: "teal",
-          title: "Capacity sincronizado",
-          message: "FTE actualizado vía ServiceNow API (simulado).",
+          title: "Capacity synced",
+          message: "FTE updated via ServiceNow API (simulated).",
         });
       })
       .finally(() => setSyncing(false));
@@ -152,10 +152,10 @@ export function CapacityPage() {
               loading={syncing}
               onClick={syncServiceNow}
             >
-              Sincronizar con ServiceNow
+              Sync with ServiceNow
             </Button>
             <Badge variant="dot" color={syncEm ? "teal" : "gray"}>
-              {syncEm ? `Fuente: ServiceNow (simulado) · ${syncEm}` : "Fuente: estimaciones del app"}
+              {syncEm ? `Source: ServiceNow (simulated) · ${syncEm}` : "Source: app estimates"}
             </Badge>
           </Group>
         </div>

@@ -8,7 +8,6 @@ import {
   Burger,
   Group,
   Indicator,
-  Menu,
   Stack,
   Text,
 } from "@mantine/core";
@@ -17,7 +16,6 @@ import {
   IconBell,
   IconChartBar,
   IconChecks,
-  IconChevronDown,
   IconClockHour4,
   IconInbox,
   IconLayoutDashboard,
@@ -28,57 +26,52 @@ import {
   IconPlus,
   IconPresentation,
   IconSettings,
-  IconUsers,
   type Icon,
 } from "@tabler/icons-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useCurrentUser } from "../../lib/useCurrentUser";
-import { ErrorBoundary } from "../ErrorBoundary";
 import { initialsFromName } from "../../lib/format";
 import { useT, type Lang, type TKey } from "../../i18n";
 import { demandService } from "../../data/demandService";
 import { precisaDeMim } from "../../domain/workflow";
 import { Role, ROLE_LABEL, ROLE_COLOR } from "../../domain/roles";
+import { ErrorBoundary } from "../ErrorBoundary";
 import abbottLogo from "../../assets/abbott-logo.png";
 import classes from "./AppLayout.module.css";
 
 interface NavItem {
   to: string;
-  labelKey: TKey;
-  /** Rótulo literal (sobrepõe labelKey quando não há chave i18n). */
-  label?: string;
+  label: string;
   icon: Icon;
   end?: boolean;
   badge?: number;
-  /** Se definido, item só aparece para quem tem um desses papéis. */
   roles?: Role[];
 }
 
-function pageTitleKey(path: string): TKey {
-  if (path === "/") return "nav_dashboard";
-  if (path.startsWith("/demandas/nova")) return "newDemand";
-  if (path.startsWith("/demandas")) return "nav_demandas";
-  if (path.startsWith("/kanban")) return "nav_kanban";
-  if (path.startsWith("/scoreboard")) return "nav_scoreboard";
-  if (path.startsWith("/sponsors")) return "nav_sponsors";
-  if (path.startsWith("/aprovacoes")) return "nav_aprovacoes";
-  if (path.startsWith("/capacity")) return "nav_capacity";
-  if (path.startsWith("/relatorio")) return "nav_admin";
-  if (path.startsWith("/admin")) return "nav_admin";
-  return "appName";
+function pageTitle(path: string): string {
+  if (path === "/") return "Home";
+  if (path.startsWith("/demandas/nova")) return "New request";
+  if (path.startsWith("/demandas")) return "Requests";
+  if (path.startsWith("/kanban")) return "Board";
+  if (path.startsWith("/scoreboard")) return "Score Board";
+  if (path.startsWith("/aprovacoes")) return "My inbox";
+  if (path.startsWith("/approvers")) return "Approvers Status";
+  if (path.startsWith("/capacity")) return "Capacity";
+  if (path.startsWith("/relatorio")) return "Monthly report";
+  if (path.startsWith("/integraciones")) return "ServiceNow";
+  if (path.startsWith("/admin")) return "Administration";
+  return "Demand Hub";
 }
 
 export function AppLayout() {
   const user = useCurrentUser();
   const loc = useLocation();
   const [opened, { toggle, close }] = useDisclosure();
-  const { t } = useT();
-  const { signOut, personas, switchPersona, user: session } = useAuth();
+  useT();
+  const { signOut } = useAuth();
   const [pendentes, setPendentes] = useState(0);
-
   const roles = user.roles;
 
-  // Conta demandas que aguardam UMA AÇÃO dos papéis do usuário atual.
   useEffect(() => {
     let cancelled = false;
     function refresh() {
@@ -99,187 +92,124 @@ export function AppLayout() {
   }, [roles, loc.pathname]);
 
   const isAdmin = roles.includes(Role.Admin);
+  const canCreate = roles.includes(Role.Solicitante) || isAdmin;
+  const gate = [Role.PMO, Role.Diretor, Role.Sponsor, Role.Admin];
 
   const NAV_MAIN: NavItem[] = [
-    { to: "/", labelKey: "nav_dashboard", icon: IconLayoutDashboard, end: true },
-    { to: "/aprovacoes", labelKey: "nav_aprovacoes", icon: IconInbox, badge: pendentes },
-    { to: "/demandas", labelKey: "nav_demandas", icon: IconListDetails },
-    { to: "/kanban", labelKey: "nav_kanban", icon: IconLayoutKanban },
-    { to: "/approvers", labelKey: "nav_scoreboard", label: "Approvers Status", icon: IconChecks, roles: [Role.PMO, Role.Diretor, Role.Sponsor, Role.Admin] },
-    { to: "/scoreboard", labelKey: "nav_scoreboard", icon: IconChartBar, roles: [Role.PMO, Role.Diretor, Role.Sponsor, Role.Admin] },
-    { to: "/sponsors", labelKey: "nav_sponsors", icon: IconUsers, roles: [Role.Sponsor, Role.PMO, Role.Diretor, Role.Admin] },
-    { to: "/capacity", labelKey: "nav_capacity", icon: IconClockHour4, roles: [Role.TechLead, Role.PMO, Role.Admin] },
+    { to: "/", label: "Home", icon: IconLayoutDashboard, end: true },
+    { to: "/aprovacoes", label: "My inbox", icon: IconInbox, badge: pendentes },
+    { to: "/demandas", label: "Requests", icon: IconListDetails },
+    { to: "/approvers", label: "Approvers Status", icon: IconChecks, roles: gate },
+    { to: "/scoreboard", label: "Score Board", icon: IconChartBar, roles: gate },
+    { to: "/kanban", label: "Board", icon: IconLayoutKanban },
+    { to: "/capacity", label: "Capacity", icon: IconClockHour4, roles: [Role.TechLead, Role.PMO, Role.Admin] },
   ];
   const navVisible = NAV_MAIN.filter((n) => !n.roles || n.roles.some((r) => roles.includes(r)));
-  const canCreate = roles.includes(Role.Solicitante) || isAdmin;
+
+  const NAV_ADMIN: NavItem[] = [
+    { to: "/relatorio", label: "Monthly report", icon: IconPresentation },
+    { to: "/integraciones", label: "ServiceNow", icon: IconPlugConnected },
+    { to: "/admin", label: "Administration", icon: IconSettings },
+  ];
+
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem;
 
   return (
     <AppShell
-      header={{ height: 60 }}
-      navbar={{ width: 268, breakpoint: "sm", collapsed: { mobile: !opened } }}
+      header={{ height: 62 }}
+      navbar={{ width: 264, breakpoint: "sm", collapsed: { mobile: !opened } }}
       padding="lg"
     >
-      <AppShell.Header>
-        <Group h="100%" px="md" gap="sm" wrap="nowrap" justify="space-between">
+      <AppShell.Header className="glass" withBorder={false} style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}>
+        <Group h="100%" px="lg" gap="sm" wrap="nowrap" justify="space-between">
           <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Text fw={700} size="lg" truncate>
-              {t(pageTitleKey(loc.pathname))}
-            </Text>
+            <Text fw={800} size="lg" truncate>{pageTitle(loc.pathname)}</Text>
           </Group>
           <Group gap="xs" wrap="nowrap">
-            <Indicator disabled={pendentes === 0} label={pendentes} size={16} color="red" offset={4}>
-              <ActionIcon
-                variant="default"
-                size="lg"
-                component="a"
-                href="#/aprovacoes"
-                aria-label="Bandeja de entrada"
-              >
+            <Indicator disabled={pendentes === 0} label={pendentes} size={16} color="grape" offset={4}>
+              <ActionIcon variant="default" size="lg" component="a" href="#/aprovacoes" aria-label="Inbox">
                 <IconBell size={18} />
               </ActionIcon>
             </Indicator>
-
-            {/* Switcher de persona — troca de papel sem deslogar (demo) */}
-            <Menu position="bottom-end" width={300} shadow="md">
-              <Menu.Target>
-                <ActionIcon variant="default" size="lg" aria-label="Cambiar persona">
-                  <IconChevronDown size={16} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>Entrar como (demo)</Menu.Label>
-                {personas.map((p) => (
-                  <Menu.Item
-                    key={p.id}
-                    onClick={() => switchPersona(p.id)}
-                    leftSection={
-                      <Avatar size={26} radius="xl" color="abbott.6" variant="filled">
-                        {initialsFromName(p.nome)}
-                      </Avatar>
-                    }
-                    rightSection={
-                      session?.personaId === p.id ? <IconChecks size={15} color="green" /> : null
-                    }
-                  >
-                    <Text size="sm" fw={session?.personaId === p.id ? 700 : 500}>
-                      {p.nome}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      {p.cargo}
-                    </Text>
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
+            <Group gap={8} wrap="nowrap" visibleFrom="sm">
+              <Avatar radius="xl" size={34} variant="gradient" gradient={{ from: "abbott.6", to: "grape.6", deg: 60 }}>
+                {initialsFromName(user.name)}
+              </Avatar>
+              <div style={{ minWidth: 0 }}>
+                <Text size="sm" fw={600} truncate style={{ maxWidth: 160 }}>{user.name}</Text>
+                <Text size="xs" c="dimmed" truncate style={{ maxWidth: 160 }}>{user.cargo}</Text>
+              </div>
+            </Group>
           </Group>
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar bg="abbott.9" withBorder={false}>
+      <AppShell.Navbar
+        withBorder={false}
+        style={{
+          background:
+            "linear-gradient(180deg, var(--mantine-color-abbott-9) 0%, var(--mantine-color-abbott-8) 55%, #3a1d6e 130%)",
+        }}
+      >
         <Stack gap={3} p="md" h="100%">
           <div className={classes.brand}>
             <div className={classes.logoBox}>
               <img src={abbottLogo} alt="Abbott" className={classes.logoImg} />
             </div>
-            <div className={classes.brand1}>{t("appName")}</div>
-            <div className={classes.brandSub}>{t("appTag")}</div>
+            <div className={classes.brand1}>Demand Hub</div>
+            <div className={classes.brandSub}>by LIT Digitall</div>
           </div>
 
           {canCreate && (
             <RouterNavLink to="/demandas/nova" className={classes.cta} onClick={close}>
               <IconPlus size={17} stroke={2.5} />
-              <span>{t("newDemand")}</span>
+              <span>New request</span>
             </RouterNavLink>
           )}
 
           {navVisible.map((n) => (
-            <RouterNavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
-              onClick={close}
-              className={({ isActive }) =>
-                isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem
-              }
-            >
+            <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
               <n.icon size={19} stroke={1.7} />
-              <span>{n.label ?? t(n.labelKey)}</span>
+              <span>{n.label}</span>
               {(n.badge ?? 0) > 0 && (
-                <Badge size="sm" color="red" variant="filled" ml="auto">
-                  {n.badge}
-                </Badge>
+                <Badge size="sm" color="grape" variant="filled" ml="auto">{n.badge}</Badge>
               )}
             </RouterNavLink>
           ))}
 
           {isAdmin && (
             <>
-              <div className={classes.navSection}>{t("nav_admin_section")}</div>
-              <RouterNavLink
-                to="/relatorio"
-                onClick={close}
-                className={({ isActive }) =>
-                  isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem
-                }
-              >
-                <IconPresentation size={19} stroke={1.7} />
-                <span>Informe mensual</span>
-              </RouterNavLink>
-              <RouterNavLink
-                to="/integraciones"
-                onClick={close}
-                className={({ isActive }) =>
-                  isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem
-                }
-              >
-                <IconPlugConnected size={19} stroke={1.7} />
-                <span>Integración ServiceNow</span>
-              </RouterNavLink>
-              <RouterNavLink
-                to="/admin"
-                onClick={close}
-                className={({ isActive }) =>
-                  isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem
-                }
-              >
-                <IconSettings size={19} stroke={1.7} />
-                <span>{t("nav_admin")}</span>
-              </RouterNavLink>
+              <div className={classes.navSection}>Configuration</div>
+              {NAV_ADMIN.map((n) => (
+                <RouterNavLink key={n.to} to={n.to} onClick={close} className={navClass}>
+                  <n.icon size={19} stroke={1.7} />
+                  <span>{n.label}</span>
+                </RouterNavLink>
+              ))}
             </>
           )}
 
           <div className={classes.userCard}>
-            <Avatar src={user.photoUrl} radius="xl" size={40} color="abbott.4" variant="filled">
+            <Avatar radius="xl" size={40} variant="gradient" gradient={{ from: "abbott.4", to: "grape.5", deg: 60 }}>
               {initialsFromName(user.name)}
             </Avatar>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <Text className={classes.userName} truncate>
-                {user.name}
-              </Text>
+              <Text className={classes.userName} truncate>{user.name}</Text>
               <Group gap={3} wrap="nowrap">
                 {roles.slice(0, 2).map((r) => (
-                  <Badge key={r} size="xs" variant="light" color={ROLE_COLOR[r]}>
-                    {ROLE_LABEL[r]}
-                  </Badge>
+                  <Badge key={r} size="xs" variant="light" color={ROLE_COLOR[r]}>{ROLE_LABEL[r]}</Badge>
                 ))}
-                {roles.length > 2 && (
-                  <Badge size="xs" variant="light" color="gray">
-                    +{roles.length - 2}
-                  </Badge>
-                )}
+                {roles.length > 2 && <Badge size="xs" variant="light" color="gray">+{roles.length - 2}</Badge>}
               </Group>
             </div>
             <ActionIcon
               variant="subtle"
-              color="gray"
               size="md"
-              onClick={() => {
-                signOut();
-                window.location.hash = "#/login";
-              }}
-              title="Salir"
-              aria-label="Salir"
+              onClick={() => { signOut(); window.location.hash = "#/login"; }}
+              title="Sign out"
+              aria-label="Sign out"
               style={{ color: "rgba(255,255,255,0.7)" }}
             >
               <IconLogout size={16} />
@@ -288,7 +218,7 @@ export function AppLayout() {
         </Stack>
       </AppShell.Navbar>
 
-      <AppShell.Main bg="gray.0">
+      <AppShell.Main>
         <div className="page-fade" key={loc.pathname}>
           <ErrorBoundary key={loc.pathname}>
             <Outlet />
@@ -299,5 +229,4 @@ export function AppLayout() {
   );
 }
 
-// Avoid TS6133 — Lang only re-exported for callers
-export type { Lang };
+export type { Lang, TKey };

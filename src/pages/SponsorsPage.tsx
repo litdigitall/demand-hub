@@ -66,7 +66,7 @@ export function SponsorsPage() {
   const sponsors: SponsorStats[] = useMemo(() => {
     const map = new Map<string, Demand[]>();
     items.forEach((d) => {
-      const key = d.sponsor || "— sem sponsor —";
+      const key = d.sponsor || "— no sponsor —";
       const list = map.get(key) ?? [];
       list.push(d);
       map.set(key, list);
@@ -150,7 +150,7 @@ export function SponsorsPage() {
                 label={t("sponsors_critical")}
                 color="red"
               />
-              <MiniStat icon={IconCash} value="" label="R$" color="abbott" extra={formatCurrency(s.valorTotal)} />
+              <MiniStat icon={IconCash} value="" label="Value" color="abbott" extra={formatCurrency(s.valorTotal)} />
             </SimpleGrid>
 
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} mb={4}>

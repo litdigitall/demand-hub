@@ -20,7 +20,7 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
   return (
     <Card withBorder radius="lg" padding="lg">
       <Group justify="space-between" mb="md">
-        <Text fw={700}>Ciclo de vida</Text>
+        <Text fw={700}>Lifecycle</Text>
         <Badge variant="light" color={recusada ? "red" : devolvida ? "yellow" : "gray"}>
           {aguardando(demand)}
         </Badge>
@@ -42,8 +42,8 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
           </ThemeIcon>
           <Text size="sm" fw={500}>
             {recusada
-              ? "Solicitud rechazada — fuera del flujo."
-              : "Devuelta al solicitante para completar y reenviar."}
+              ? "Request rejected — out of the flow."
+              : "Returned to the requester to complete and resubmit."}
           </Text>
         </Group>
       )}
@@ -83,7 +83,7 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
                   </Text>
                   {atual && (
                     <Badge size="xs" color="abbott" variant="filled">
-                      actual
+                      current
                     </Badge>
                   )}
                 </Group>

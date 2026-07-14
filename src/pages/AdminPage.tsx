@@ -205,7 +205,7 @@ export function AdminPage() {
     } catch (err) {
       notifications.show({
         color: "red",
-        title: "Error al poblar",
+        title: "Error while seeding",
         message: (err as Error).message,
       });
       setSeeding(null);

@@ -88,9 +88,9 @@ export function IntegrationsPage() {
     setSyncing(true);
     const f = await getFteAvailability();
     setFte(f);
-    setSyncEm(new Date().toLocaleString("es-ES"));
+    setSyncEm(new Date().toLocaleString("en-US"));
     setSyncing(false);
-    notifications.show({ color: "teal", title: "Capacity sincronizado", message: "FTE actualizado desde ServiceNow (simulado)." });
+    notifications.show({ color: "teal", title: "Capacity synced", message: "FTE updated from ServiceNow (simulated)." });
   }
 
   async function publicar() {
@@ -101,18 +101,18 @@ export function IntegrationsPage() {
     setPushing(false);
     if (r.ok) {
       setUltimoTicket(r.ticket);
-      notifications.show({ color: "teal", title: "Publicado en ServiceNow", message: r.mensagem });
+      notifications.show({ color: "teal", title: "Published to ServiceNow", message: r.mensagem });
     } else {
-      notifications.show({ color: "red", title: "No se pudo publicar", message: r.mensagem });
+      notifications.show({ color: "red", title: "Could not publish", message: r.mensagem });
     }
   }
 
   return (
     <Stack gap="lg">
       <div>
-        <Title order={2}>Integración ServiceNow</Title>
+        <Title order={2}>ServiceNow Integration</Title>
         <Text c="dimmed" mt={4}>
-          Previsión de la integración: qué datos entran y salen entre Demand Hub y ServiceNow.
+          Integration preview: what data flows in and out between Demand Hub and ServiceNow.
         </Text>
       </div>
 
@@ -126,12 +126,12 @@ export function IntegrationsPage() {
             <div>
               <Text fw={700}>{serviceNowConfig.instanceUrl}</Text>
               <Text size="sm" c="dimmed">
-                Tablas: {serviceNowConfig.fteTable} · {serviceNowConfig.projectTable}
+                Tables: {serviceNowConfig.fteTable} · {serviceNowConfig.projectTable}
               </Text>
             </div>
           </Group>
           <Badge size="lg" variant="light" color={serviceNowConfig.connected ? "teal" : "orange"}>
-            {serviceNowConfig.connected ? "Conectado" : "Simulado (demo)"}
+            {serviceNowConfig.connected ? "Connected" : "Simulated (demo)"}
           </Badge>
         </Group>
       </Card>
@@ -144,7 +144,7 @@ export function IntegrationsPage() {
               <ThemeIcon color="blue" variant="light" radius="md">
                 <IconArrowDown size={18} />
               </ThemeIcon>
-              <Text fw={700}>Entra: FTE / Capacity</Text>
+              <Text fw={700}>In: FTE / Capacity</Text>
             </Group>
             <Button
               size="xs"
@@ -153,16 +153,16 @@ export function IntegrationsPage() {
               loading={syncing}
               onClick={sincronizar}
             >
-              Sincronizar
+              Sync
             </Button>
           </Group>
           <Table verticalSpacing="xs" fz="sm">
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Equipo</Table.Th>
+                <Table.Th>Team</Table.Th>
                 <Table.Th ta="right">FTE</Table.Th>
-                <Table.Th ta="right">Horas comp.</Table.Th>
-                <Table.Th ta="right">Capacidad</Table.Th>
+                <Table.Th ta="right">Committed h.</Table.Th>
+                <Table.Th ta="right">Capacity</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -177,7 +177,7 @@ export function IntegrationsPage() {
             </Table.Tbody>
           </Table>
           <Text size="xs" c="dimmed" mt="xs">
-            {syncEm ? `Última sync: ${syncEm}` : "Fuente: ServiceNow API (simulado)"}
+            {syncEm ? `Last sync: ${syncEm}` : "Source: ServiceNow API (simulated)"}
           </Text>
         </Card>
 
@@ -187,14 +187,14 @@ export function IntegrationsPage() {
             <ThemeIcon color="grape" variant="light" radius="md">
               <IconArrowUp size={18} />
             </ThemeIcon>
-            <Text fw={700}>Sale: Proyecto aprobado</Text>
+            <Text fw={700}>Out: Approved project</Text>
           </Group>
           <Text size="sm" c="dimmed" mb="sm">
-            Publica en ServiceNow los datos de la demanda aprobada (RCE, nº, score, estado).
+            Publishes the approved demand's data to ServiceNow (RCE, no., score, status).
           </Text>
           <Select
-            label="Demanda a publicar"
-            placeholder="Elegí una demanda priorizada/en ejecución"
+            label="Demand to publish"
+            placeholder="Pick a prioritized/in-execution demand"
             data={publicables.map((d) => ({ value: d.id, label: `${d.numero} — ${d.titulo}` }))}
             value={selId}
             onChange={setSelId}
@@ -207,7 +207,7 @@ export function IntegrationsPage() {
             return (
               <Table fz="sm" mb="sm">
                 <Table.Tbody>
-                  <Table.Tr><Table.Td c="dimmed">RCE</Table.Td><Table.Td>{d.rce || "— (falta)"}</Table.Td></Table.Tr>
+                  <Table.Tr><Table.Td c="dimmed">RCE</Table.Td><Table.Td>{d.rce || "— (missing)"}</Table.Td></Table.Tr>
                   <Table.Tr><Table.Td c="dimmed">APP ID</Table.Td><Table.Td>{d.appId || "—"}</Table.Td></Table.Tr>
                   <Table.Tr><Table.Td c="dimmed">Score</Table.Td><Table.Td>{weightedScore(d.score).toFixed(2)}</Table.Td></Table.Tr>
                 </Table.Tbody>
@@ -221,11 +221,11 @@ export function IntegrationsPage() {
             loading={pushing}
             onClick={publicar}
           >
-            Publicar en ServiceNow
+            Publish to ServiceNow
           </Button>
           {ultimoTicket && (
             <Badge mt="sm" color="teal" variant="light">
-              Último proyecto: {ultimoTicket}
+              Last project: {ultimoTicket}
             </Badge>
           )}
         </Card>
@@ -234,13 +234,13 @@ export function IntegrationsPage() {
       {/* Mapeo de campos */}
       <Card withBorder radius="lg" padding="lg">
         <Text fw={700} mb="sm">
-          Mapeo de campos
+          Field mapping
         </Text>
         <Table verticalSpacing="xs" fz="sm">
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Demand Hub</Table.Th>
-              <Table.Th>Dirección</Table.Th>
+              <Table.Th>Direction</Table.Th>
               <Table.Th>ServiceNow</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -262,15 +262,15 @@ export function IntegrationsPage() {
 
       <Alert color="abbott" variant="light" icon={<IconInfoCircle size={18} />}>
         <Text size="sm">
-          Integración simulada para la demo. La lógica está aislada en{" "}
-          <strong>src/integrations/serviceNow.ts</strong> — en producción, cada función
-          se reemplaza por una llamada REST (Table API / Scripted REST) sin tocar el resto del app.
+          Simulated integration for the demo. The logic is isolated in{" "}
+          <strong>src/integrations/serviceNow.ts</strong> — in production, each function
+          is replaced by a REST call (Table API / Scripted REST) without touching the rest of the app.
         </Text>
       </Alert>
 
       <Group gap="xs" c="dimmed">
         <IconRefresh size={14} />
-        <Text size="xs">Autenticación real vía OAuth/credenciales de la instancia (fuera del alcance del prototipo).</Text>
+        <Text size="xs">Real authentication via OAuth/instance credentials (out of scope for the prototype).</Text>
       </Group>
     </Stack>
   );

@@ -58,7 +58,7 @@ export function ApproversStatusPage() {
       <div>
         <Title order={2}>Approvers Status</Title>
         <Text c="dimmed" mt={4}>
-          Estado de los gates de aprobación (Sponsor → Tech Lead → Director/DMC) por demanda.
+          Status of the approval gates (Sponsor → Tech Lead → Director/DMC) per demand.
         </Text>
       </div>
 
@@ -67,17 +67,17 @@ export function ApproversStatusPage() {
           <Table verticalSpacing="sm" horizontalSpacing="lg" highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Demanda</Table.Th>
-                <Table.Th>Estado</Table.Th>
-                <Table.Th>Gates de aprobación</Table.Th>
-                <Table.Th>Esperando</Table.Th>
+                <Table.Th>Demand</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Approval gates</Table.Th>
+                <Table.Th>Waiting on</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {enAprobacion.length === 0 ? (
                 <Table.Tr>
                   <Table.Td colSpan={4}>
-                    <Text ta="center" c="dimmed" py="md">Sin demandas en aprobación.</Text>
+                    <Text ta="center" c="dimmed" py="md">No demands in approval.</Text>
                   </Table.Td>
                 </Table.Tr>
               ) : (
@@ -104,7 +104,7 @@ export function ApproversStatusPage() {
                         {next ? (
                           <Badge color="orange" variant="light">{NIVEL_LABEL[next.nivel]}</Badge>
                         ) : (
-                          <Badge color="teal" variant="light">Completo</Badge>
+                          <Badge color="teal" variant="light">Complete</Badge>
                         )}
                       </Table.Td>
                     </Table.Tr>

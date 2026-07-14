@@ -34,25 +34,25 @@ export function NotifyButton({ demand }: { demand: Demand }) {
 
   const linkDemanda = `${window.location.origin}${window.location.pathname}#/demandas/${demand.id}`;
 
-  function enviar(canal: "correo" | "Teams") {
+  function enviar(canal: "email" | "Teams") {
     notifications.show({
       color: "teal",
-      title: `Notificación enviada a los aprobadores (${canal})`,
-      message: `${demand.numero} — con enlace a la demanda · simulado`,
+      title: `Notification sent to approvers (${canal})`,
+      message: `${demand.numero} — with link to the request · simulated`,
     });
     setOpen(false);
   }
 
   const perguntas: { q: string; a: string }[] = [
-    { q: "Problema/oportunidad", a: demand.problemaResolve || "—" },
-    { q: "Objetivo principal", a: demand.objetivoPrincipal || "—" },
-    { q: "Consecuencia de no ejecutar", a: demand.consequenciaNaoExecucao || "—" },
+    { q: "Problem/opportunity", a: demand.problemaResolve || "—" },
+    { q: "Main objective", a: demand.objetivoPrincipal || "—" },
+    { q: "Consequence of not executing", a: demand.consequenciaNaoExecucao || "—" },
     {
-      q: "Alcance del impacto",
+      q: "Impact scope",
       a: demand.impactoAbrangencia ? abrangenciaLabel[demand.impactoAbrangencia] : "—",
     },
     {
-      q: "ROI estimado",
+      q: "Estimated ROI",
       a: demand.roiEstimado != null ? `${demand.roiEstimado}%` : "—",
     },
   ];
@@ -64,14 +64,14 @@ export function NotifyButton({ demand }: { demand: Demand }) {
         leftSection={<IconSend size={16} />}
         onClick={() => setOpen(true)}
       >
-        Notificar
+        Notify
       </Button>
 
-      <Modal opened={open} onClose={() => setOpen(false)} title="Notificar al comité / stakeholders" size="lg">
+      <Modal opened={open} onClose={() => setOpen(false)} title="Notify the committee / stakeholders" size="lg">
         <Stack>
           <Group gap="xs">
             <Badge color="grape" variant="light">
-              DMC · Comité Hub IT
+              DMC · IT Hub Committee
             </Badge>
             <Badge variant="light" color="gray">
               {statusLabel[demand.status]}
@@ -81,24 +81,24 @@ export function NotifyButton({ demand }: { demand: Demand }) {
           {/* Preview del correo formateado */}
           <Paper withBorder radius="md" p="md" bg="gray.0">
             <Text size="xs" c="dimmed" tt="uppercase" fw={700} lts={1}>
-              Asunto
+              Subject
             </Text>
             <Text fw={700} mb="sm">
               [Demand Hub] {demand.numero} — {demand.titulo} (score {wScore.toFixed(2)})
             </Text>
 
             <Text size="sm" mb="xs">
-              Estimado comité, sigue la solicitud para su evaluación. Respuestas del
-              solicitante y desglose del score a continuación.
+              Dear committee, please find the request for your evaluation below. The
+              requester's answers and the score breakdown follow.
             </Text>
             <Text size="sm" mb="xs">
-              Acceder a la demanda:{" "}
+              Open the request:{" "}
               <a href={linkDemanda} target="_blank" rel="noreferrer">
                 {demand.numero} — {demand.titulo}
               </a>
             </Text>
 
-            <Divider my="sm" label="Respuestas del intake" labelPosition="left" />
+            <Divider my="sm" label="Intake answers" labelPosition="left" />
             <Stack gap={6}>
               {perguntas.map((p) => (
                 <div key={p.q}>
@@ -112,7 +112,7 @@ export function NotifyButton({ demand }: { demand: Demand }) {
               ))}
             </Stack>
 
-            <Divider my="sm" label="Score ponderado (100 % = 5,00)" labelPosition="left" />
+            <Divider my="sm" label="Weighted score (100% = 5.00)" labelPosition="left" />
             <Table verticalSpacing={4} fz="sm">
               <Table.Tbody>
                 {(Object.keys(SCORE_LABELS) as (keyof Score)[]).map((k) => (
@@ -141,8 +141,8 @@ export function NotifyButton({ demand }: { demand: Demand }) {
           </Paper>
 
           <Text size="xs" c="dimmed">
-            Envío simulado — en la versión integrada, se dispara en el canal de Teams y por
-            correo (Microsoft Graph). El contenido de arriba es la plantilla real.
+            Simulated send — in the integrated version, it fires on the Teams channel and by
+            email (Microsoft Graph). The content above is the actual template.
           </Text>
 
           <Group justify="flex-end">
@@ -152,14 +152,14 @@ export function NotifyButton({ demand }: { demand: Demand }) {
               leftSection={<IconBrandTeams size={16} />}
               onClick={() => enviar("Teams")}
             >
-              Notificar en Teams
+              Notify on Teams
             </Button>
             <Button
               color="abbott"
               leftSection={<IconMail size={16} />}
-              onClick={() => enviar("correo")}
+              onClick={() => enviar("email")}
             >
-              Enviar correo
+              Send email
             </Button>
           </Group>
         </Stack>

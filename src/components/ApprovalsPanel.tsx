@@ -118,12 +118,12 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
           <ThemeIcon size={60} radius="xl" color="abbott" variant="light">
             <IconInfoCircle size={28} />
           </ThemeIcon>
-          <Text fw={700}>Workflow de aprobación no inicializado</Text>
+          <Text fw={700}>Approval workflow not initialized</Text>
           <Text size="sm" c="dimmed" ta="center" maw={460}>
-            Las solicitudes creadas en el app ya vienen con la secuencia estándar (Sponsor →
-            Tech Lead → Director). Para inicializarla en esta solicitud existente, haz clic abajo.
+            Requests created in the app already come with the standard sequence (Sponsor →
+            Tech Lead → Director). To initialize it on this existing request, click below.
           </Text>
-          <Button onClick={inicializar}>Inicializar flujo de aprobación</Button>
+          <Button onClick={inicializar}>Initialize approval flow</Button>
         </Stack>
       </Card>
     );
@@ -139,8 +139,8 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
               {t("apr_workflow")}
             </Text>
             <Text fw={700} fz="xl">
-              {aprovados}/{steps.length} aprobados
-              {recusados > 0 && ` · ${recusados} rechazado`}
+              {aprovados}/{steps.length} approved
+              {recusados > 0 && ` · ${recusados} rejected`}
             </Text>
             <Text size="sm" c="dimmed">
               {t("apr_workflow_help")}
@@ -148,17 +148,17 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
           </div>
           {nextStep && (
             <Badge color="orange" variant="light" size="lg">
-              Siguiente: {labelNivel[nextStep.nivel]}
+              Next: {labelNivel[nextStep.nivel]}
             </Badge>
           )}
           {!nextStep && recusados === 0 && (
             <Badge color="teal" variant="filled" size="lg" leftSection={<IconCheck size={12} />}>
-              Concluido
+              Completed
             </Badge>
           )}
           {recusados > 0 && (
             <Badge color="red" variant="filled" size="lg">
-              Rechazada
+              Rejected
             </Badge>
           )}
         </Group>
@@ -233,7 +233,7 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
                         </Badge>
                         {isNext && (
                           <Badge color="orange" variant="filled" size="sm">
-                            {isCurrentUser ? t("apr_youAreNext") : "Pendiente"}
+                            {isCurrentUser ? t("apr_youAreNext") : "Pending"}
                           </Badge>
                         )}
                       </Group>
@@ -242,7 +242,7 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
                       </Text>
                       {s.acaoEm && (
                         <Text size="xs" c="dimmed">
-                          {s.status === "aprovado" ? t("approved") : t("rejected")} em{" "}
+                          {s.status === "aprovado" ? t("approved") : t("rejected")} on{" "}
                           {formatDateTime(s.acaoEm)}
                         </Text>
                       )}
@@ -306,10 +306,10 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
 
       <Alert color="abbott" variant="light" icon={<IconInfoCircle size={18} />}>
         <Text size="sm">
-          <strong>Regla:</strong> cualquier rechazo lleva la solicitud al estado{" "}
-          <em>Rechazada</em>. Los 3 aprobados la liberan a <em>Priorizada</em>. Las solicitudes
-          en aprobación aparecen en <strong>Mi bandeja</strong> del aprobador actual y
-          cuentan en el badge de la campana arriba.
+          <strong>Rule:</strong> any rejection moves the request to the{" "}
+          <em>Rejected</em> status. All 3 approvals release it to <em>Prioritized</em>. Requests
+          in approval appear in the current approver's <strong>My inbox</strong> and
+          count toward the bell badge above.
         </Text>
       </Alert>
 
@@ -344,7 +344,7 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
               label={t("comment")}
               autosize
               minRows={2}
-              placeholder="Justifique sua decisão..."
+              placeholder="Justify your decision..."
               value={modal.comentario}
               onChange={(e) =>
                 setModal({ ...modal, comentario: e.currentTarget.value })

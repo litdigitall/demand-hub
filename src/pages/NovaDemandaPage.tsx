@@ -215,7 +215,7 @@ export function NovaDemandaPage() {
     } catch (err) {
       notifications.show({
         color: "red",
-        title: "Erro",
+        title: "Error",
         message: (err as Error).message,
       });
       setSaving(false);
@@ -362,14 +362,14 @@ export function NovaDemandaPage() {
             <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
               <Select
                 label="Category"
-                description="Clasificación SPM"
+                description="SPM classification"
                 withAsterisk
                 data={categoryOptions}
                 allowDeselect={false}
                 value={form.category}
                 onChange={(v) => v && set("category", v)}
               />
-              <TextInput label="Type" value="Project" readOnly description="Toda demanda es un Project" />
+              <TextInput label="Type" value="Project" readOnly description="Every demand is a Project" />
               <Select
                 label={t("nova_category")}
                 withAsterisk
@@ -381,8 +381,8 @@ export function NovaDemandaPage() {
             </SimpleGrid>
             <Group align="flex-end" grow>
               <Select
-                label="Clasificación de proyecto"
-                description="Infraestructura (Sambini) · Inteligencia Artificial · Aplicaciones (Gabriela) · Otro"
+                label="Project classification"
+                description="Infrastructure (Sambini) · Artificial Intelligence · Applications (Gabriela) · Other"
                 withAsterisk
                 data={clasificacionOptions}
                 allowDeselect={false}
@@ -391,8 +391,8 @@ export function NovaDemandaPage() {
               />
               {form.clasificacion === "otro" && (
                 <TextInput
-                  label="Especificar"
-                  placeholder="Clasificación no listada"
+                  label="Specify"
+                  placeholder="Classification not listed"
                   value={form.clasificacionOtro}
                   onChange={(e) => set("clasificacionOtro", e.currentTarget.value)}
                 />
@@ -406,8 +406,8 @@ export function NovaDemandaPage() {
           <Stack gap="md">
             <SectionTitle index={4} title={t("nova_section4")} />
             <Select
-              label="¿Hasta dónde impacta esta solicitud?"
-              description="Define automáticamente el criterio 'Impacto en el Negocio' del score — no necesitas puntuar."
+              label="How far does this request reach?"
+              description="Automatically sets the 'Business Impact' score criterion — no need to score it."
               withAsterisk
               data={abrangenciaOptions.map((o) => ({ value: String(o.value), label: o.label }))}
               allowDeselect={false}
@@ -416,14 +416,14 @@ export function NovaDemandaPage() {
             />
             <Alert color="blue" variant="light">
               <Text size="sm">
-                Impacto en el Negocio (automático):{" "}
-                <strong>{ABRANGENCIA_SCORE[form.impactoAbrangencia]} / 5</strong> — peso 25 % en el score.
+                Business Impact (automatic):{" "}
+                <strong>{ABRANGENCIA_SCORE[form.impactoAbrangencia]} / 5</strong> — 25% weight in the score.
               </Text>
             </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
               <Select
                 label={t("nova_impactLevel")}
-                description="Percepción cualitativa (no entra en el score)"
+                description="Qualitative perception (not part of the score)"
                 withAsterisk
                 data={impactoOptions.map((o) => ({ value: String(o.value), label: L.impacto[o.value] }))}
                 allowDeselect={false}
@@ -452,8 +452,8 @@ export function NovaDemandaPage() {
                 onChange={(v) => set("tiposImpacto", v.map(Number))}
               />
               <NumberInput
-                label="ROI estimado (%)"
-                description="Retorno esperado de la inversión (opcional)"
+                label="Estimated ROI (%)"
+                description="Expected return on investment (optional)"
                 min={0}
                 max={100000}
                 suffix="%"
@@ -485,13 +485,13 @@ export function NovaDemandaPage() {
             <SectionTitle index={9} title={t("nova_section9")} />
             <Alert color="gray" variant="light" mb="xs">
               <Text size="sm">
-                Esfuerzo, equipo y horas (capacity) los define el equipo técnico en la
-                etapa de Evaluación. Aquí es opcional — complétalo solo si tienes una idea.
+                Effort, team and hours (capacity) are defined by the technical team in the
+                Evaluation stage. It's optional here — fill it in only if you have an idea.
               </Text>
             </Alert>
             <Select
               label={t("nova_effort")}
-              description="Opcional — estimación del solicitante"
+              description="Optional — requester's estimate"
               clearable
               maw={340}
               data={esforcoOptions.map((o) => ({ value: String(o.value), label: L.esforco[o.value] }))}
@@ -507,8 +507,8 @@ export function NovaDemandaPage() {
             <SectionTitle index={6} title={t("nova_section6")} />
             <Alert color="gray" variant="light">
               <Text size="sm">
-                Esta sección es opcional. Si no conoces los detalles técnicos,
-                déjala en blanco — el equipo técnico la completa durante la Evaluación.
+                This section is optional. If you don't know the technical details,
+                leave it blank — the technical team completes it during the Evaluation.
               </Text>
             </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
@@ -535,7 +535,7 @@ export function NovaDemandaPage() {
               />
               <div>
                 <Checkbox
-                  label="¿Ya hay una solución propuesta?"
+                  label="Is there already a proposed solution?"
                   checked={form.temSolucaoProposta}
                   onChange={(e) => set("temSolucaoProposta", e.currentTarget.checked)}
                 />
@@ -545,7 +545,7 @@ export function NovaDemandaPage() {
                     label={t("nova_solution_label")}
                     autosize
                     minRows={2}
-                    placeholder="Describí la solución propuesta..."
+                    placeholder="Describe the proposed solution..."
                     value={form.solucaoProposta}
                     onChange={(e) => set("solucaoProposta", e.currentTarget.value)}
                   />
@@ -554,13 +554,13 @@ export function NovaDemandaPage() {
             </SimpleGrid>
 
             <TextInput
-              label="APP ID (código de la aplicación)"
+              label="APP ID (application code)"
               description={
                 appName(form.appId)
-                  ? `Aplicación: ${appName(form.appId)}`
-                  : "Para demandas de sistema — el nombre aparece solo (ej.: APP-0456)"
+                  ? `Application: ${appName(form.appId)}`
+                  : "For system demands — the name appears automatically (e.g.: APP-0456)"
               }
-              placeholder="ej.: APP-0456"
+              placeholder="e.g.: APP-0456"
               maw={360}
               value={form.appId}
               onChange={(e) => set("appId", e.currentTarget.value)}
@@ -570,7 +570,7 @@ export function NovaDemandaPage() {
             <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
               <Select
                 label={t("nova_sponsor")}
-                description="Se completa automáticamente según el área"
+                description="Filled in automatically based on the area"
                 withAsterisk
                 data={sponsorOptions}
                 searchable
@@ -624,18 +624,18 @@ export function NovaDemandaPage() {
             </Paper>
 
             {/* ---- Resumen antes de enviar ---- */}
-            <SectionTitle index={11} title="Resumen" />
+            <SectionTitle index={11} title="Summary" />
             <Paper withBorder radius="md" p="md">
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" verticalSpacing={6}>
-                <Resumo k="Solicitante" v={`${form.solicitante || "—"} · ${form.email || "—"}`} />
-                <Resumo k="Área" v={form.areaSolicitante || "—"} />
-                <Resumo k="Título" v={form.titulo || "—"} />
-                <Resumo k="Category / Tipo" v={`${categoryOptions.find((o) => o.value === form.category)?.label ?? "—"} · ${L.tipo[form.tipo]}`} />
-                <Resumo k="Alcance (impacto)" v={`${abrangenciaOptions.find((o) => String(o.value) === String(form.impactoAbrangencia))?.label ?? "—"} → ${ABRANGENCIA_SCORE[form.impactoAbrangencia]}/5`} />
-                <Resumo k="Urgencia / Impacto" v={`${L.urgencia[form.urgencia]} · ${L.impacto[form.impactoNivel]}`} />
+                <Resumo k="Requester" v={`${form.solicitante || "—"} · ${form.email || "—"}`} />
+                <Resumo k="Area" v={form.areaSolicitante || "—"} />
+                <Resumo k="Title" v={form.titulo || "—"} />
+                <Resumo k="Category / Type" v={`${categoryOptions.find((o) => o.value === form.category)?.label ?? "—"} · ${L.tipo[form.tipo]}`} />
+                <Resumo k="Scope (impact)" v={`${abrangenciaOptions.find((o) => String(o.value) === String(form.impactoAbrangencia))?.label ?? "—"} → ${ABRANGENCIA_SCORE[form.impactoAbrangencia]}/5`} />
+                <Resumo k="Urgency / Impact" v={`${L.urgencia[form.urgencia]} · ${L.impacto[form.impactoNivel]}`} />
                 <Resumo k="Sponsor (auto)" v={form.sponsor || "—"} />
                 <Resumo k="APP ID" v={form.appId || "—"} />
-                <Resumo k="Valor / ROI" v={`${typeof form.valorEstimado === "number" ? `US$ ${form.valorEstimado.toLocaleString()}` : "—"} · ${typeof form.roiEstimado === "number" ? `${form.roiEstimado}%` : "—"}`} />
+                <Resumo k="Value / ROI" v={`${typeof form.valorEstimado === "number" ? `US$ ${form.valorEstimado.toLocaleString()}` : "—"} · ${typeof form.roiEstimado === "number" ? `${form.roiEstimado}%` : "—"}`} />
               </SimpleGrid>
             </Paper>
 

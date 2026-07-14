@@ -21,6 +21,7 @@ import {
   Tabs,
   Text,
   Textarea,
+  ThemeIcon,
   Title,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -37,6 +38,7 @@ import {
   IconStar,
   IconTrash,
   IconUpload,
+  IconX,
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
 import { useCurrentUser } from "../lib/useCurrentUser";
@@ -161,8 +163,8 @@ export function DemandaDetailPage() {
     if (file.size > 10 * 1024 * 1024) {
       notifications.show({
         color: "red",
-        title: "Archivo demasiado grande",
-        message: `${file.name} supera el límite de 10 MB.`,
+        title: "File too large",
+        message: `${file.name} exceeds the 10 MB limit.`,
       });
       return;
     }
@@ -207,7 +209,7 @@ export function DemandaDetailPage() {
               const c = criticidad(demand.urgencia);
               return (
                 <Badge variant="filled" color={c.color} radius="sm">
-                  Criticidad: {c.label}
+                  Criticality: {c.label}
                 </Badge>
               );
             })()}
@@ -257,42 +259,54 @@ export function DemandaDetailPage() {
         onSave={(changes) => persist(changes, { silent: true })}
       />
 
-      {/* Faixa do fluxo de aprovação (Sponsor → Tech Lead → Director/DMC) */}
-      {demand.aprovacoes.length > 0 && (
-        <Card withBorder radius="lg" padding="md">
-          <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} mb="xs">
-            Flujo de aprobación (DMC · Comité Hub IT)
-          </Text>
-          <Group gap={0} wrap="wrap">
-            {demand.aprovacoes.map((a, i) => {
-              const label =
-                a.nivel === "sponsor" ? "Sponsor" : a.nivel === "techlead" ? "Tech Lead" : "Director (DMC)";
-              const color =
-                a.status === "aprovado" ? "teal" : a.status === "recusado" ? "red" : "gray";
-              const icon =
-                a.status === "aprovado" ? "✓" : a.status === "recusado" ? "✗" : (i + 1).toString();
-              return (
-                <Group key={a.nivel} gap={6} wrap="nowrap">
-                  <Badge
-                    size="lg"
-                    radius="sm"
-                    variant={a.status === "pendente" ? "outline" : "filled"}
-                    color={color}
-                    leftSection={<span style={{ fontWeight: 800 }}>{icon}</span>}
-                  >
-                    {label}
-                  </Badge>
-                  {i < demand.aprovacoes.length - 1 && (
-                    <Text c="dimmed" px={4}>
-                      →
-                    </Text>
-                  )}
-                </Group>
-              );
-            })}
-          </Group>
-        </Card>
-      )}
+      {/* Stepper do fluxo de aprovação (Sponsor → Tech Lead → Director/DMC) */}
+      {demand.aprovacoes.length > 0 && (() => {
+        const nextIdx = demand.aprovacoes.findIndex((a) => a.status === "pendente");
+        return (
+          <Card withBorder radius="lg" padding="lg">
+            <Group justify="space-between" mb="md">
+              <Text fw={700}>Approval flow — DMC · IT Hub Committee</Text>
+              <Badge variant="light" color="gray">
+                {demand.aprovacoes.filter((a) => a.status === "aprovado").length}/{demand.aprovacoes.length} approved
+              </Badge>
+            </Group>
+            <Group gap={0} align="flex-start" wrap="nowrap" style={{ overflowX: "auto" }}>
+              {demand.aprovacoes.map((a, i) => {
+                const label =
+                  a.nivel === "sponsor" ? "Sponsor" : a.nivel === "techlead" ? "Tech Lead" : "Director (DMC)";
+                const approved = a.status === "aprovado";
+                const rejected = a.status === "recusado";
+                const isNext = i === nextIdx;
+                const color = approved ? "teal" : rejected ? "red" : isNext ? "abbott" : "gray";
+                return (
+                  <Group key={a.nivel} gap={0} wrap="nowrap" align="flex-start" style={{ flex: 1, minWidth: 150 }}>
+                    <Stack gap={6} align="center" style={{ flex: 1 }}>
+                      <ThemeIcon
+                        size={44}
+                        radius="xl"
+                        variant={approved || rejected || isNext ? "filled" : "light"}
+                        color={color}
+                        style={isNext ? { boxShadow: "0 0 0 4px var(--mantine-color-abbott-1)" } : undefined}
+                      >
+                        {approved ? <IconChecks size={20} /> : rejected ? <IconX size={20} /> : <Text fw={800}>{i + 1}</Text>}
+                      </ThemeIcon>
+                      <Text fw={700} size="sm" ta="center">{label}</Text>
+                      <Text size="xs" c="dimmed" ta="center" lineClamp={1}>{a.responsavel}</Text>
+                      <Badge size="sm" variant="light" color={color}>
+                        {approved ? "Approved" : rejected ? "Rejected" : isNext ? "Waiting" : "Pending"}
+                      </Badge>
+                    </Stack>
+                    {i < demand.aprovacoes.length - 1 && (
+                      <div style={{ flexShrink: 0, alignSelf: "flex-start", marginTop: 21, width: 40, height: 3, borderRadius: 2,
+                        background: approved ? "var(--mantine-color-teal-4)" : "var(--mantine-color-gray-3)" }} />
+                    )}
+                  </Group>
+                );
+              })}
+            </Group>
+          </Card>
+        );
+      })()}
 
       <Grid>
         <Grid.Col span={{ base: 12, md: 8 }}>
@@ -320,7 +334,7 @@ export function DemandaDetailPage() {
                 {demand.finalPriority != null && demand.finalPriority > 0 && (
                   <div>
                     <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                      Prioridad
+                      Priority
                     </Text>
                     <Text fw={700}>#{demand.finalPriority}</Text>
                   </div>
@@ -433,12 +447,12 @@ export function DemandaDetailPage() {
               <Card withBorder radius="lg" padding="lg" mb="md">
                 <SectionLabel n={4} title={t("detail_section_impact")} />
                 {demand.impactoAbrangencia ? (
-                  <KV k="Alcance (score automático)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
+                  <KV k="Reach (automatic score)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
                 ) : null}
                 <KV k={t("detail_label_impactLevel")} v={<ImpactoBadge value={demand.impactoNivel} />} />
                 <KV k={t("detail_label_estimatedValue")} v={formatCurrency(demand.valorEstimado)} />
                 {demand.roiEstimado != null && (
-                  <KV k="ROI estimado" v={`${demand.roiEstimado}%`} />
+                  <KV k="Estimated ROI" v={`${demand.roiEstimado}%`} />
                 )}
                 <Text size="xs" c="dimmed" mt={4}>
                   {t("detail_label_impactTypes")}
@@ -447,14 +461,14 @@ export function DemandaDetailPage() {
                   {demand.tiposImpacto.map((t) => (
                     <Badge key={t} variant="dot" color="cyan">
                       {t === 1
-                        ? "Ingresos"
+                        ? "Revenue"
                         : t === 2
-                          ? "Reducción de costes"
+                          ? "Cost reduction"
                           : t === 3
-                            ? "Eficiencia"
+                            ? "Efficiency"
                             : t === 4
-                              ? "Riesgo / compliance"
-                              : "Experiencia del cliente"}
+                              ? "Risk / compliance"
+                              : "Customer experience"}
                     </Badge>
                   ))}
                   {demand.tiposImpacto.length === 0 && (
@@ -474,7 +488,7 @@ export function DemandaDetailPage() {
                   const p = processoRecomendado(demand);
                   return (
                     <KV
-                      k="Proceso recomendado"
+                      k="Recommended process"
                       v={
                         <Badge color={p.color} variant="light" radius="sm">
                           {p.processo} · {p.motivo}
@@ -485,7 +499,7 @@ export function DemandaDetailPage() {
                 })()}
                 {demand.time && (
                   <KV
-                    k="Equipo (capacity)"
+                    k="Team (capacity)"
                     v={`${demand.time} · ${TIME_DESCRICAO[demand.time as TimeImplantacao]}${demand.horasEstimadas ? ` · ${demand.horasEstimadas}h` : ""}`}
                   />
                 )}
@@ -598,7 +612,7 @@ export function DemandaDetailPage() {
             <Group justify="space-between" mb="md">
               <Text fw={700}>{t("detail_files_count", { n: demand.anexos.length })}</Text>
               <Group gap="xs">
-                <Text size="xs" c="dimmed">máx. 10 MB</Text>
+                <Text size="xs" c="dimmed">max. 10 MB</Text>
                 <FileButton onChange={handleUpload}>
                   {(props) => (
                     <Button leftSection={<IconUpload size={16} />} {...props}>

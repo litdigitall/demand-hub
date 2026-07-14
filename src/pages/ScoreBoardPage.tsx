@@ -161,7 +161,7 @@ export function ScoreBoardPage() {
             leftSection={<IconFlame size={16} />}
             onClick={() => setSoTop((v) => !v)}
           >
-            Portafolio top score (≥4,5)
+            Top score portfolio (≥4.5)
           </Button>
           <Button
             variant="default"
@@ -283,10 +283,10 @@ export function ScoreBoardPage() {
                             label={
                               <Stack gap={4}>
                                 <Text size="xs">
-                                  Critérios validados: {v}/7
+                                  Criteria validated: {v}/7
                                 </Text>
                                 <Text size="xs">
-                                  Stack: {stack ? "validada" : "pendente"}
+                                  Stack: {stack ? "validated" : "pending"}
                                 </Text>
                               </Stack>
                             }

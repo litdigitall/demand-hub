@@ -124,12 +124,12 @@ export function DemandasPage() {
         value={view}
         onChange={(v) => setView(v as Categoria | "todas")}
         data={[
-          { label: "Todas", value: "todas" },
+          { label: "All", value: "todas" },
           { label: `${CATEGORIA_VIEW_LABEL.infra} · ${CATEGORIA_RESPONSAVEL.infra}`, value: "infra" },
           { label: CATEGORIA_VIEW_LABEL.ia, value: "ia" },
           { label: `${CATEGORIA_VIEW_LABEL.app} · ${CATEGORIA_RESPONSAVEL.app}`, value: "app" },
         ]}
-        // vistas: Infraestructura·Sambini / Inteligencia Artificial / Aplicaciones·Gabriela
+        // views: Infrastructure·Sambini / Artificial Intelligence / Applications·Gabriela
       />
 
       <Card withBorder radius="lg" padding="md">
@@ -200,7 +200,7 @@ export function DemandasPage() {
                 <Table.Tr>
                   <Table.Th>{t("list_demand")}</Table.Th>
                   <Table.Th>{t("list_area")}</Table.Th>
-                  <Table.Th>Categoría</Table.Th>
+                  <Table.Th>Category</Table.Th>
                   <Table.Th>{t("list_type")}</Table.Th>
                   <Table.Th>{t("list_impact")}</Table.Th>
                   <Table.Th>{t("list_urgency")}</Table.Th>

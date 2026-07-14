@@ -90,15 +90,15 @@ export const StatusDemanda = {
   Devolvida: 506970008, // devolvida ao solicitante para complementar
 } as const;
 export const statusLabel: Record<number, string> = {
-  [StatusDemanda.Rascunho]: "Borrador",
-  [StatusDemanda.Nova]: "En triaje",
-  [StatusDemanda.EmAnalise]: "En evaluación",
-  [StatusDemanda.EmAprovacao]: "En aprobación",
-  [StatusDemanda.Priorizada]: "Priorizada",
-  [StatusDemanda.EmExecucao]: "En ejecución",
-  [StatusDemanda.Concluida]: "Concluida",
-  [StatusDemanda.Devolvida]: "Devuelta",
-  [StatusDemanda.Recusada]: "Rechazada",
+  [StatusDemanda.Rascunho]: "Draft",
+  [StatusDemanda.Nova]: "In triage",
+  [StatusDemanda.EmAnalise]: "In evaluation",
+  [StatusDemanda.EmAprovacao]: "In approval",
+  [StatusDemanda.Priorizada]: "Prioritized",
+  [StatusDemanda.EmExecucao]: "In execution",
+  [StatusDemanda.Concluida]: "Completed",
+  [StatusDemanda.Devolvida]: "Returned",
+  [StatusDemanda.Recusada]: "Rejected",
 };
 
 type Option = { value: number; label: string };
@@ -123,10 +123,10 @@ export const ImpactoAbrangencia = {
   Infraestrutura: 4,
 } as const;
 export const abrangenciaLabel: Record<number, string> = {
-  [ImpactoAbrangencia.Usuario]: "Usuario (impacto individual)",
-  [ImpactoAbrangencia.Processo]: "Proceso (un flujo de trabajo)",
-  [ImpactoAbrangencia.Departamento]: "Departamento / Organización",
-  [ImpactoAbrangencia.Infraestrutura]: "Infraestructura (base de TI)",
+  [ImpactoAbrangencia.Usuario]: "User (individual impact)",
+  [ImpactoAbrangencia.Processo]: "Process (a single workflow)",
+  [ImpactoAbrangencia.Departamento]: "Department / Organization",
+  [ImpactoAbrangencia.Infraestrutura]: "Infrastructure (IT backbone)",
 };
 export const abrangenciaOptions = toOptions(abrangenciaLabel);
 /** Mapa abrangência → nota 1..5 do critério businessImpact. */
@@ -136,14 +136,14 @@ export const ABRANGENCIA_SCORE: Record<number, number> = {
   [ImpactoAbrangencia.Departamento]: 4,
   [ImpactoAbrangencia.Infraestrutura]: 5,
 };
-export const AUTO_AVALIADOR = "Automático (nivel de impacto)";
+export const AUTO_AVALIADOR = "Automatic (impact level)";
 
-/** Criticidad (qualification) derivada de la urgencia. */
+/** Criticality (qualification) derived from urgency. */
 export function criticidad(urgencia: number): { label: string; color: string } {
-  if (urgencia === Urgencia.Critico) return { label: "Crítica", color: "red" };
-  if (urgencia === Urgencia.Alto) return { label: "Alta", color: "orange" };
-  if (urgencia === Urgencia.Medio) return { label: "Media", color: "yellow" };
-  return { label: "Baja", color: "gray" };
+  if (urgencia === Urgencia.Critico) return { label: "Critical", color: "red" };
+  if (urgencia === Urgencia.Alto) return { label: "High", color: "orange" };
+  if (urgencia === Urgencia.Medio) return { label: "Medium", color: "yellow" };
+  return { label: "Low", color: "gray" };
 }
 
 /* ---------------- Clasificación de proyecto (view por portfólio) ----
@@ -160,14 +160,14 @@ export const CATEGORIA_TIPO: Record<number, Categoria> = {
   [TipoDemanda.Compliance]: "app",
 };
 export const CATEGORIA_VIEW_LABEL: Record<Categoria, string> = {
-  infra: "Infraestructura",
-  ia: "Inteligencia Artificial",
-  app: "Aplicaciones",
-  otro: "Otro",
+  infra: "Infrastructure",
+  ia: "Artificial Intelligence",
+  app: "Applications",
+  otro: "Other",
 };
 export const CATEGORIA_RESPONSAVEL: Record<Categoria, string> = {
   infra: "Sambini",
-  ia: "Equipo de IA",
+  ia: "AI Team",
   app: "Gabriela",
   otro: "—",
 };
@@ -189,9 +189,9 @@ export function clasificacionEfetiva(d: { clasificacion?: string; tipo: number }
   return c === "infra" || c === "ia" || c === "app" || c === "otro" ? c : categoriaDe(d.tipo);
 }
 
-/** Nota del disparador de conteo de esfuerzo. */
+/** Note about when effort counting starts. */
 export const ESFUERZO_TRIGGER_NOTA =
-  "El esfuerzo (horas/FTE) se cuenta desde la evaluación técnica (Phase 0), definido por el equipo técnico.";
+  "Effort (hours/FTE) is counted from the technical evaluation (Phase 0), set by the technical team.";
 
 /* ---------------- Score (priorização) ----------------------- */
 /* Cada critério recebe nota 1..5; ponderação fixa abaixo soma 100%. */
@@ -680,8 +680,8 @@ export function appName(appId: string): string {
 /* ---------------- Modelo de entrega / esforço ---------------- */
 export const TIME_DESCRICAO: Record<TimeImplantacao, string> = {
   "Internal Delivery": "Wipro / Abbott",
-  "External Delivery": "Terceros / contratistas independientes",
-  Support: "Soporte / sustentación",
+  "External Delivery": "Third parties / independent contractors",
+  Support: "Support / sustaining",
 };
 
 /* ---------------- Classificação SPM (Abbott) ----------------
@@ -725,7 +725,7 @@ export function processoRecomendado(d: {
   valorEstimado: number | null;
 }): ProcessoInfo {
   if (d.horasEstimadas > 0 && d.horasEstimadas < LIMITE_ME_HORAS) {
-    return { processo: "Minor Enhancement (ME)", projectType: "Minor Enhancement", color: "teal", motivo: "< 80 horas" };
+    return { processo: "Minor Enhancement (ME)", projectType: "Minor Enhancement", color: "teal", motivo: "< 80 hours" };
   }
   if ((d.valorEstimado ?? 0) > LIMITE_FASE0_USD) {
     return { processo: "Phase 0", projectType: "Phase 0", color: "red", motivo: "> US$ 500k" };
@@ -739,7 +739,7 @@ export function classificaEsforco(d: {
   valorEstimado: number | null;
 }): { label: string; color: string } {
   if (d.horasEstimadas <= 0 && (d.valorEstimado ?? 0) <= 0) {
-    return { label: "Sin estimar", color: "gray" };
+    return { label: "Not estimated", color: "gray" };
   }
   const p = processoRecomendado(d);
   return { label: p.projectType, color: p.color };

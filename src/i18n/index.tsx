@@ -14,8 +14,8 @@ interface I18nCtx {
 const LS_KEY = "pulse.lang";
 
 function detectLang(): Lang {
-  // App travado em espanhol — sem seletor pro usuário.
-  return "es";
+  // App travado em inglês — sem seletor pro usuário.
+  return "en";
 }
 
 const Context = createContext<I18nCtx | null>(null);

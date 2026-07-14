@@ -13,9 +13,9 @@ import {
   type DemandService,
   type AvaliacaoCriterio,
 } from "./types";
-import { seedDemands } from "./mockData";
 
-const LS_KEY_DEMANDS = "demand-system.demands.v1";
+// v2: começa VAZIO (sem demandas de exemplo). O Admin pode popular a amostra.
+const LS_KEY_DEMANDS = "demand-system.demands.v2";
 
 function loadDemands(): Demand[] {
   try {
@@ -24,9 +24,8 @@ function loadDemands(): Demand[] {
   } catch {
     /* recreate */
   }
-  const fresh = seedDemands();
-  localStorage.setItem(LS_KEY_DEMANDS, JSON.stringify(fresh));
-  return fresh;
+  localStorage.setItem(LS_KEY_DEMANDS, JSON.stringify([]));
+  return [];
 }
 
 function saveDemands(items: Demand[]) {

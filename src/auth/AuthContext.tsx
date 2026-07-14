@@ -23,10 +23,15 @@ export interface AuthSession {
   signedAt: string;
 }
 
+/** Senha demo compartilhada (no Power Apps a identidade vem do M365). */
+export const DEMO_PASSWORD = "demand2026";
+
 interface AuthCtx {
   user: AuthSession | null;
   roles: Role[];
   personas: Persona[];
+  /** Login real por papel: e-mail + senha. */
+  signIn: (email: string, password: string) => boolean;
   signInAs: (personaId: string) => boolean;
   switchPersona: (personaId: string) => void;
   signOut: () => void;
@@ -75,6 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   }
 
+  function signIn(email: string, password: string): boolean {
+    if (password !== DEMO_PASSWORD) return false;
+    const p = PERSONAS.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
+    if (!p) return false;
+    setUser(sessionFromPersona(p));
+    return true;
+  }
+
   function switchPersona(personaId: string) {
     const p = personaById(personaId);
     if (p) setUser(sessionFromPersona(p));
@@ -92,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         roles,
         personas: PERSONAS,
+        signIn,
         signInAs,
         switchPersona,
         signOut,

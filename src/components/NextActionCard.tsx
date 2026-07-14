@@ -75,7 +75,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
   async function aplicar(acao: Acao, ctx: AcaoContexto) {
     const changes = acao.apply(demand, ator, ctx);
     await onSave(changes);
-    notifications.show({ color: "teal", title: "Acción aplicada", message: acao.label });
+    notifications.show({ color: "teal", title: "Action applied", message: acao.label });
     setModal(null);
   }
 
@@ -93,7 +93,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
           </ThemeIcon>
           <div>
             <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Etapa actual
+              Current stage
             </Text>
             <Text fw={700}>{statusLabel[demand.status]}</Text>
           </div>
@@ -106,7 +106,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
       {minhas.length > 0 ? (
         <Stack gap="xs">
           <Text size="sm" c="dimmed">
-            Como <strong>{rolesAtuantes(minhas)}</strong>, puedes:
+            As <strong>{rolesAtuantes(minhas)}</strong>, you can:
           </Text>
           <Group gap="sm">
             {minhas.map((acao) => {
@@ -138,10 +138,10 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
       ) : (
         <Alert color="gray" variant="light" icon={<IconInfoCircle size={16} />}>
           {terminal
-            ? `Solicitud ${statusLabel[demand.status].toLowerCase()} — sin acciones pendientes.`
+            ? `Request ${statusLabel[demand.status].toLowerCase()} — no pending actions.`
             : haEstado
-              ? `Ninguna acción tuya en esta etapa. ${aguardando(demand)}.`
-              : "Sin acciones configuradas para esta etapa."}
+              ? `No action for you at this stage. ${aguardando(demand)}.`
+              : "No actions configured for this stage."}
         </Alert>
       )}
 
@@ -156,11 +156,11 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
           <Stack>
             {modal.acao.exigeComentario && (
               <Textarea
-                label="Justificación"
+                label="Justification"
                 withAsterisk
                 autosize
                 minRows={2}
-                placeholder="Registra el motivo de esta decisión..."
+                placeholder="Record the reason for this decision..."
                 value={modal.ctx.comentario ?? ""}
                 onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, comentario: e.currentTarget.value } })}
               />
@@ -169,7 +169,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
             {modal.acao.campos?.includes("capacity") && (
               <>
                 <Select
-                  label="Equipo de implantación"
+                  label="Implementation team"
                   withAsterisk
                   data={TIMES_IMPLANTACAO.map((tm) => ({
                     value: tm,
@@ -179,7 +179,7 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
                   onChange={(v) => setModal({ ...modal, ctx: { ...modal.ctx, time: v ?? "" } })}
                 />
                 <NumberInput
-                  label="Horas estimadas"
+                  label="Estimated hours"
                   description={ESFUERZO_TRIGGER_NOTA}
                   min={0}
                   max={10000}
@@ -191,8 +191,8 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
 
             {modal.acao.campos?.includes("prioridade") && (
               <NumberInput
-                label="Posición en el ranking (prioridad final)"
-                description="1 = más prioritaria"
+                label="Ranking position (final priority)"
+                description="1 = highest priority"
                 min={1}
                 max={999}
                 value={modal.ctx.finalPriority ?? undefined}
@@ -203,20 +203,20 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
             {modal.acao.campos?.includes("serviceNow") && (
               <>
                 <TextInput
-                  label="RCE — nº del proyecto aprobado por Gestión"
-                  description="Identificador obligatorio en la aceptación"
-                  placeholder="ej.: RCE-2026-0099"
+                  label="RCE — project no. approved by Management"
+                  description="Required identifier on acceptance"
+                  placeholder="e.g.: RCE-2026-0099"
                   value={modal.ctx.rce ?? ""}
                   onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, rce: e.currentTarget.value } })}
                 />
                 <TextInput
-                  label="Nº del proyecto (ServiceNow)"
-                  placeholder="ej.: PRJ0012345"
+                  label="Project no. (ServiceNow)"
+                  placeholder="e.g.: PRJ0012345"
                   value={modal.ctx.idServiceNow ?? ""}
                   onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, idServiceNow: e.currentTarget.value } })}
                 />
                 <TextInput
-                  label="ID del proyecto interno (opcional)"
+                  label="Internal project ID (optional)"
                   value={modal.ctx.idProjeto ?? ""}
                   onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, idProjeto: e.currentTarget.value } })}
                 />
@@ -225,14 +225,14 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
 
             <Group justify="flex-end" mt="sm">
               <Button variant="default" onClick={() => setModal(null)}>
-                Cancelar
+                Cancel
               </Button>
               <Button
                 color={modal.acao.cor}
                 disabled={modal.acao.exigeComentario && !modal.ctx.comentario?.trim()}
                 onClick={() => aplicar(modal.acao, modal.ctx)}
               >
-                Confirmar
+                Confirm
               </Button>
             </Group>
           </Stack>

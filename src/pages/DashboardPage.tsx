@@ -226,7 +226,7 @@ export function DashboardPage() {
               h={220}
               data={urgenciaData}
               dataKey="urgencia"
-              series={[{ name: "total", color: "abbott.6", label: "Demandas" }]}
+              series={[{ name: "total", color: "abbott.6", label: "Demands" }]}
               withLegend={false}
               barProps={{ radius: 6 }}
               tickLine="none"
@@ -244,7 +244,7 @@ export function DashboardPage() {
               h={200}
               data={monthData}
               dataKey="mes"
-              series={[{ name: "demandas", color: "abbott.6", label: "Demandas" }]}
+              series={[{ name: "demandas", color: "abbott.6", label: "Demands" }]}
               curveType="monotone"
               withDots
               gridAxis="y"

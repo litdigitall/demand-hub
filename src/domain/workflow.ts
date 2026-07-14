@@ -35,13 +35,13 @@ export const NIVEL_PARA_PAPEL: Record<NivelAprovacao, Role> = {
 
 /* ---------------- Etapas do pipeline (para a timeline) ------ */
 export const PIPELINE: { status: number; label: string; descricao: string }[] = [
-  { status: StatusDemanda.Rascunho, label: "Borrador", descricao: "Solicitante completando la solicitud." },
-  { status: StatusDemanda.Nova, label: "Triaje", descricao: "PMO valida si la solicitud está lo bastante completa." },
-  { status: StatusDemanda.EmAnalise, label: "Evaluación", descricao: "Negocio, técnico y PMO puntúan los criterios; se define equipo/horas." },
-  { status: StatusDemanda.EmAprovacao, label: "Aprobación", descricao: "Sponsor → Tech Lead → Director (DMC) deciden." },
-  { status: StatusDemanda.Priorizada, label: "Priorización", descricao: "PMO posiciona en el ranking y libera para ejecución." },
-  { status: StatusDemanda.EmExecucao, label: "Ejecución", descricao: "Proyecto en curso." },
-  { status: StatusDemanda.Concluida, label: "Concluida", descricao: "Entregada." },
+  { status: StatusDemanda.Rascunho, label: "Draft", descricao: "Requester completing the request." },
+  { status: StatusDemanda.Nova, label: "Triage", descricao: "PMO checks whether the request is complete enough." },
+  { status: StatusDemanda.EmAnalise, label: "Evaluation", descricao: "Business, tech and PMO score the criteria; team/hours are defined." },
+  { status: StatusDemanda.EmAprovacao, label: "Approval", descricao: "Sponsor → Tech Lead → Director (DMC) decide." },
+  { status: StatusDemanda.Priorizada, label: "Prioritization", descricao: "PMO positions it in the ranking and releases it for execution." },
+  { status: StatusDemanda.EmExecucao, label: "Execution", descricao: "Project in progress." },
+  { status: StatusDemanda.Concluida, label: "Completed", descricao: "Delivered." },
 ];
 
 /** Índice da etapa no pipeline linear (estados laterais retornam -1). */
@@ -139,13 +139,13 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.Rascunho]: [
     {
       id: "submeter",
-      label: "Enviar solicitud",
+      label: "Submit request",
       papeis: [Role.Solicitante],
       cor: "blue",
       guarda: (d) =>
         d.titulo.trim() && d.descricao.trim() && d.areaSolicitante.trim()
           ? true
-          : "Complete título, descripción y área antes de enviar.",
+          : "Fill in title, description and area before submitting.",
       apply: () => ({ status: StatusDemanda.Nova }),
     },
   ],
@@ -154,7 +154,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.Nova]: [
     {
       id: "aceitarTriagem",
-      label: "Aceptar e iniciar evaluación",
+      label: "Accept & start evaluation",
       papeis: [Role.PMO],
       cor: "teal",
       guarda: () => true,
@@ -162,7 +162,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "devolver",
-      label: "Devolver al solicitante",
+      label: "Return to requester",
       papeis: [Role.PMO],
       cor: "yellow",
       exigeComentario: true,
@@ -171,7 +171,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "recusarTriagem",
-      label: "Rechazar solicitud",
+      label: "Reject request",
       papeis: [Role.PMO],
       cor: "red",
       exigeComentario: true,
@@ -184,11 +184,11 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.Devolvida]: [
     {
       id: "reenviar",
-      label: "Reenviar a triaje",
+      label: "Resend to triage",
       papeis: [Role.Solicitante],
       cor: "blue",
       guarda: (d) =>
-        d.titulo.trim() && d.descricao.trim() ? true : "Complete título y descripción.",
+        d.titulo.trim() && d.descricao.trim() ? true : "Fill in title and description.",
       apply: () => ({ status: StatusDemanda.Nova }),
     },
   ],
@@ -197,7 +197,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.EmAnalise]: [
     {
       id: "definirCapacity",
-      label: "Definir equipo y horas (capacity)",
+      label: "Define team & hours (capacity)",
       papeis: [Role.TechLead],
       cor: "violet",
       campos: ["capacity"],
@@ -215,7 +215,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "enviarParaAprovacao",
-      label: "Concluir evaluación → enviar a aprobación",
+      label: "Complete evaluation → send to approval",
       // PMO orquestra, mas o Tech Lead que definiu o capacity também pode empurrar.
       papeis: [Role.PMO, Role.TechLead],
       cor: "teal",
@@ -224,7 +224,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       guarda: (d) =>
         capacityDefinido(d)
           ? true
-          : "Defina equipo y horas (capacity) antes de enviar a aprobación.",
+          : "Define team & hours (capacity) before sending to approval.",
       // Reinicia a sequência de gates como PENDENTE ao entrar na aprovação
       // (garante que sempre há um gate para decidir — sem becos sem saída).
       apply: (d) => ({
@@ -234,7 +234,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "devolverAvaliacao",
-      label: "Devolver al solicitante",
+      label: "Return to requester",
       papeis: [Role.PMO],
       cor: "yellow",
       exigeComentario: true,
@@ -247,7 +247,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.EmAprovacao]: [
     {
       id: "aprovarGate",
-      label: "Aprobar (mi gate)",
+      label: "Approve (my gate)",
       papeis: [Role.Sponsor, Role.TechLead, Role.Diretor],
       papeisDinamicos: (d) => {
         const prox = proximaAprovacao(d);
@@ -255,7 +255,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       },
       cor: "green",
       campos: ["serviceNow"], // capturado no aceite final (diretor)
-      guarda: (d) => (proximaAprovacao(d) ? true : "Sin gate pendiente."),
+      guarda: (d) => (proximaAprovacao(d) ? true : "No pending gate."),
       apply: (d, ator, ctx) => {
         const aprovacoes = decidirAprovacao(d, "aprovado", ator, ctx.comentario ?? "");
         const todasAprovadas = aprovacoes.every((a) => a.status === "aprovado");
@@ -277,7 +277,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "recusarGate",
-      label: "Rechazar (mi gate)",
+      label: "Reject (my gate)",
       papeis: [Role.Sponsor, Role.TechLead, Role.Diretor],
       papeisDinamicos: (d) => {
         const prox = proximaAprovacao(d);
@@ -285,7 +285,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       },
       cor: "red",
       exigeComentario: true,
-      guarda: (d) => (proximaAprovacao(d) ? true : "Sin gate pendiente."),
+      guarda: (d) => (proximaAprovacao(d) ? true : "No pending gate."),
       apply: (d, ator, ctx) => ({
         aprovacoes: decidirAprovacao(d, "recusado", ator, ctx.comentario ?? ""),
         status: StatusDemanda.Recusada,
@@ -300,7 +300,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.Priorizada]: [
     {
       id: "definirPrioridade",
-      label: "Definir prioridad en el ranking",
+      label: "Set ranking priority",
       papeis: [Role.PMO],
       cor: "teal",
       campos: ["prioridade"],
@@ -309,15 +309,15 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "iniciarExecucao",
-      label: "Iniciar ejecución",
+      label: "Start execution",
       papeis: [Role.PMO, Role.TechLead],
       cor: "blue",
       guarda: (d) =>
         d.finalPriority != null && d.finalPriority > 0
           ? capacityDefinido(d)
             ? true
-            : "Defina equipo y horas antes de iniciar."
-          : "El PMO debe definir la prioridad en el ranking primero.",
+            : "Define team & hours before starting."
+          : "PMO must set the ranking priority first.",
       apply: () => ({ status: StatusDemanda.EmExecucao, projectStage: "Build" }),
     },
   ],
@@ -326,7 +326,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.EmExecucao]: [
     {
       id: "concluir",
-      label: "Concluir solicitud",
+      label: "Complete request",
       papeis: [Role.TechLead, Role.PMO],
       cor: "green",
       campos: ["serviceNow"],
@@ -368,14 +368,14 @@ export function precisaDeMim(d: Demand, papeis: Role[]): boolean {
 export function aguardando(d: Demand): string {
   const acoes = acoesDoEstado(d.status);
   if (!acoes.length) {
-    if (d.status === StatusDemanda.Concluida) return "Concluida";
-    if (d.status === StatusDemanda.Recusada) return "Rechazada";
+    if (d.status === StatusDemanda.Concluida) return "Completed";
+    if (d.status === StatusDemanda.Recusada) return "Rejected";
     return "—";
   }
   if (d.status === StatusDemanda.EmAprovacao) {
     const prox = proximaAprovacao(d);
-    if (prox) return `Esperando ${ROLE_LABEL[NIVEL_PARA_PAPEL[prox.nivel]]}`;
+    if (prox) return `Waiting on ${ROLE_LABEL[NIVEL_PARA_PAPEL[prox.nivel]]}`;
   }
   const papeis = new Set(acoes.flatMap((a) => a.papeis));
-  return `Esperando ${[...papeis].map((p) => ROLE_LABEL[p]).join(" / ")}`;
+  return `Waiting on ${[...papeis].map((p) => ROLE_LABEL[p]).join(" / ")}`;
 }

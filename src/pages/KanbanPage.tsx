@@ -148,7 +148,7 @@ export function KanbanPage() {
     } catch (err) {
       notifications.show({
         color: "red",
-        title: "Erro",
+        title: "Error",
         message: (err as Error).message,
       });
       refresh();

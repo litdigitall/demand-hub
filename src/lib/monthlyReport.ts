@@ -25,8 +25,8 @@ const GREEN = "2F9E44";
 const ORANGE = "E8590C";
 
 const MESES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 function noMes(iso: string, ano: number, mes: number): boolean {
@@ -98,36 +98,36 @@ export async function generateMonthlyReport(demands: Demand[], ref = new Date())
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "Demand Hub";
   pptx.company = "LIT Digitall";
-  pptx.title = `Demand Hub — Informe ${stats.mesLabel}`;
+  pptx.title = `Demand Hub — Report ${stats.mesLabel}`;
 
   /* ---------- Capa ---------- */
   const capa = pptx.addSlide();
   capa.background = { color: NAVY };
   capa.addShape(pptx.ShapeType.rect, { x: 0, y: 3.9, w: "100%", h: 0.08, fill: { color: ACCENT } });
   capa.addText("DEMAND HUB", { x: 0.6, y: 1.5, w: 11, h: 0.5, fontSize: 14, bold: true, color: ACCENT, charSpacing: 4 });
-  capa.addText("Informe Mensual de Solicitudes", { x: 0.6, y: 2.0, w: 11.5, h: 0.9, fontSize: 40, bold: true, color: WHITE });
+  capa.addText("Monthly Request Report", { x: 0.6, y: 2.0, w: 11.5, h: 0.9, fontSize: 40, bold: true, color: WHITE });
   capa.addText(stats.mesLabel, { x: 0.6, y: 3.0, w: 11, h: 0.6, fontSize: 22, color: "C9D6EA" });
-  capa.addText("LIT Digitall · Confidencial", { x: 0.6, y: 6.6, w: 11, h: 0.3, fontSize: 11, color: "8AA0C0" });
+  capa.addText("LIT Digitall · Confidential", { x: 0.6, y: 6.6, w: 11, h: 0.3, fontSize: 11, color: "8AA0C0" });
 
   /* ---------- Resumen ejecutivo (KPIs) ---------- */
   const resumo = pptx.addSlide();
-  header(resumo, pptx, "Resumen ejecutivo", `Visión general del funnel de solicitudes — ${stats.mesLabel}`);
+  header(resumo, pptx, "Executive summary", `Overview of the request funnel — ${stats.mesLabel}`);
   const y1 = 1.4;
   const cardW = 2.55;
   const gap = 0.18;
   const xs = [0.5, 0.5 + (cardW + gap), 0.5 + 2 * (cardW + gap), 0.5 + 3 * (cardW + gap), 0.5 + 4 * (cardW + gap)];
-  kpiCard(resumo, pptx, xs[0], y1, cardW, stats.ideiasNoMes, "Ideas registradas en el mes", BLUE);
-  kpiCard(resumo, pptx, xs[1], y1, cardW, stats.emAvaliacao, "En evaluación", ORANGE);
-  kpiCard(resumo, pptx, xs[2], y1, cardW, stats.emAprovacao, "En aprobación", ORANGE);
-  kpiCard(resumo, pptx, xs[3], y1, cardW, stats.priorizadas, "Priorizadas", ACCENT);
-  kpiCard(resumo, pptx, xs[4], y1, cardW, stats.emExecucao, "En ejecución", GREEN);
+  kpiCard(resumo, pptx, xs[0], y1, cardW, stats.ideiasNoMes, "Ideas registered this month", BLUE);
+  kpiCard(resumo, pptx, xs[1], y1, cardW, stats.emAvaliacao, "In evaluation", ORANGE);
+  kpiCard(resumo, pptx, xs[2], y1, cardW, stats.emAprovacao, "In approval", ORANGE);
+  kpiCard(resumo, pptx, xs[3], y1, cardW, stats.priorizadas, "Prioritized", ACCENT);
+  kpiCard(resumo, pptx, xs[4], y1, cardW, stats.emExecucao, "In execution", GREEN);
   const y2 = y1 + 1.5;
-  kpiCard(resumo, pptx, xs[0], y2, cardW, stats.concluidas, "Concluidas", GREEN);
-  kpiCard(resumo, pptx, xs[1], y2, cardW, stats.recusadas, "Rechazadas", "C92A2A");
-  kpiCard(resumo, pptx, xs[2], y2, cardW, stats.total, "Total en la base", NAVY);
+  kpiCard(resumo, pptx, xs[0], y2, cardW, stats.concluidas, "Completed", GREEN);
+  kpiCard(resumo, pptx, xs[1], y2, cardW, stats.recusadas, "Rejected", "C92A2A");
+  kpiCard(resumo, pptx, xs[2], y2, cardW, stats.total, "Total in the database", NAVY);
 
   resumo.addText(
-    "Funnel: Ideas → Triaje → Evaluación (scoring) → Aprobación (Sponsor → Tech Lead → Director) → Priorización → Ejecución → Conclusión.",
+    "Funnel: Ideas → Triage → Evaluation (scoring) → Approval (Sponsor → Tech Lead → Director) → Prioritization → Execution → Completion.",
     { x: 0.5, y: y2 + 1.6, w: 12.3, h: 0.5, fontSize: 12, italic: true, color: GRAY },
   );
 
@@ -137,9 +137,9 @@ export async function generateMonthlyReport(demands: Demand[], ref = new Date())
   const ideias = demands.filter((d) => noMes(d.criadoEm, ano, mes));
   addTableSlide(
     pptx,
-    "Ideas registradas en el mes",
-    `${ideias.length} nueva(s) solicitud(es) registrada(s) en ${stats.mesLabel}`,
-    ["Nº", "Título", "Área", "Solicitante", "Estado"],
+    "Ideas registered this month",
+    `${ideias.length} new request(s) registered in ${stats.mesLabel}`,
+    ["No.", "Title", "Area", "Requester", "Status"],
     ideias.map((d) => [d.numero, d.titulo, d.areaSolicitante, d.solicitante, statusLabel[d.status]]),
     [1.1, 4.6, 2.4, 2.6, 1.7],
   );
@@ -148,9 +148,9 @@ export async function generateMonthlyReport(demands: Demand[], ref = new Date())
   const emExec = demands.filter((d) => d.status === StatusDemanda.EmExecucao);
   addTableSlide(
     pptx,
-    "Proyectos en desarrollo",
-    `${emExec.length} proyecto(s) en ejecución`,
-    ["Nº", "Proyecto", "Equipo", "Horas", "Etapa", "ServiceNow"],
+    "Projects in development",
+    `${emExec.length} project(s) in execution`,
+    ["No.", "Project", "Team", "Hours", "Stage", "ServiceNow"],
     emExec.map((d) => [
       d.numero, d.titulo, d.time || "—",
       d.horasEstimadas ? `${d.horasEstimadas}h` : "—",
@@ -165,9 +165,9 @@ export async function generateMonthlyReport(demands: Demand[], ref = new Date())
     .sort((a, b) => (a.finalPriority ?? 999) - (b.finalPriority ?? 999));
   addTableSlide(
     pptx,
-    "Backlog priorizado",
-    `${priorizadas.length} solicitud(es) aprobada(s) esperando ejecución, por prioridad`,
-    ["Prioridad", "Nº", "Título", "Score", "Equipo"],
+    "Prioritized backlog",
+    `${priorizadas.length} approved request(s) waiting for execution, by priority`,
+    ["Priority", "No.", "Title", "Score", "Team"],
     priorizadas.map((d) => [
       d.finalPriority != null ? `#${d.finalPriority}` : "—",
       d.numero, d.titulo, weightedScore(d.score).toFixed(2), d.time || "—",
@@ -177,12 +177,12 @@ export async function generateMonthlyReport(demands: Demand[], ref = new Date())
 
   /* ---------- Capacity por equipo ---------- */
   const cap = pptx.addSlide();
-  header(cap, pptx, "Capacity por equipo", "Horas asignadas (solicitudes activas) vs. capacidad mensual");
+  header(cap, pptx, "Capacity per team", "Allocated hours (active requests) vs. monthly capacity");
   const ativos = demands.filter(
     (d) => d.status === StatusDemanda.Priorizada || d.status === StatusDemanda.EmExecucao,
   );
   const capRows: pptxgen.TableRow[] = [
-    headRow(["Equipo", "Capacidad", "Asignado", "Utilización"]),
+    headRow(["Team", "Capacity", "Allocated", "Utilization"]),
   ];
   TIMES_IMPLANTACAO.forEach((time) => {
     const alocado = ativos.filter((d) => d.time === time).reduce((s, d) => s + (d.horasEstimadas || 0), 0);
@@ -201,7 +201,7 @@ export async function generateMonthlyReport(demands: Demand[], ref = new Date())
     fontSize: 13, rowH: 0.5, valign: "middle",
   });
   cap.addText(
-    "Utilización por encima del 100 % indica sobreasignación — repriorizar o ajustar plazos.",
+    "Utilization above 100% indicates over-allocation — reprioritize or adjust deadlines.",
     { x: 0.5, y: 5.6, w: 12.3, h: 0.4, fontSize: 12, italic: true, color: GRAY },
   );
 
@@ -240,7 +240,7 @@ function addTableSlide(
   const slide = pptx.addSlide();
   header(slide, pptx, titulo, sub);
   if (rows.length === 0) {
-    slide.addText("Ningún ítem en este período.", {
+    slide.addText("No items in this period.", {
       x: 0.5, y: 3, w: 12.3, h: 0.6, fontSize: 16, italic: true, color: GRAY, align: "center",
     });
     return;
@@ -257,7 +257,7 @@ function addTableSlide(
     rowH: 0.42, autoPage: false,
   });
   if (rows.length > 12) {
-    slide.addText(`+ ${rows.length - 12} otros ítems`, {
+    slide.addText(`+ ${rows.length - 12} other items`, {
       x: 0.5, y: 7.0, w: 12.3, h: 0.3, fontSize: 10, italic: true, color: GRAY,
     });
   }

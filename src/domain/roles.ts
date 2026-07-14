@@ -24,12 +24,12 @@ export const Role = {
 export type Role = (typeof Role)[keyof typeof Role];
 
 export const ROLE_LABEL: Record<Role, string> = {
-  solicitante: "Solicitante",
-  sponsor: "Sponsor / Negocio",
+  solicitante: "Requester",
+  sponsor: "Sponsor / Business",
   techlead: "Tech Lead",
   pmo: "PMO",
   diretor: "Director (DMC)",
-  admin: "Administrador",
+  admin: "Administrator",
 };
 
 export const ROLE_LABEL_EN: Record<Role, string> = {
@@ -42,12 +42,12 @@ export const ROLE_LABEL_EN: Record<Role, string> = {
 };
 
 export const ROLE_DESC: Record<Role, string> = {
-  solicitante: "Abre la solicitud y describe el lado de negocio. No necesita saber el impacto técnico.",
-  sponsor: "Patrocina la solicitud y valida los criterios de negocio (impacto, ingresos, estrategia).",
-  techlead: "Define impacto técnico, esfuerzo y asigna equipo/horas (capacity).",
-  pmo: "Hace el triaje, evalúa urgencia/compliance y define la prioridad final en el ranking.",
-  diretor: "Aprobación final del comité (DMC) y liberación para ejecución.",
-  admin: "Gestiona catálogos (áreas, sponsors, evaluadores) y configuración.",
+  solicitante: "Opens the request and describes the business side. Does not need to know the technical impact.",
+  sponsor: "Sponsors the request and validates the business criteria (impact, revenue, strategy).",
+  techlead: "Defines technical impact, effort and assigns team/hours (capacity).",
+  pmo: "Runs triage, assesses urgency/compliance and sets the final ranking priority.",
+  diretor: "Final committee (DMC) approval and release to execution.",
+  admin: "Manages catalogs (areas, sponsors, evaluators) and configuration.",
 };
 
 export const ROLE_COLOR: Record<Role, string> = {
@@ -78,24 +78,24 @@ export const PERSONAS: Persona[] = [
     id: "ana",
     nome: "Ana Ribeiro",
     email: "ana.ribeiro@litdigitall.com.br",
-    area: "Comercial",
-    cargo: "Analista de Negocio",
+    area: "Commercial",
+    cargo: "Business Analyst",
     roles: [Role.Solicitante],
   },
   {
     id: "carlos",
     nome: "Carlos Mendes",
     email: "carlos.mendes@litdigitall.com.br",
-    area: "Comercial",
-    cargo: "Director Comercial (Sponsor)",
-    roles: [Role.Sponsor, Role.Solicitante],
+    area: "Commercial",
+    cargo: "Commercial Director (Sponsor)",
+    roles: [Role.Sponsor],
   },
   {
     id: "daniela",
     nome: "Daniela Bastos",
     email: "daniela.bastos@litdigitall.com.br",
-    area: "Tecnología",
-    cargo: "Tech Lead / Arquitecta de Soluciones",
+    area: "Technology",
+    cargo: "Tech Lead / Solutions Architect",
     roles: [Role.TechLead],
   },
   {
@@ -103,23 +103,23 @@ export const PERSONAS: Persona[] = [
     nome: "Paula Nakamura",
     email: "paula.nakamura@litdigitall.com.br",
     area: "PMO",
-    cargo: "Gerente de PMO",
+    cargo: "PMO Manager",
     roles: [Role.PMO],
   },
   {
     id: "marcelo",
     nome: "Marcelo Tavares",
     email: "marcelo.tavares@litdigitall.com.br",
-    area: "Dirección",
-    cargo: "Director de TI (DMC)",
+    area: "Leadership",
+    cargo: "IT Director (DMC)",
     roles: [Role.Diretor],
   },
   {
     id: "sambini",
     nome: "Sambini (Admin)",
     email: "sambini@litdigitall.com.br",
-    area: "Tecnología",
-    cargo: "Administrador del sistema",
+    area: "Technology",
+    cargo: "System Administrator",
     /* Admin enxerga e opera tudo — útil para configurar e demonstrar. */
     roles: [Role.Admin, Role.PMO, Role.TechLead, Role.Sponsor, Role.Diretor, Role.Solicitante],
   },
