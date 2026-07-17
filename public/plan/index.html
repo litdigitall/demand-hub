@@ -1,296 +1,261 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
+<title>Abbott DemandFlow — Plan Ejecutivo de Implementación</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Demand Hub — Plan Ejecutivo de Implementación</title>
-<style>
-  :root{
-    --ground:#F5F7FA; --surface:#FFFFFF; --ink:#101E2C; --muted:#5B6B7C;
-    --line:#DFE5EC; --brand:#0072BC; --brand-ink:#003E66; --brand-soft:#E7F1F9;
-    --gold:#B98217; --gold-soft:#F7EEDC; --ok:#0E7F6E; --ok-soft:#E2F2EE;
-    --hero-a:#051E33; --hero-b:#0A3556; --hero-ink:#F2F7FB;
-    --shadow:0 14px 40px rgba(8,32,54,.09); --shadow-sm:0 4px 14px rgba(8,32,54,.06);
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --ground:#0B131C; --surface:#121E2A; --ink:#E7EEF5; --muted:#93A5B7;
-      --line:#223345; --brand:#54AAE0; --brand-ink:#AFD9F4; --brand-soft:#11293C;
-      --gold:#E0AC4C; --gold-soft:#332608; --ok:#43C0AA; --ok-soft:#0F2E27;
-      --hero-a:#04182A; --hero-b:#082A46; --hero-ink:#ECF3F9;
-      --shadow:0 14px 40px rgba(0,0,0,.4); --shadow-sm:0 4px 14px rgba(0,0,0,.3);
-    }
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
-  body{
-    margin:0; background:var(--ground); color:var(--ink);
-    font-family:"Segoe UI Variable Text","Segoe UI",-apple-system,"Avenir Next",Roboto,sans-serif;
-    font-size:16.5px; line-height:1.62;
-  }
-  /* ================= HERO ================= */
-  .hero{
-    background:
-      radial-gradient(900px 420px at 88% -10%, rgba(84,170,224,.22), transparent 60%),
-      radial-gradient(700px 380px at -8% 110%, rgba(185,130,23,.16), transparent 55%),
-      linear-gradient(148deg,var(--hero-a) 0%,var(--hero-b) 100%);
-    color:var(--hero-ink); padding:72px 24px 0;
-  }
-  .wrap{max-width:980px; margin:0 auto; padding:0 4px}
-  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:44px}
-  .brandline{font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#8FBEDF}
-  .lang{display:flex; gap:4px; border:1px solid rgba(255,255,255,.28); border-radius:999px; padding:3px}
-  .lang a,.lang span{font-size:12px; font-weight:700; padding:4px 13px; border-radius:999px; text-decoration:none; letter-spacing:.04em}
-  .lang span{background:#fff; color:#0A3556}
-  .lang a{color:#CFE3F2}
-  .lang a:hover{background:rgba(255,255,255,.14)}
-  h1{
-    font-family:"Segoe UI Variable Display","Segoe UI",-apple-system,sans-serif;
-    font-size:clamp(34px,5.2vw,56px); line-height:1.04; letter-spacing:-.02em;
-    font-weight:800; margin:0 0 18px; max-width:20ch; text-wrap:balance;
-  }
-  .hero .sub{font-size:19px; color:#BFD8EA; max-width:56ch; margin:0 0 42px}
-  .hero .sub strong{color:#fff}
-  /* Stat band */
-  .stats{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
-    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.16);
-    border-bottom:none; border-radius:18px 18px 0 0; overflow:hidden;
-    transform:translateY(1px);
-  }
-  @media (max-width:700px){ .stats{grid-template-columns:repeat(2,1fr)} }
-  .stat{background:rgba(6,30,51,.55); backdrop-filter:blur(6px); padding:22px 24px}
-  .stat .n{font-size:34px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#fff}
-  .stat .n em{font-style:normal; font-size:16px; font-weight:700; color:#8FBEDF; margin-left:2px}
-  .stat .l{font-size:12px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:#9DC3DD; margin-top:2px}
-  /* ================= BODY ================= */
-  main{max-width:980px; margin:0 auto; padding:56px 24px 90px}
-  section{margin-top:64px}
-  section:first-child{margin-top:0}
-  .kicker{font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--brand); margin-bottom:8px}
-  h2{font-size:29px; font-weight:800; letter-spacing:-.015em; margin:0 0 8px; text-wrap:balance}
-  .lede{color:var(--muted); font-size:16.5px; max-width:66ch; margin:0 0 22px}
-  p{max-width:70ch}
-  code{font-family:Consolas,"SF Mono",Menlo,monospace; font-size:.88em; background:var(--brand-soft); color:var(--brand-ink); padding:.08em .4em; border-radius:5px}
-  /* Cards / grids */
-  .grid{display:grid; gap:14px}
-  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-  .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px 24px; box-shadow:var(--shadow-sm)}
-  .card h3{margin:0 0 6px; font-size:16.5px; font-weight:800}
-  .card p{font-size:14.5px; color:var(--muted); margin:0}
-  .tag{display:inline-block; font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; padding:3px 10px; border-radius:999px; margin-bottom:10px}
-  .tag.b{background:var(--brand-soft); color:var(--brand-ink)}
-  .tag.g{background:var(--gold-soft); color:var(--gold)}
-  .tag.k{background:var(--ok-soft); color:var(--ok)}
-  /* Pillars (solution) */
-  .pillars{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px}
-  .pillar{background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--brand); border-radius:16px; padding:20px 22px; box-shadow:var(--shadow-sm)}
-  .pillar:nth-child(2){border-top-color:var(--ok)}
-  .pillar:nth-child(3){border-top-color:var(--gold)}
-  .pillar h3{margin:0 0 6px; font-size:16px; font-weight:800}
-  .pillar p{font-size:14px; color:var(--muted); margin:0}
-  /* Flow list */
-  .flows{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px}
-  .flow{display:flex; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow-sm)}
-  .flow .n{flex:0 0 auto; width:34px; height:34px; border-radius:10px; background:var(--brand-soft); color:var(--brand-ink); font-weight:800; font-size:13.5px; display:flex; align-items:center; justify-content:center}
-  .flow b{display:block; font-size:15px}
-  .flow p{font-size:13.5px; color:var(--muted); margin:2px 0 0}
-  /* Integration */
-  .int{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px}
-  .int .card{border-left:4px solid var(--brand)}
-  .int .card.out{border-left-color:var(--ok)}
-  .int .card.sync{border-left-color:var(--gold)}
-  /* Capacity table */
-  .tblwrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-sm)}
-  table{border-collapse:collapse; width:100%; font-size:15px; min-width:520px}
-  th{text-align:left; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:800; padding:13px 18px; border-bottom:1px solid var(--line)}
-  td{padding:12px 18px; border-bottom:1px solid var(--line)}
-  tr:last-child td{border-bottom:none}
-  .num{font-variant-numeric:tabular-nums; text-align:right}
-  /* ============ GANTT ============ */
-  .gwrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 26px 20px; box-shadow:var(--shadow)}
-  .g{display:grid; grid-template-columns:170px repeat(10,minmax(42px,1fr)); row-gap:10px; min-width:760px; align-items:center}
-  .g .month{grid-row:1; text-align:center; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--brand-ink); background:var(--brand-soft); border-radius:8px; padding:4px 0; margin:0 3px}
-  .g .wk{font-size:10.5px; color:var(--muted); text-align:center; font-weight:700; font-variant-numeric:tabular-nums; padding-bottom:2px}
-  .g .ph{font-size:13.5px; font-weight:700; padding-right:12px; white-space:nowrap}
-  .g .ph small{display:block; font-weight:500; color:var(--muted); font-size:11px}
-  .bar{height:28px; border-radius:8px; background:linear-gradient(90deg,var(--brand),#005A94); color:#fff; font-size:11.5px; font-weight:800; display:flex; align-items:center; padding:0 11px; letter-spacing:.02em; white-space:nowrap; overflow:hidden; box-shadow:var(--shadow-sm)}
-  .bar.go{background:linear-gradient(90deg,var(--gold),#8F6206)}
-  .bar.done{background:linear-gradient(90deg,var(--ok),#0A5E50)}
-  .glegend{display:flex; gap:18px; margin-top:16px; font-size:12.5px; color:var(--muted); flex-wrap:wrap}
-  .dot{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:baseline}
-  /* Milestones strip */
-  .miles{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px}
-  .mile{background:var(--surface); border:1px dashed var(--line); border-radius:12px; padding:13px 16px; font-size:13.5px}
-  .mile b{color:var(--gold)}
-  /* Decisions */
-  .dec{display:grid; gap:10px}
-  .dec .item{display:flex; gap:14px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:15px 18px; box-shadow:var(--shadow-sm)}
-  .dec .q{flex:0 0 auto; width:30px; height:30px; border-radius:9px; background:var(--gold-soft); color:var(--gold); font-weight:800; display:flex; align-items:center; justify-content:center; font-size:15px}
-  .dec b{font-size:15px}
-  .dec p{font-size:13.5px; color:var(--muted); margin:2px 0 0}
-  /* Steps */
-  ol.steps{counter-reset:s; list-style:none; padding:0; margin:14px 0 0; display:grid; gap:10px}
-  ol.steps li{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 18px 14px 58px; position:relative; font-size:15px; box-shadow:var(--shadow-sm)}
-  ol.steps li::before{counter-increment:s; content:counter(s); position:absolute; left:15px; top:13px; width:28px; height:28px; border-radius:9px; background:var(--brand-soft); color:var(--brand-ink); font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center}
-  footer{margin-top:70px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
-  @media print{ .hero{padding-top:34px} .lang{display:none} body{font-size:13px} }
-</style>
 </head>
 <body>
-
-<header class="hero">
-  <div class="wrap">
-    <div class="topbar">
-      <span class="brandline">Abbott · IT Hub (DMC) &nbsp;—&nbsp; LIT Digitall</span>
-      <nav class="lang" aria-label="Idioma"><span>ES</span><a href="./pt/">PT</a></nav>
-    </div>
-    <h1>Demand Hub<br>Plan Ejecutivo de Implementación</h1>
-    <p class="sub">Del prototipo aprobado a producción sobre <strong>Power Apps Premium</strong> — con aprobación DMC automatizada, integración con <strong>ServiceNow</strong> y priorización por <strong>capacity vs. score</strong>.</p>
-    <div class="stats">
-      <div class="stat"><div class="n">10<em>sem</em></div><div class="l">Go-live · ~2,5 meses</div></div>
-      <div class="stat"><div class="n">7</div><div class="l">Automatizaciones</div></div>
-      <div class="stat"><div class="n">1</div><div class="l">Integración ServiceNow</div></div>
-      <div class="stat"><div class="n">10</div><div class="l">Licencias Premium (DMC)</div></div>
-    </div>
-  </div>
-</header>
-
-<main>
-
-<section>
-  <div class="kicker">La solución</div>
-  <h2>Una plataforma, tres piezas</h2>
-  <p class="lede">La aplicación ya construida y validada se publica <em>tal cual</em> dentro de Power Apps. No se reescribe nada: se conecta a datos corporativos, identidad y automatización.</p>
-  <div class="pillars">
-    <div class="pillar"><h3>Aplicación (ya lista)</h3><p>El Demand Hub validado por el negocio, publicado como aplicación premium con acceso por rol e inicio de sesión corporativo (M365).</p></div>
-    <div class="pillar"><h3>Entrada libre, sin licencia</h3><p>Cualquier colaborador solicita vía Microsoft Forms. La solicitud entra sola al sistema y el solicitante recibe confirmación y estado por correo.</p></div>
-    <div class="pillar"><h3>Automatización e integración</h3><p>Aprobaciones DMC por Teams y correo, publicación del proyecto aprobado en ServiceNow y lectura diaria de la capacidad real de los equipos.</p></div>
-  </div>
-</section>
-
-<section>
-  <div class="kicker">Automatizaciones</div>
-  <h2>Siete flujos que mueven la demanda sola</h2>
-  <div class="flows">
-    <div class="flow"><span class="n">1</span><div><b>Entrada libre</b><p>Forms → sistema, con score de impacto automático y confirmación al solicitante.</p></div></div>
-    <div class="flow"><span class="n">2</span><div><b>Aviso de triage</b><p>Nueva demanda → notificación inmediata al PMO por Teams y correo.</p></div></div>
-    <div class="flow"><span class="n">3</span><div><b>Aprobación DMC</b><p>Secuencial: Sponsor → Tech Lead → Director. Decisión desde Teams o correo, con enlace directo.</p></div></div>
-    <div class="flow"><span class="n">4</span><div><b>Publicación en ServiceNow</b><p>Demanda aprobada → proyecto creado automáticamente con RCE, score y nº de proyecto.</p></div></div>
-    <div class="flow"><span class="n">5</span><div><b>Estado al solicitante</b><p>Cada avance del flujo → correo con el nuevo estado. Transparencia sin licencia.</p></div></div>
-    <div class="flow"><span class="n">6</span><div><b>Capacity diaria</b><p>Lectura automática de la capacidad real (FTE) de los equipos desde ServiceNow.</p></div></div>
-    <div class="flow"><span class="n">7</span><div><b>Alertas y respaldo</b><p>Aviso de demandas vencidas + copia de seguridad semanal contra borrado accidental.</p></div></div>
-  </div>
-</section>
-
-<section>
-  <div class="kicker">Integración ServiceNow</div>
-  <h2>Qué entra, qué sale</h2>
-  <p class="lede">Conexión segura vía la API oficial de ServiceNow, con credenciales corporativas por ambiente (desarrollo → pruebas → producción).</p>
-  <div class="int">
-    <div class="card"><span class="tag b">Entra ↓</span><h3>Capacidad de los equipos</h3><p>FTE y horas comprometidas de Internal, External y Support — cada mañana, para priorizar con datos reales.</p></div>
-    <div class="card out"><span class="tag k">Sale ↑</span><h3>Proyecto aprobado</h3><p>Al aprobar el DMC: se crea el proyecto en ServiceNow con RCE, código de aplicación y score. El nº de proyecto vuelve al Demand Hub.</p></div>
-    <div class="card sync"><span class="tag g">Sincroniza ↔</span><h3>Estado del proyecto</h3><p>El avance del proyecto en ServiceNow se refleja en el Demand Hub — una sola verdad para todos.</p></div>
-  </div>
-</section>
-
-<section>
-  <div class="kicker">Capacity</div>
-  <h2>Priorización con datos, no con opinión</h2>
-  <div class="tblwrap"><table>
-    <thead><tr><th>Equipo</th><th>Composición</th><th class="num">Línea base</th><th class="num">FTE</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Internal Delivery</strong></td><td>Wipro / Abbott</td><td class="num">640 h/mes</td><td class="num">4,0</td></tr>
-      <tr><td><strong>External Delivery</strong></td><td>Terceros / contractors</td><td class="num">960 h/mes</td><td class="num">6,0</td></tr>
-      <tr><td><strong>Support</strong></td><td>Sustaining</td><td class="num">480 h/mes</td><td class="num">3,0</td></tr>
-    </tbody>
-  </table></div>
-  <div class="grid g3" style="margin-top:14px">
-    <div class="card"><span class="tag b">Regla</span><h3>Capacity vs. score</h3><p>El PMO prioriza cruzando capacidad disponible con el score. Score 5,00 = atención máxima.</p></div>
-    <div class="card"><span class="tag b">Ruteo automático</span><h3>Proceso según tamaño</h3><p>&lt; 80 h → Minor Enhancement · &lt; US$ 500k → RAPID/Sprint · &gt; US$ 500k → Phase 0.</p></div>
-    <div class="card"><span class="tag g">Semáforo</span><h3>70 · 90 · 100 %</h3><p>La sobreasignación bloquea el inicio de nuevas ejecuciones hasta liberar capacidad.</p></div>
-  </div>
-</section>
-
-<section>
-  <div class="kicker">Roadmap</div>
-  <h2>Go-live en 10 semanas</h2>
-  <p class="lede">Fases en paralelo donde es seguro: la gestión con ServiceNow se inicia el día 1 para absorber su lead time.</p>
-  <div class="gwrap">
-    <div class="g">
-      <div></div>
-      <div class="month" style="grid-column:2 / span 4">Mes 1</div>
-      <div class="month" style="grid-column:6 / span 4">Mes 2</div>
-      <div class="month" style="grid-column:10 / span 2">Mes 3</div>
-
-      <div></div>
-      <div class="wk">S1</div><div class="wk">S2</div><div class="wk">S3</div><div class="wk">S4</div><div class="wk">S5</div><div class="wk">S6</div><div class="wk">S7</div><div class="wk">S8</div><div class="wk">S9</div><div class="wk">S10</div>
-
-      <div class="ph">Preparación<small>entornos · licencias · roles</small></div>
-      <div class="bar" style="grid-column:2 / span 1">F0</div>
-
-      <div class="ph">Datos e identidad<small>base corporativa · SSO</small></div>
-      <div class="bar" style="grid-column:3 / span 2">F1</div>
-
-      <div class="ph">Entrada libre<small>Forms + confirmaciones</small></div>
-      <div class="bar" style="grid-column:5 / span 2">F2</div>
-
-      <div class="ph">Aprobación DMC<small>Teams · correo · decisión</small></div>
-      <div class="bar" style="grid-column:6 / span 2">F3</div>
-
-      <div class="ph">ServiceNow<small>conector · pruebas</small></div>
-      <div class="bar" style="grid-column:7 / span 2">F4</div>
-
-      <div class="ph">Capacity<small>FTE real · umbrales</small></div>
-      <div class="bar" style="grid-column:9 / span 1">F5</div>
-
-      <div class="ph">UAT &amp; Go-live<small>DMC · capacitación</small></div>
-      <div class="bar go" style="grid-column:10 / span 1">Go-live</div>
-
-      <div class="ph">Hypercare<small>2 semanas post go-live</small></div>
-      <div class="bar done" style="grid-column:10 / span 1" title="continúa 2 semanas">HC →</div>
-    </div>
-    <div class="glegend">
-      <span><span class="dot" style="background:var(--brand)"></span>Construcción</span>
-      <span><span class="dot" style="background:var(--gold)"></span>Go-live (semana 10)</span>
-      <span><span class="dot" style="background:var(--ok)"></span>Hypercare (+2 semanas)</span>
+<x-dc>
+<helmet>
+<style>
+:root{--bg:#f3f7fa;--surface:#ffffff;--ink:#16293a;--heading:#0a2e4c;--muted:#587085;--line:#d8e2eb;--blue:#0072bc;--navy:#003e66;--blue-soft:#e9f3fb;--amber:#c27a10;--amber-soft:#fbf1df;--band:#04263e;--band-ink:#eaf2f9;--band-muted:#84a5c0;--band-line:rgba(255,255,255,.14);--gline:rgba(255,255,255,.09);--bar:#2f9de0;--chip:#f0f6fb}
+:root[data-theme="dark"]{--bg:#0a141e;--surface:#101f2e;--ink:#dbe7f1;--heading:#eef5fb;--muted:#8ba6bd;--line:#1e3347;--blue:#4aa8e0;--navy:#9ecdec;--blue-soft:#0f2b42;--amber:#e0a044;--amber-soft:#271d0c;--band:#020f1a;--band-ink:#eaf2f9;--band-muted:#84a5c0;--band-line:rgba(255,255,255,.14);--gline:rgba(255,255,255,.09);--bar:#2f9de0;--chip:#0e2434}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0a141e;--surface:#101f2e;--ink:#dbe7f1;--heading:#eef5fb;--muted:#8ba6bd;--line:#1e3347;--blue:#4aa8e0;--navy:#9ecdec;--blue-soft:#0f2b42;--amber:#e0a044;--amber-soft:#271d0c;--band:#020f1a;--chip:#0e2434}}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI Variable Text','Segoe UI',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--navy);text-decoration:underline}
+@media print{[data-noprint]{display:none!important}body{background:#fff}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:var(--bg)">
+  <div style="height:3px;background:var(--blue)"></div>
+  <div style="border-bottom:1px solid var(--line);background:var(--surface)">
+    <div style="max-width:1120px;margin:0 auto;padding:13px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <img src="./assets/abbott-logo.png" alt="Logo Abbott" style="width:118px;height:20px">
+        <div style="width:1px;height:22px;background:var(--line)"></div>
+        <img src="./assets/lit-mark.png" alt="LIT logo" style="width:34px;height:34px">
+        <div style="font-size:11.5px;letter-spacing:.16em;font-weight:600;color:var(--muted);text-transform:uppercase">IT Hub (DMC) — LIT Digitall</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:12px;letter-spacing:.08em;display:flex;gap:8px;align-items:center">
+          <span style="font-weight:700;color:var(--heading)">ES</span><span style="color:var(--line)">|</span><a href="./en/" style="color:var(--muted)">EN</a><span style="color:var(--line)">|</span><a href="./pt/" style="color:var(--muted)">PT</a>
+        </div>
+        <button data-noprint="true" onclick="dcToggle()" title="Claro / oscuro" style="border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;width:28px;height:28px;cursor:pointer;font-size:13px;line-height:1;padding:0">◐</button>
+      </div>
     </div>
   </div>
-  <div class="miles">
-    <div class="mile"><b>Semana 5</b> · demo del intake a Sambini y Gabriela</div>
-    <div class="mile"><b>Semana 7</b> · aprobación piloto real con el DMC</div>
-    <div class="mile"><b>Semana 9</b> · primer proyecto publicado en ServiceNow (pruebas)</div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:72px 32px 40px">
+    <div style="width:44px;height:3px;background:var(--blue);margin-bottom:26px"></div>
+    <h1 style="margin:0;font-size:clamp(30px,4.5vw,44px);line-height:1.12;letter-spacing:-0.02em;font-weight:650;color:var(--heading);max-width:760px;text-wrap:pretty">Abbott DemandFlow — Plan Ejecutivo de Implementación</h1>
+    <p style="margin:18px 0 0;font-size:17px;line-height:1.55;color:var(--muted);max-width:680px;text-wrap:pretty">Del prototipo aprobado a producción sobre Power Apps Premium — con aprobación DMC automatizada, integración con ServiceNow y priorización por capacity vs. score.</p>
   </div>
-</section>
-
-<section>
-  <div class="kicker">Decisiones requeridas</div>
-  <h2>Tres respuestas para arrancar</h2>
-  <div class="dec">
-    <div class="item"><span class="q">?</span><div><b>Licenciamiento Premium (10 personas DMC)</b><p>Aprobación de costo por Governanza — condición para la semana 1.</p></div></div>
-    <div class="item"><span class="q">?</span><div><b>Umbral de proceso: ¿US$ 500 mil o US$ 500 millones?</b><p>Define el ruteo Phase 0 vs. RAPID. Hoy configurado en US$ 500 mil (según minuta).</p></div></div>
-    <div class="item"><span class="q">?</span><div><b>Dueño del portafolio de Inteligencia Artificial</b><p>Infraestructura → Sambini · Aplicaciones → Gabriela · IA → por definir.</p></div></div>
+  <div style="max-width:1120px;margin:0 auto;padding:0 32px 72px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+      <div style="padding:22px 24px 22px 0;border-left:none"><div style="font-size:32px;font-weight:650;color:var(--navy);font-variant-numeric:tabular-nums">10 sem</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px;letter-spacing:.04em">Go-live · ~2,5 meses</div></div>
+      <div style="padding:22px 24px;border-left:1px solid var(--line)"><div style="font-size:32px;font-weight:650;color:var(--navy);font-variant-numeric:tabular-nums">7</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px;letter-spacing:.04em">Automatizaciones</div></div>
+      <div style="padding:22px 24px;border-left:1px solid var(--line)"><div style="font-size:32px;font-weight:650;color:var(--navy);font-variant-numeric:tabular-nums">1</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px;letter-spacing:.04em">Integración ServiceNow</div></div>
+      <div style="padding:22px 24px;border-left:1px solid var(--line)"><div style="font-size:32px;font-weight:650;color:var(--navy);font-variant-numeric:tabular-nums">10</div><div style="font-size:12.5px;color:var(--muted);margin-top:4px;letter-spacing:.04em">Licencias Premium (DMC)</div></div>
+    </div>
   </div>
-</section>
 
-<section>
-  <div class="kicker">Próximos pasos</div>
-  <h2>Semana 1</h2>
-  <ol class="steps">
-    <li><strong>Governanza</strong> confirma licencias y política de acceso.</li>
-    <li><strong>Equipo técnico</strong> crea los ambientes y publica la línea base en Power Apps.</li>
-    <li><strong>PMO</strong> valida con Sambini el umbral y los criterios finales de impacto.</li>
-    <li><strong>ServiceNow</strong> recibe la solicitud de credenciales de integración (lead time largo — se pide el día 1).</li>
-    <li><strong>Kick-off</strong> con este plan como alcance.</li>
-  </ol>
-  <footer>
-    <span>Demand Hub · Plan Ejecutivo v1.1 — Julio 2026</span>
-    <span>LIT Digitall — Confidencial · <a href="../" style="color:var(--brand)">ver prototipo</a></span>
-  </footer>
-</section>
+  <div style="max-width:1120px;margin:0 auto;padding:0 32px 72px">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:600">01 · La solución</div>
+    <h2 style="margin:10px 0 28px;font-size:26px;font-weight:650;letter-spacing:-0.01em;color:var(--heading)">Una plataforma, tres piezas</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="font-size:16px;font-weight:650;color:var(--heading)">Aplicación (60% lista)</div><p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:var(--muted)">El Abbott DemandFlow validado por el negocio — requiere un incremento de ~40% de desarrollo para llegar a producción — publicado como aplicación premium con acceso por rol e inicio de sesión corporativo (M365).</p><div style="margin-top:18px"><div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:6px"><span style="color:var(--blue)">60% lista</span><span>+40% hasta el go-live</span></div><div style="height:6px;border-radius:999px;background:var(--blue-soft);overflow:hidden"><div style="width:60%;height:100%;background:var(--blue)"></div></div></div></div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="font-size:16px;font-weight:650;color:var(--heading)">Entrada libre, sin licencia</div><p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:var(--muted)">Cualquier colaborador solicita vía una app de requests — construida en SharePoint o en una app Power Apps Canvas — que alimenta Intake Forms. La solicitud entra sola al sistema y el solicitante recibe confirmación y estado por correo.</p></div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="font-size:16px;font-weight:650;color:var(--heading)">Automatización e integración</div><p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:var(--muted)">Aprobaciones DMC por Teams y correo, publicación del proyecto aprobado en ServiceNow y lectura diaria de la capacidad real de los equipos.</p></div>
+    </div>
+  </div>
 
-</main>
+  <div style="max-width:1120px;margin:0 auto;padding:0 32px 72px">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:600">02 · Automatizaciones</div>
+    <h2 style="margin:10px 0 28px;font-size:26px;font-weight:650;letter-spacing:-0.01em;color:var(--heading)">Siete flujos que mueven la demanda sola</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 40px;border-top:1px solid var(--line)">
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">1</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Entrada libre</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">La solicitud entra desde la app de requests con score de impacto automático y confirmación al solicitante.</div></div>
+        </div>
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">2</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Aviso de triage</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">Nueva demanda → notificación inmediata al PMO por Teams y correo.</div></div>
+        </div>
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">3</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Aprobación DMC</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">Secuencial: Sponsor → Tech Lead → Director. Decisión desde Teams o correo, con enlace directo.</div></div>
+        </div>
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">4</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Publicación en ServiceNow</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">Demanda aprobada → proyecto creado automáticamente con RCE, score y nº de proyecto.</div></div>
+        </div>
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">5</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Estado al solicitante</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">Cada avance del flujo → correo con el nuevo estado. Transparencia sin licencia.</div></div>
+        </div>
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">6</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Capacity diaria</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">Lectura automática de la capacidad real (FTE) de los equipos desde ServiceNow.</div></div>
+        </div>
+      
+        <div style="display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums;min-width:26px;line-height:1.3">7</div>
+          <div><div style="font-size:14.5px;font-weight:650;color:var(--heading)">Alertas y respaldo</div><div style="font-size:13.5px;line-height:1.55;color:var(--muted);margin-top:3px">Aviso de demandas vencidas + copia de seguridad semanal contra borrado accidental.</div></div>
+        </div>
+      
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 32px 72px">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:600">03 · Integración ServiceNow</div>
+    <h2 style="margin:10px 0 28px;font-size:26px;font-weight:650;letter-spacing:-0.01em;color:var(--heading)">Qué entra, qué sale</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:999px;padding:5px 12px">ENTRA <span style="font-size:14px">↓</span></div><div style="font-size:16px;font-weight:650;color:var(--heading);margin-top:14px">Capacidad de los equipos</div><p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--muted)">FTE y horas comprometidas de Internal, External y Support — cada mañana, para priorizar con datos reales.</p></div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:999px;padding:5px 12px">SALE <span style="font-size:14px">↑</span></div><div style="font-size:16px;font-weight:650;color:var(--heading);margin-top:14px">Proyecto aprobado</div><p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--muted)">Al aprobar el DMC: se crea el proyecto en ServiceNow con RCE, código de aplicación y score. El nº de proyecto vuelve al Abbott DemandFlow.</p></div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:999px;padding:5px 12px">SINCRONIZA <span style="font-size:14px">↔</span></div><div style="font-size:16px;font-weight:650;color:var(--heading);margin-top:14px">Estado del proyecto</div><p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--muted)">El avance del proyecto en ServiceNow se refleja en el Abbott DemandFlow — una sola verdad para todos.</p></div>
+    </div>
+    <p style="margin:18px 0 0;font-size:13px;color:var(--muted)">Conexión segura vía la API oficial de ServiceNow, con credenciales corporativas por ambiente (desarrollo → pruebas → producción).</p>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 32px 72px">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:600">04 · Capacity</div>
+    <h2 style="margin:10px 0 28px;font-size:26px;font-weight:650;letter-spacing:-0.01em;color:var(--heading)">Priorización con datos, no con opinión</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:32px;align-items:start">
+      <div style="overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;min-width:380px">
+          <thead><tr>
+            <th style="text-align:left;padding:12px 18px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);font-weight:600">Equipo</th>
+            <th style="text-align:left;padding:12px 18px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);font-weight:600">Origen</th>
+            <th style="text-align:right;padding:12px 18px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);font-weight:600">h/mes</th>
+            <th style="text-align:right;padding:12px 18px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);font-weight:600">FTE</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:13px 18px;font-weight:600;color:var(--heading);border-bottom:1px solid var(--line)">Internal Delivery</td><td style="padding:13px 18px;color:var(--muted);border-bottom:1px solid var(--line)">Wipro/Abbott</td><td style="padding:13px 18px;text-align:right;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line)">640</td><td style="padding:13px 18px;text-align:right;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line)">4,0</td></tr>
+            <tr><td style="padding:13px 18px;font-weight:600;color:var(--heading);border-bottom:1px solid var(--line)">External Delivery</td><td style="padding:13px 18px;color:var(--muted);border-bottom:1px solid var(--line)">Terceros/contractors</td><td style="padding:13px 18px;text-align:right;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line)">960</td><td style="padding:13px 18px;text-align:right;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line)">6,0</td></tr>
+            <tr><td style="padding:13px 18px;font-weight:600;color:var(--heading)">Support</td><td style="padding:13px 18px;color:var(--muted)">Sustaining</td><td style="padding:13px 18px;text-align:right;font-variant-numeric:tabular-nums">480</td><td style="padding:13px 18px;text-align:right;font-variant-numeric:tabular-nums">3,0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <div style="padding:16px 0;border-top:1px solid var(--line)"><div style="font-size:14px;font-weight:650;color:var(--heading)">Capacity vs. score</div><div style="font-size:13.5px;color:var(--muted);line-height:1.55;margin-top:3px">El PMO prioriza cruzando capacidad disponible con el score. Score 5,00 = atención máxima.</div></div>
+        <div style="padding:16px 0;border-top:1px solid var(--line)"><div style="font-size:14px;font-weight:650;color:var(--heading)">Ruteo automático</div><div style="font-size:13.5px;color:var(--muted);line-height:1.55;margin-top:3px">&lt; 80 h → Minor Enhancement · &lt; US$ 500k → RAPID/Sprint · &gt; US$ 500k → Phase 0.</div></div>
+        <div style="padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)"><div style="font-size:14px;font-weight:650;color:var(--heading)">Semáforo 70 · 90 · 100%</div><div style="font-size:13.5px;color:var(--muted);line-height:1.55;margin-top:3px">La sobreasignación bloquea el inicio de nuevas ejecuciones.</div></div>
+      </div>
+    </div>
+    <p style="margin:22px 0 0;font-size:13px;color:var(--muted)"><span style="color:var(--amber);font-weight:650">Por validar:</span> las reglas de la matriz de peso (preguntas y pesos del score de impacto) aún deben revalidarse con el negocio antes del go-live.</p>
+  </div>
+
+  <div style="background:var(--band);padding:64px 0 56px">
+    <div style="max-width:1120px;margin:0 auto;padding:0 32px">
+      <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:600">05 · Roadmap</div>
+      <h2 style="margin:10px 0 34px;font-size:28px;font-weight:650;letter-spacing:-0.01em;color:var(--band-ink)">Go-live en 10 semanas</h2>
+      <div style="overflow-x:auto">
+        <div style="min-width:880px;display:grid;grid-template-columns:190px repeat(10,minmax(56px,1fr));position:relative">
+          
+            <div style="grid-column:2;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:3;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:4;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:5;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:6;grid-row:2/11;border-left:1px solid var(--band-line);pointer-events:none"></div>
+          
+            <div style="grid-column:7;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:8;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:9;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+            <div style="grid-column:10;grid-row:2/11;border-left:1px solid var(--band-line);pointer-events:none"></div>
+          
+            <div style="grid-column:11;grid-row:2/11;border-left:1px solid var(--gline);pointer-events:none"></div>
+          
+          <div style="grid-column:2/6;grid-row:1;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--band-muted);padding:0 0 8px 10px;border-bottom:1px solid var(--band-line)">Mes 1</div>
+          <div style="grid-column:6/10;grid-row:1;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--band-muted);padding:0 0 8px 10px;border-bottom:1px solid var(--band-line)">Mes 2</div>
+          <div style="grid-column:10/12;grid-row:1;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--band-muted);padding:0 0 8px 10px;border-bottom:1px solid var(--band-line)">Mes 3</div>
+          <div style="grid-column:1;grid-row:1;border-bottom:1px solid var(--band-line)"></div>
+          
+            <div style="grid-column:2;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S1</div>
+          
+            <div style="grid-column:3;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S2</div>
+          
+            <div style="grid-column:4;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S3</div>
+          
+            <div style="grid-column:5;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S4</div>
+          
+            <div style="grid-column:6;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S5</div>
+          
+            <div style="grid-column:7;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S6</div>
+          
+            <div style="grid-column:8;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S7</div>
+          
+            <div style="grid-column:9;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S8</div>
+          
+            <div style="grid-column:10;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S9</div>
+          
+            <div style="grid-column:11;grid-row:2;font-size:11.5px;color:var(--band-muted);padding:9px 0 9px 10px;font-variant-numeric:tabular-nums">S10</div>
+          
+          <div style="grid-column:1;grid-row:3;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0"><span style="color:var(--band-muted);font-variant-numeric:tabular-nums">F0</span>&nbsp;&nbsp;Preparación</div>
+          <div style="grid-column:2/3;grid-row:3;align-self:center;height:20px;border-radius:3px;background:var(--bar);margin:0 4px"></div>
+          <div style="grid-column:1;grid-row:4;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0"><span style="color:var(--band-muted);font-variant-numeric:tabular-nums">F1</span>&nbsp;&nbsp;Datos e identidad</div>
+          <div style="grid-column:3/5;grid-row:4;align-self:center;height:20px;border-radius:3px;background:var(--bar);margin:0 4px"></div>
+          <div style="grid-column:1;grid-row:5;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0"><span style="color:var(--band-muted);font-variant-numeric:tabular-nums">F2</span>&nbsp;&nbsp;Entrada libre</div>
+          <div style="grid-column:5/7;grid-row:5;align-self:center;height:20px;border-radius:3px;background:var(--bar);margin:0 4px"></div>
+          <div style="grid-column:1;grid-row:6;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0"><span style="color:var(--band-muted);font-variant-numeric:tabular-nums">F3</span>&nbsp;&nbsp;Aprobación DMC</div>
+          <div style="grid-column:6/8;grid-row:6;align-self:center;height:20px;border-radius:3px;background:var(--bar);margin:0 4px"></div>
+          <div style="grid-column:1;grid-row:7;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0"><span style="color:var(--band-muted);font-variant-numeric:tabular-nums">F4</span>&nbsp;&nbsp;ServiceNow</div>
+          <div style="grid-column:7/10;grid-row:7;align-self:center;height:20px;border-radius:3px;background:var(--bar);margin:0 4px"></div>
+          <div style="grid-column:1;grid-row:8;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0"><span style="color:var(--band-muted);font-variant-numeric:tabular-nums">F5</span>&nbsp;&nbsp;Capacity</div>
+          <div style="grid-column:9/10;grid-row:8;align-self:center;height:20px;border-radius:3px;background:var(--bar);margin:0 4px"></div>
+          <div style="grid-column:1;grid-row:9;font-size:13px;font-weight:700;color:var(--amber);padding:11px 14px 11px 0">Go-live</div>
+          <div style="grid-column:11;grid-row:9;align-self:center;justify-self:center;width:15px;height:15px;background:var(--amber);transform:rotate(45deg)"></div>
+          <div style="grid-column:1;grid-row:10;font-size:13px;color:var(--band-ink);padding:11px 14px 11px 0">Hypercare</div>
+          <div style="grid-column:11/12;grid-row:10;align-self:center;height:20px;border-radius:3px 0 0 3px;margin:0 0 0 4px;background:repeating-linear-gradient(45deg,var(--bar) 0 5px,rgba(47,157,224,.35) 5px 10px);display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:10.5px;color:#04263e;font-weight:700;white-space:nowrap">+2 sem →</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px 36px;margin-top:32px;padding-top:22px;border-top:1px solid var(--band-line)">
+        <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--band-muted)"><span style="width:9px;height:9px;background:var(--amber);transform:rotate(45deg);display:inline-block;flex:none"></span><span><strong style="color:var(--band-ink);font-weight:650">Semana 5</strong> · demo del intake a Sambini y Gabriela</span></div>
+        <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--band-muted)"><span style="width:9px;height:9px;background:var(--amber);transform:rotate(45deg);display:inline-block;flex:none"></span><span><strong style="color:var(--band-ink);font-weight:650">Semana 7</strong> · aprobación piloto real con el DMC</span></div>
+        <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--band-muted)"><span style="width:9px;height:9px;background:var(--amber);transform:rotate(45deg);display:inline-block;flex:none"></span><span><strong style="color:var(--band-ink);font-weight:650">Semana 9</strong> · primer proyecto publicado en ServiceNow (pruebas)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:72px 32px">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:600">06 · Decisiones requeridas</div>
+    <h2 style="margin:10px 0 28px;font-size:26px;font-weight:650;letter-spacing:-0.01em;color:var(--heading)">Tres respuestas para arrancar</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums">1</div><div style="font-size:15px;font-weight:650;color:var(--heading);margin-top:10px">Licenciamiento Premium (10 personas DMC)</div><p style="margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--muted)">Aprobación de costo por Governanza — condición para la semana 1.</p></div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums">2</div><div style="font-size:15px;font-weight:650;color:var(--heading);margin-top:10px">Umbral de proceso: US$ 500 mil</div><p style="margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--muted)">Confirmar el umbral que define el ruteo Phase 0 vs. RAPID. Configurado en US$ 500 mil.</p></div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px"><div style="font-size:20px;font-weight:650;color:var(--blue);font-variant-numeric:tabular-nums">3</div><div style="font-size:15px;font-weight:650;color:var(--heading);margin-top:10px">Dueño del portafolio de Inteligencia Artificial</div><p style="margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--muted)">Infraestructura → Sambini · Aplicaciones → Gabriela · IA → por definir.</p></div>
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:0 auto;padding:0 32px 80px">
+    <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue);font-weight:600">07 · Próximos pasos</div>
+    <h2 style="margin:10px 0 28px;font-size:26px;font-weight:650;letter-spacing:-0.01em;color:var(--heading)">Semana 1</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;border-top:1px solid var(--line)">
+      
+        <div style="padding:20px 22px 20px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.1em;font-variant-numeric:tabular-nums">PASO 1</div><div style="font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px;text-wrap:pretty">Governanza confirma licencias y política de acceso.</div></div>
+      
+        <div style="padding:20px 22px 20px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.1em;font-variant-numeric:tabular-nums">PASO 2</div><div style="font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px;text-wrap:pretty">Equipo técnico crea los ambientes y publica la línea base en Power Apps.</div></div>
+      
+        <div style="padding:20px 22px 20px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.1em;font-variant-numeric:tabular-nums">PASO 3</div><div style="font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px;text-wrap:pretty">PMO valida con Sambini el umbral y los criterios finales de impacto.</div></div>
+      
+        <div style="padding:20px 22px 20px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.1em;font-variant-numeric:tabular-nums">PASO 4</div><div style="font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px;text-wrap:pretty">ServiceNow recibe la solicitud de credenciales de integración (se pide el día 1).</div></div>
+      
+        <div style="padding:20px 22px 20px 0;border-bottom:1px solid var(--line)"><div style="font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.1em;font-variant-numeric:tabular-nums">PASO 5</div><div style="font-size:13.5px;line-height:1.55;color:var(--ink);margin-top:8px;text-wrap:pretty">Kick-off con este plan como alcance.</div></div>
+      
+    </div>
+  </div>
+
+  <div style="border-top:1px solid var(--line);background:var(--surface)">
+    <div style="max-width:1120px;margin:0 auto;padding:20px 32px;display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;font-size:12.5px;color:var(--muted)">
+      <div>Abbott DemandFlow · Plan Ejecutivo v1.1 — Julio 2026</div>
+      <div>LIT Digitall — Confidencial · <a href="../">ver prototipo</a></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script>function dcToggle(){var r=document.documentElement;var c=r.getAttribute("data-theme");var d=c?c==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.setAttribute("data-theme",d?"light":"dark");try{localStorage.setItem("plan-theme",d?"light":"dark")}catch(e){}}(function(){try{var t=localStorage.getItem("plan-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}})();</script>
 </body>
 </html>
