@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demand Hub — Plano Executivo de Implementação</title>
+<style>
+  :root{
+    --ground:#F5F7FA; --surface:#FFFFFF; --ink:#101E2C; --muted:#5B6B7C;
+    --line:#DFE5EC; --brand:#0072BC; --brand-ink:#003E66; --brand-soft:#E7F1F9;
+    --gold:#B98217; --gold-soft:#F7EEDC; --ok:#0E7F6E; --ok-soft:#E2F2EE;
+    --hero-a:#051E33; --hero-b:#0A3556; --hero-ink:#F2F7FB;
+    --shadow:0 14px 40px rgba(8,32,54,.09); --shadow-sm:0 4px 14px rgba(8,32,54,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#0B131C; --surface:#121E2A; --ink:#E7EEF5; --muted:#93A5B7;
+      --line:#223345; --brand:#54AAE0; --brand-ink:#AFD9F4; --brand-soft:#11293C;
+      --gold:#E0AC4C; --gold-soft:#332608; --ok:#43C0AA; --ok-soft:#0F2E27;
+      --hero-a:#04182A; --hero-b:#082A46; --hero-ink:#ECF3F9;
+      --shadow:0 14px 40px rgba(0,0,0,.4); --shadow-sm:0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:"Segoe UI Variable Text","Segoe UI",-apple-system,"Avenir Next",Roboto,sans-serif;
+    font-size:16.5px; line-height:1.62;
+  }
+  /* ================= HERO ================= */
+  .hero{
+    background:
+      radial-gradient(900px 420px at 88% -10%, rgba(84,170,224,.22), transparent 60%),
+      radial-gradient(700px 380px at -8% 110%, rgba(185,130,23,.16), transparent 55%),
+      linear-gradient(148deg,var(--hero-a) 0%,var(--hero-b) 100%);
+    color:var(--hero-ink); padding:72px 24px 0;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:0 4px}
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:44px}
+  .brandline{font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#8FBEDF}
+  .lang{display:flex; gap:4px; border:1px solid rgba(255,255,255,.28); border-radius:999px; padding:3px}
+  .lang a,.lang span{font-size:12px; font-weight:700; padding:4px 13px; border-radius:999px; text-decoration:none; letter-spacing:.04em}
+  .lang span{background:#fff; color:#0A3556}
+  .lang a{color:#CFE3F2}
+  .lang a:hover{background:rgba(255,255,255,.14)}
+  h1{
+    font-family:"Segoe UI Variable Display","Segoe UI",-apple-system,sans-serif;
+    font-size:clamp(34px,5.2vw,56px); line-height:1.04; letter-spacing:-.02em;
+    font-weight:800; margin:0 0 18px; max-width:20ch; text-wrap:balance;
+  }
+  .hero .sub{font-size:19px; color:#BFD8EA; max-width:56ch; margin:0 0 42px}
+  .hero .sub strong{color:#fff}
+  /* Stat band */
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.16);
+    border-bottom:none; border-radius:18px 18px 0 0; overflow:hidden;
+    transform:translateY(1px);
+  }
+  @media (max-width:700px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:rgba(6,30,51,.55); backdrop-filter:blur(6px); padding:22px 24px}
+  .stat .n{font-size:34px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#fff}
+  .stat .n em{font-style:normal; font-size:16px; font-weight:700; color:#8FBEDF; margin-left:2px}
+  .stat .l{font-size:12px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:#9DC3DD; margin-top:2px}
+  /* ================= BODY ================= */
+  main{max-width:980px; margin:0 auto; padding:56px 24px 90px}
+  section{margin-top:64px}
+  section:first-child{margin-top:0}
+  .kicker{font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--brand); margin-bottom:8px}
+  h2{font-size:29px; font-weight:800; letter-spacing:-.015em; margin:0 0 8px; text-wrap:balance}
+  .lede{color:var(--muted); font-size:16.5px; max-width:66ch; margin:0 0 22px}
+  p{max-width:70ch}
+  code{font-family:Consolas,"SF Mono",Menlo,monospace; font-size:.88em; background:var(--brand-soft); color:var(--brand-ink); padding:.08em .4em; border-radius:5px}
+  /* Cards / grids */
+  .grid{display:grid; gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px 24px; box-shadow:var(--shadow-sm)}
+  .card h3{margin:0 0 6px; font-size:16.5px; font-weight:800}
+  .card p{font-size:14.5px; color:var(--muted); margin:0}
+  .tag{display:inline-block; font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; padding:3px 10px; border-radius:999px; margin-bottom:10px}
+  .tag.b{background:var(--brand-soft); color:var(--brand-ink)}
+  .tag.g{background:var(--gold-soft); color:var(--gold)}
+  .tag.k{background:var(--ok-soft); color:var(--ok)}
+  /* Pillars (solution) */
+  .pillars{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px}
+  .pillar{background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--brand); border-radius:16px; padding:20px 22px; box-shadow:var(--shadow-sm)}
+  .pillar:nth-child(2){border-top-color:var(--ok)}
+  .pillar:nth-child(3){border-top-color:var(--gold)}
+  .pillar h3{margin:0 0 6px; font-size:16px; font-weight:800}
+  .pillar p{font-size:14px; color:var(--muted); margin:0}
+  /* Flow list */
+  .flows{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px}
+  .flow{display:flex; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow-sm)}
+  .flow .n{flex:0 0 auto; width:34px; height:34px; border-radius:10px; background:var(--brand-soft); color:var(--brand-ink); font-weight:800; font-size:13.5px; display:flex; align-items:center; justify-content:center}
+  .flow b{display:block; font-size:15px}
+  .flow p{font-size:13.5px; color:var(--muted); margin:2px 0 0}
+  /* Integration */
+  .int{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px}
+  .int .card{border-left:4px solid var(--brand)}
+  .int .card.out{border-left-color:var(--ok)}
+  .int .card.sync{border-left-color:var(--gold)}
+  /* Capacity table */
+  .tblwrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow-sm)}
+  table{border-collapse:collapse; width:100%; font-size:15px; min-width:520px}
+  th{text-align:left; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:800; padding:13px 18px; border-bottom:1px solid var(--line)}
+  td{padding:12px 18px; border-bottom:1px solid var(--line)}
+  tr:last-child td{border-bottom:none}
+  .num{font-variant-numeric:tabular-nums; text-align:right}
+  /* ============ GANTT ============ */
+  .gwrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px 26px 20px; box-shadow:var(--shadow)}
+  .g{display:grid; grid-template-columns:170px repeat(10,minmax(42px,1fr)); row-gap:10px; min-width:760px; align-items:center}
+  .g .month{grid-row:1; text-align:center; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--brand-ink); background:var(--brand-soft); border-radius:8px; padding:4px 0; margin:0 3px}
+  .g .wk{font-size:10.5px; color:var(--muted); text-align:center; font-weight:700; font-variant-numeric:tabular-nums; padding-bottom:2px}
+  .g .ph{font-size:13.5px; font-weight:700; padding-right:12px; white-space:nowrap}
+  .g .ph small{display:block; font-weight:500; color:var(--muted); font-size:11px}
+  .bar{height:28px; border-radius:8px; background:linear-gradient(90deg,var(--brand),#005A94); color:#fff; font-size:11.5px; font-weight:800; display:flex; align-items:center; padding:0 11px; letter-spacing:.02em; white-space:nowrap; overflow:hidden; box-shadow:var(--shadow-sm)}
+  .bar.go{background:linear-gradient(90deg,var(--gold),#8F6206)}
+  .bar.done{background:linear-gradient(90deg,var(--ok),#0A5E50)}
+  .glegend{display:flex; gap:18px; margin-top:16px; font-size:12.5px; color:var(--muted); flex-wrap:wrap}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:baseline}
+  /* Milestones strip */
+  .miles{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px}
+  .mile{background:var(--surface); border:1px dashed var(--line); border-radius:12px; padding:13px 16px; font-size:13.5px}
+  .mile b{color:var(--gold)}
+  /* Decisions */
+  .dec{display:grid; gap:10px}
+  .dec .item{display:flex; gap:14px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:15px 18px; box-shadow:var(--shadow-sm)}
+  .dec .q{flex:0 0 auto; width:30px; height:30px; border-radius:9px; background:var(--gold-soft); color:var(--gold); font-weight:800; display:flex; align-items:center; justify-content:center; font-size:15px}
+  .dec b{font-size:15px}
+  .dec p{font-size:13.5px; color:var(--muted); margin:2px 0 0}
+  /* Steps */
+  ol.steps{counter-reset:s; list-style:none; padding:0; margin:14px 0 0; display:grid; gap:10px}
+  ol.steps li{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 18px 14px 58px; position:relative; font-size:15px; box-shadow:var(--shadow-sm)}
+  ol.steps li::before{counter-increment:s; content:counter(s); position:absolute; left:15px; top:13px; width:28px; height:28px; border-radius:9px; background:var(--brand-soft); color:var(--brand-ink); font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center}
+  footer{margin-top:70px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  @media print{ .hero{padding-top:34px} .lang{display:none} body{font-size:13px} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <span class="brandline">Abbott · IT Hub (DMC) &nbsp;—&nbsp; LIT Digitall</span>
+      <nav class="lang" aria-label="Idioma"><a href="../">ES</a><span>PT</span></nav>
+    </div>
+    <h1>Demand Hub<br>Plano Executivo de Implementação</h1>
+    <p class="sub">Do protótipo aprovado à produção sobre <strong>Power Apps Premium</strong> — com aprovação DMC automatizada, integração com <strong>ServiceNow</strong> e priorização por <strong>capacity vs. score</strong>.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">10<em>sem</em></div><div class="l">Go-live · ~2,5 meses</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">Automações</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Integração ServiceNow</div></div>
+      <div class="stat"><div class="n">10</div><div class="l">Licenças Premium (DMC)</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <div class="kicker">A solução</div>
+  <h2>Uma plataforma, três peças</h2>
+  <p class="lede">A aplicação já construída e validada é publicada <em>como está</em> dentro do Power Apps. Nada é reescrito: ela se conecta a dados corporativos, identidade e automação.</p>
+  <div class="pillars">
+    <div class="pillar"><h3>Aplicação (já pronta)</h3><p>O Demand Hub validado pelo negócio, publicado como aplicação premium com acesso por papel e login corporativo (M365).</p></div>
+    <div class="pillar"><h3>Entrada livre, sem licença</h3><p>Qualquer colaborador solicita via Microsoft Forms. A solicitação entra sozinha no sistema e o solicitante recebe confirmação e status por e-mail.</p></div>
+    <div class="pillar"><h3>Automação e integração</h3><p>Aprovações DMC por Teams e e-mail, publicação do projeto aprovado no ServiceNow e leitura diária da capacidade real dos times.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Automações</div>
+  <h2>Sete fluxos que movem a demanda sozinha</h2>
+  <div class="flows">
+    <div class="flow"><span class="n">1</span><div><b>Entrada livre</b><p>Forms → sistema, com score de impacto automático e confirmação ao solicitante.</p></div></div>
+    <div class="flow"><span class="n">2</span><div><b>Aviso de triagem</b><p>Nova demanda → notificação imediata ao PMO por Teams e e-mail.</p></div></div>
+    <div class="flow"><span class="n">3</span><div><b>Aprovação DMC</b><p>Sequencial: Sponsor → Tech Lead → Diretor. Decisão pelo Teams ou e-mail, com link direto.</p></div></div>
+    <div class="flow"><span class="n">4</span><div><b>Publicação no ServiceNow</b><p>Demanda aprovada → projeto criado automaticamente com RCE, score e nº do projeto.</p></div></div>
+    <div class="flow"><span class="n">5</span><div><b>Status ao solicitante</b><p>Cada avanço do fluxo → e-mail com o novo status. Transparência sem licença.</p></div></div>
+    <div class="flow"><span class="n">6</span><div><b>Capacity diária</b><p>Leitura automática da capacidade real (FTE) dos times a partir do ServiceNow.</p></div></div>
+    <div class="flow"><span class="n">7</span><div><b>Alertas e backup</b><p>Aviso de demandas vencidas + cópia de segurança semanal contra exclusão acidental.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Integração ServiceNow</div>
+  <h2>O que entra, o que sai</h2>
+  <p class="lede">Conexão segura via API oficial do ServiceNow, com credenciais corporativas por ambiente (desenvolvimento → testes → produção).</p>
+  <div class="int">
+    <div class="card"><span class="tag b">Entra ↓</span><h3>Capacidade dos times</h3><p>FTE e horas comprometidas de Internal, External e Support — toda manhã, para priorizar com dados reais.</p></div>
+    <div class="card out"><span class="tag k">Sai ↑</span><h3>Projeto aprovado</h3><p>Ao aprovar o DMC: o projeto é criado no ServiceNow com RCE, código da aplicação e score. O nº do projeto volta ao Demand Hub.</p></div>
+    <div class="card sync"><span class="tag g">Sincroniza ↔</span><h3>Status do projeto</h3><p>O avanço do projeto no ServiceNow se reflete no Demand Hub — uma única verdade para todos.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Capacity</div>
+  <h2>Priorização com dados, não com opinião</h2>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Time</th><th>Composição</th><th class="num">Linha base</th><th class="num">FTE</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Internal Delivery</strong></td><td>Wipro / Abbott</td><td class="num">640 h/mes</td><td class="num">4,0</td></tr>
+      <tr><td><strong>External Delivery</strong></td><td>Terceiros / contractors</td><td class="num">960 h/mes</td><td class="num">6,0</td></tr>
+      <tr><td><strong>Support</strong></td><td>Sustaining</td><td class="num">480 h/mes</td><td class="num">3,0</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid g3" style="margin-top:14px">
+    <div class="card"><span class="tag b">Regra</span><h3>Capacity vs. score</h3><p>O PMO prioriza cruzando capacidade disponível com o score. Score 5,00 = atendimento máximo.</p></div>
+    <div class="card"><span class="tag b">Roteamento automático</span><h3>Processo pelo porte</h3><p>&lt; 80 h → Minor Enhancement · &lt; US$ 500k → RAPID/Sprint · &gt; US$ 500k → Phase 0.</p></div>
+    <div class="card"><span class="tag g">Semáforo</span><h3>70 · 90 · 100 %</h3><p>A sobrealocação bloqueia o início de novas execuções até liberar capacidade.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Roadmap</div>
+  <h2>Go-live em 10 semanas</h2>
+  <p class="lede">Fases em paralelo onde é seguro: a tratativa com o ServiceNow começa no dia 1 para absorver seu lead time.</p>
+  <div class="gwrap">
+    <div class="g">
+      <div></div>
+      <div class="month" style="grid-column:2 / span 4">Mês 1</div>
+      <div class="month" style="grid-column:6 / span 4">Mês 2</div>
+      <div class="month" style="grid-column:10 / span 2">Mês 3</div>
+
+      <div></div>
+      <div class="wk">S1</div><div class="wk">S2</div><div class="wk">S3</div><div class="wk">S4</div><div class="wk">S5</div><div class="wk">S6</div><div class="wk">S7</div><div class="wk">S8</div><div class="wk">S9</div><div class="wk">S10</div>
+
+      <div class="ph">Preparação<small>ambientes · licenças · papéis</small></div>
+      <div class="bar" style="grid-column:2 / span 1">F0</div>
+
+      <div class="ph">Dados e identidade<small>base corporativa · SSO</small></div>
+      <div class="bar" style="grid-column:3 / span 2">F1</div>
+
+      <div class="ph">Entrada livre<small>Forms + confirmações</small></div>
+      <div class="bar" style="grid-column:5 / span 2">F2</div>
+
+      <div class="ph">Aprovação DMC<small>Teams · e-mail · decisão</small></div>
+      <div class="bar" style="grid-column:6 / span 2">F3</div>
+
+      <div class="ph">ServiceNow<small>conector · testes</small></div>
+      <div class="bar" style="grid-column:7 / span 2">F4</div>
+
+      <div class="ph">Capacity<small>FTE real · limites</small></div>
+      <div class="bar" style="grid-column:9 / span 1">F5</div>
+
+      <div class="ph">UAT &amp; Go-live<small>DMC · treinamento</small></div>
+      <div class="bar go" style="grid-column:10 / span 1">Go-live</div>
+
+      <div class="ph">Hypercare<small>2 semanas pós go-live</small></div>
+      <div class="bar done" style="grid-column:10 / span 1" title="continua 2 semanas">HC →</div>
+    </div>
+    <div class="glegend">
+      <span><span class="dot" style="background:var(--brand)"></span>Construção</span>
+      <span><span class="dot" style="background:var(--gold)"></span>Go-live (semana 10)</span>
+      <span><span class="dot" style="background:var(--ok)"></span>Hypercare (+2 semanas)</span>
+    </div>
+  </div>
+  <div class="miles">
+    <div class="mile"><b>Semana 5</b> · demo do intake para Sambini e Gabriela</div>
+    <div class="mile"><b>Semana 7</b> · aprovação piloto real com o DMC</div>
+    <div class="mile"><b>Semana 9</b> · primeiro projeto publicado no ServiceNow (testes)</div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Decisões necessárias</div>
+  <h2>Três respostas para começar</h2>
+  <div class="dec">
+    <div class="item"><span class="q">?</span><div><b>Licenciamento Premium (10 pessoas DMC)</b><p>Aprovação de custo pela Governança — condição para a semana 1.</p></div></div>
+    <div class="item"><span class="q">?</span><div><b>Limite de processo: US$ 500 mil ou US$ 500 milhões?</b><p>Define o roteamento Phase 0 vs. RAPID. Hoje configurado em US$ 500 mil (conforme ata).</p></div></div>
+    <div class="item"><span class="q">?</span><div><b>Dono do portfólio de Inteligência Artificial</b><p>Infraestrutura → Sambini · Aplicações → Gabriela · IA → a definir.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Próximos passos</div>
+  <h2>Semana 1</h2>
+  <ol class="steps">
+    <li><strong>Governança</strong> confirma licenças e política de acesso.</li>
+    <li><strong>Time técnico</strong> cria os ambientes e publica a linha de base no Power Apps.</li>
+    <li><strong>PMO</strong> valida com Sambini o limite e os critérios finais de impacto.</li>
+    <li><strong>ServiceNow</strong> recebe o pedido de credenciais de integração (lead time longo — solicitado no dia 1).</li>
+    <li><strong>Kick-off</strong> com este plano como escopo.</li>
+  </ol>
+  <footer>
+    <span>Demand Hub · Plano Executivo v1.1 — Julho 2026</span>
+    <span>LIT Digitall — Confidencial · <a href="../../" style="color:var(--brand)">ver protótipo</a></span>
+  </footer>
+</section>
+
+</main>
+</body>
+</html>
