@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Alert,
   Anchor,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -26,11 +27,15 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconChecks,
+  IconDeviceFloppy,
+  IconHelpCircle,
   IconRocket,
 } from "@tabler/icons-react";
+import { Tooltip } from "@mantine/core";
 import { adminLookupService, demandService } from "../data/demandService";
 import {
   ABRANGENCIA_SCORE,
+  APP_REGISTRY,
   Impacto,
   ImpactoAbrangencia,
   TipoDemanda,
@@ -48,6 +53,30 @@ import {
   type AdminLookup,
   type DemandInput,
 } from "../data/types";
+
+/* Evaluación guiada (análise UX): consecuencias de no ejecutar. */
+const CONSEQUENCE_OPTIONS = [
+  "Cost increase",
+  "Regulatory risk",
+  "Operational risk",
+  "Customer impact",
+  "Reputational impact",
+];
+
+/* Beneficio económico esperado en rangos (análise UX). O valor numérico
+   (ponto médio) alimenta o roteamento de processo (Phase 0 / RAPID / ME). */
+const VALUE_RANGES: { label: string; value: number }[] = [
+  { label: "< US$ 10k", value: 5_000 },
+  { label: "US$ 10k – 50k", value: 30_000 },
+  { label: "US$ 50k – 100k", value: 75_000 },
+  { label: "US$ 100k – 500k", value: 300_000 },
+  { label: "> US$ 500k", value: 750_000 },
+];
+
+/* Áreas afectadas (selección múltiple — análise UX). */
+const AFFECTED_AREAS = ["Commercial", "IT", "Purchasing", "HR", "Finance", "Operations"];
+
+const DRAFT_KEY = "demand-system.newdraft.v1";
 import { useCurrentUser } from "../lib/useCurrentUser";
 import { useT } from "../i18n";
 import { useLabels } from "../i18n/useLabels";
@@ -67,6 +96,7 @@ type DraftForm = Omit<
   clasificacion: string;
   clasificacionOtro: string;
   temSolucaoProposta: boolean;
+  rce: string;
 };
 
 function emptyDraft(): DraftForm {
@@ -99,6 +129,7 @@ function emptyDraft(): DraftForm {
     solucaoProposta: "",
     temSolucaoProposta: false,
     appId: "",
+    rce: "",
     sponsor: "",
     donoProcesso: "",
     areasEnvolvidas: "",
@@ -140,7 +171,14 @@ export function NovaDemandaPage() {
   const L = useLabels();
   const me = useCurrentUser();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<DraftForm>(emptyDraft());
+  // Restaura o rascunho salvo ("Save draft" — análise UX)
+  const [form, setForm] = useState<DraftForm>(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) return { ...emptyDraft(), ...(JSON.parse(raw) as Partial<DraftForm>) };
+    } catch { /* fresh */ }
+    return emptyDraft();
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [areas, setAreas] = useState<AdminLookup[]>([]);
@@ -173,6 +211,15 @@ export function NovaDemandaPage() {
     setStep((s) => Math.max(0, s - 1));
   }
 
+  function saveDraft() {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+    notifications.show({
+      color: "abbott",
+      title: "Draft saved",
+      message: "You can come back and finish this request later.",
+    });
+  }
+
   async function submit() {
     const errs = { ...validateStep(0, form), ...validateStep(1, form), ...validateStep(2, form), ...validateStep(3, form) };
     setErrors(errs);
@@ -200,12 +247,14 @@ export function NovaDemandaPage() {
         clasificacionOtro: form.clasificacion === "otro" ? form.clasificacionOtro : "",
         temSolucaoProposta: form.temSolucaoProposta,
         appName: appName(form.appId),
+        rce: form.rce,
         esforcoEstimado: form.esforcoEstimado,
         // Capacity (time/horas) é definido pelo time técnico na Avaliação.
         time: "",
         horasEstimadas: 0,
       };
       const created = await demandService.create(payload);
+      localStorage.removeItem(DRAFT_KEY); // rascunho consumido
       notifications.show({
         color: "teal",
         title: t("detail_created"),
@@ -234,18 +283,33 @@ export function NovaDemandaPage() {
             {t("nova_subtitle")}
           </Text>
         </div>
-        <Button
-          variant="default"
-          component={Link}
-          to="/demandas"
-          leftSection={<IconArrowLeft size={17} />}
-        >
-          {t("cancel")}
-        </Button>
+        <Group>
+          <Button
+            variant="light"
+            leftSection={<IconDeviceFloppy size={17} />}
+            onClick={saveDraft}
+          >
+            Save draft
+          </Button>
+          <Button
+            variant="default"
+            component={Link}
+            to="/demandas"
+            leftSection={<IconArrowLeft size={17} />}
+          >
+            {t("cancel")}
+          </Button>
+        </Group>
       </Group>
 
       <Card withBorder radius="lg" padding="xl">
-        <Stepper active={step} onStepClick={setStep} size="sm" iconSize={32} mb="xl">
+        {/* Indicador claro de progresso (análise UX): "Step X of 5" + stepper maior */}
+        <Group justify="space-between" mb="sm">
+          <Badge size="lg" variant="light" color="abbott">
+            Step {step + 1} of {TOTAL_STEPS}
+          </Badge>
+        </Group>
+        <Stepper active={step} onStepClick={setStep} size="md" iconSize={40} mb="xl">
           <Stepper.Step label={t("step_basico")} />
           <Stepper.Step label={t("step_objetivo")} />
           <Stepper.Step label={t("step_impacto")} />
@@ -256,7 +320,11 @@ export function NovaDemandaPage() {
         {/* ============ Passo 1 — Informações Básicas ============ */}
         {step === 0 && (
           <Stack gap="md">
-            <SectionTitle index={1} title={t("nova_section1")} />
+            <SectionTitle
+              index={1}
+              title={t("nova_section1")}
+              help="A demand is any request for IT work: a new project, an enhancement, a fix. Describe the business need — IT expects the what and the why; the technical how comes later."
+            />
             <TextInput
               label={t("nova_demand_title_label")}
               withAsterisk
@@ -349,12 +417,12 @@ export function NovaDemandaPage() {
                 value={form.processosImpactados}
                 onChange={(e) => set("processosImpactados", e.currentTarget.value)}
               />
-              <Textarea
+              <MultiSelect
                 label={t("nova_consequence_label")}
-                autosize
-                minRows={2}
-                value={form.consequenciaNaoExecucao}
-                onChange={(e) => set("consequenciaNaoExecucao", e.currentTarget.value)}
+                description="Guided evaluation — pick what happens if this is not executed"
+                data={CONSEQUENCE_OPTIONS}
+                value={form.consequenciaNaoExecucao ? form.consequenciaNaoExecucao.split("; ").filter((x) => CONSEQUENCE_OPTIONS.includes(x)) : []}
+                onChange={(v) => set("consequenciaNaoExecucao", v.join("; "))}
               />
             </SimpleGrid>
 
@@ -430,13 +498,13 @@ export function NovaDemandaPage() {
                 value={String(form.impactoNivel)}
                 onChange={(v) => v && set("impactoNivel", Number(v))}
               />
-              <NumberInput
-                label={t("nova_valueLabel")}
-                decimalScale={0}
-                thousandSeparator="."
-                decimalSeparator=","
-                value={form.valorEstimado}
-                onChange={(v) => set("valorEstimado", typeof v === "number" ? v : "")}
+              <Select
+                label="Expected economic benefit"
+                description="Pick a range — also drives the delivery process (Phase 0 / RAPID / ME)"
+                clearable
+                data={VALUE_RANGES.map((r) => ({ value: String(r.value), label: r.label }))}
+                value={typeof form.valorEstimado === "number" ? String(form.valorEstimado) : null}
+                onChange={(v) => set("valorEstimado", v ? Number(v) : "")}
               />
             </SimpleGrid>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
@@ -461,6 +529,15 @@ export function NovaDemandaPage() {
                 onChange={(v) => set("roiEstimado", typeof v === "number" ? v : "")}
               />
             </SimpleGrid>
+            {/* RCE capturado no intake (análise UX) — o solicitante conhece o número */}
+            <TextInput
+              label="RCE — project no. approved by Management"
+              description="Shown as informational in the approval flow"
+              placeholder="e.g.: RCE-2026-0099"
+              maw={360}
+              value={form.rce}
+              onChange={(e) => set("rce", e.currentTarget.value)}
+            />
 
             <SectionTitle index={5} title={t("nova_section5")} />
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
@@ -512,12 +589,16 @@ export function NovaDemandaPage() {
               </Text>
             </Alert>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <Textarea
-                label={t("nova_systems_label")}
-                autosize
-                minRows={2}
-                value={form.sistemasEnvolvidos}
-                onChange={(e) => set("sistemasEnvolvidos", e.currentTarget.value)}
+              <MultiSelect
+                label="Affected applications"
+                description="Search by code or name"
+                searchable
+                data={Object.entries(APP_REGISTRY).map(([code, name]) => ({
+                  value: code,
+                  label: `${code} — ${name}`,
+                }))}
+                value={form.sistemasEnvolvidos ? form.sistemasEnvolvidos.split("; ").filter((x) => APP_REGISTRY[x]) : []}
+                onChange={(v) => set("sistemasEnvolvidos", v.join("; "))}
               />
               <Textarea
                 label={t("nova_integrations_label")}
@@ -584,11 +665,12 @@ export function NovaDemandaPage() {
                 value={form.donoProcesso}
                 onChange={(e) => set("donoProcesso", e.currentTarget.value)}
               />
-              <TextInput
+              <MultiSelect
                 label={t("nova_areasInvolved")}
-                placeholder={t("nova_areasInvolved_placeholder")}
-                value={form.areasEnvolvidas}
-                onChange={(e) => set("areasEnvolvidas", e.currentTarget.value)}
+                description="Multiple selection"
+                data={AFFECTED_AREAS}
+                value={form.areasEnvolvidas ? form.areasEnvolvidas.split("; ").filter((x) => AFFECTED_AREAS.includes(x)) : []}
+                onChange={(v) => set("areasEnvolvidas", v.join("; "))}
               />
             </SimpleGrid>
           </Stack>
@@ -623,20 +705,36 @@ export function NovaDemandaPage() {
               </Text>
             </Paper>
 
-            {/* ---- Resumen antes de enviar ---- */}
-            <SectionTitle index={11} title="Summary" />
+            {/* ---- Resumo estruturado antes de enviar (análise UX): seções
+                 GENERAL / PRIORITIZATION / CLASSIFICATION com [Edit] rápido ---- */}
+            <SectionTitle index={11} title="Review before submitting" />
             <Paper withBorder radius="md" p="md">
-              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" verticalSpacing={6}>
-                <Resumo k="Requester" v={`${form.solicitante || "—"} · ${form.email || "—"}`} />
-                <Resumo k="Area" v={form.areaSolicitante || "—"} />
-                <Resumo k="Title" v={form.titulo || "—"} />
-                <Resumo k="Category / Type" v={`${categoryOptions.find((o) => o.value === form.category)?.label ?? "—"} · ${L.tipo[form.tipo]}`} />
-                <Resumo k="Scope (impact)" v={`${abrangenciaOptions.find((o) => String(o.value) === String(form.impactoAbrangencia))?.label ?? "—"} → ${ABRANGENCIA_SCORE[form.impactoAbrangencia]}/5`} />
-                <Resumo k="Urgency / Impact" v={`${L.urgencia[form.urgencia]} · ${L.impacto[form.impactoNivel]}`} />
-                <Resumo k="Sponsor (auto)" v={form.sponsor || "—"} />
-                <Resumo k="APP ID" v={form.appId || "—"} />
-                <Resumo k="Value / ROI" v={`${typeof form.valorEstimado === "number" ? `US$ ${form.valorEstimado.toLocaleString()}` : "—"} · ${typeof form.roiEstimado === "number" ? `${form.roiEstimado}%` : "—"}`} />
-              </SimpleGrid>
+              <Stack gap="md">
+                <SummarySection title="GENERAL INFORMATION" onEdit={() => setStep(0)}>
+                  <Resumo k="Title" v={form.titulo || "—"} />
+                  <Resumo k="Requester" v={`${form.solicitante || "—"} · ${form.email || "—"}`} />
+                  <Resumo k="Area" v={form.areaSolicitante || "—"} />
+                  <Resumo k="Sponsor (auto)" v={form.sponsor || "—"} />
+                </SummarySection>
+                <SummarySection title="PRIORITIZATION" onEdit={() => setStep(2)}>
+                  <Resumo k="Impact" v={`${ABRANGENCIA_SCORE[form.impactoAbrangencia]}/5 (${abrangenciaOptions.find((o) => String(o.value) === String(form.impactoAbrangencia))?.label ?? "—"})`} />
+                  <Resumo k="Urgency" v={L.urgencia[form.urgencia]} />
+                  <Resumo k="Value" v={typeof form.valorEstimado === "number" ? (VALUE_RANGES.find((r) => r.value === form.valorEstimado)?.label ?? `US$ ${form.valorEstimado.toLocaleString()}`) : "—"} />
+                  <Resumo k="ROI" v={typeof form.roiEstimado === "number" ? `${form.roiEstimado}%` : "—"} />
+                  <Resumo k="RCE" v={form.rce || "—"} />
+                </SummarySection>
+                <SummarySection title="CLASSIFICATION" onEdit={() => setStep(1)}>
+                  <Resumo k="Type" v={L.tipo[form.tipo]} />
+                  <Resumo k="Category" v={categoryOptions.find((o) => o.value === form.category)?.label ?? "—"} />
+                  <Resumo k="Project classification" v={form.clasificacion === "otro" ? (form.clasificacionOtro || "Other") : (clasificacionOptions.find((o) => o.value === form.clasificacion)?.label ?? "—")} />
+                  <Resumo k="APP ID" v={form.appId ? `${form.appId}${appName(form.appId) ? ` — ${appName(form.appId)}` : ""}` : "—"} />
+                </SummarySection>
+                <SummarySection title="STAKEHOLDERS" onEdit={() => setStep(3)}>
+                  <Resumo k="Process owner" v={form.donoProcesso || "—"} />
+                  <Resumo k="Areas involved" v={form.areasEnvolvidas || "—"} />
+                  <Resumo k="Affected apps" v={form.sistemasEnvolvidos || "—"} />
+                </SummarySection>
+              </Stack>
             </Paper>
 
             <Alert color="abbott" icon={<IconRocket size={18} />}>
@@ -686,6 +784,32 @@ export function NovaDemandaPage() {
   );
 }
 
+function SummarySection({
+  title,
+  onEdit,
+  children,
+}: {
+  title: string;
+  onEdit: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <Group justify="space-between" mb={6}>
+        <Text size="xs" fw={800} lts={1} c="abbott.7">
+          {title}
+        </Text>
+        <Button size="compact-xs" variant="subtle" onClick={onEdit}>
+          Edit
+        </Button>
+      </Group>
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" verticalSpacing={6}>
+        {children}
+      </SimpleGrid>
+    </div>
+  );
+}
+
 function Resumo({ k, v }: { k: string; v: string }) {
   return (
     <div>
@@ -697,7 +821,7 @@ function Resumo({ k, v }: { k: string; v: string }) {
   );
 }
 
-function SectionTitle({ index, title }: { index: number; title: string }) {
+function SectionTitle({ index, title, help }: { index: number; title: string; help?: string }) {
   return (
     <Group gap={8}>
       <Text c="abbott.6" fw={800} fz="lg" w={26} ta="right">
@@ -706,6 +830,13 @@ function SectionTitle({ index, title }: { index: number; title: string }) {
       <Text fw={700} fz="lg">
         {title}
       </Text>
+      {help && (
+        <Tooltip label={help} multiline maw={320} withArrow>
+          <Text component="span" c="dimmed" style={{ display: "inline-flex", cursor: "help" }}>
+            <IconHelpCircle size={18} />
+          </Text>
+        </Tooltip>
+      )}
     </Group>
   );
 }

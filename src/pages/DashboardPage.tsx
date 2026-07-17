@@ -16,7 +16,7 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
-import { BarChart, DonutChart, LineChart } from "@mantine/charts";
+import { BarChart, LineChart } from "@mantine/charts";
 import {
   IconAlertTriangle,
   IconChecks,
@@ -44,16 +44,31 @@ interface KpiCardProps {
   hint?: string;
   icon: Icon;
   color: string;
+  /** Clicable: navega a la lista filtrada (dashboard accionable). */
+  to?: string;
+  emphasized?: boolean;
 }
-function KpiCard({ label, value, hint, icon: Icon, color }: KpiCardProps) {
-  return (
-    <Card withBorder radius="lg" padding="lg">
+function KpiCard({ label, value, hint, icon: Icon, color, to, emphasized }: KpiCardProps) {
+  const card = (
+    <Card
+      withBorder
+      radius="lg"
+      padding="lg"
+      className={to ? "hover-lift" : undefined}
+      style={{
+        cursor: to ? "pointer" : undefined,
+        borderColor: emphasized ? `var(--mantine-color-${color}-4)` : undefined,
+        borderWidth: emphasized ? 2 : 1,
+        background: emphasized ? `var(--mantine-color-${color}-0)` : undefined,
+        height: "100%",
+      }}
+    >
       <Group justify="space-between" align="flex-start">
         <div>
           <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
             {label}
           </Text>
-          <Text fz={30} fw={800} lh={1.05} mt={6}>
+          <Text fz={30} fw={800} lh={1.05} mt={6} c={emphasized ? `${color}.8` : undefined}>
             {value}
           </Text>
           {hint && (
@@ -62,11 +77,18 @@ function KpiCard({ label, value, hint, icon: Icon, color }: KpiCardProps) {
             </Text>
           )}
         </div>
-        <ThemeIcon size={44} radius="md" color={color} variant="light">
+        <ThemeIcon size={44} radius="md" color={color} variant={emphasized ? "filled" : "light"}>
           <Icon size={22} stroke={1.8} />
         </ThemeIcon>
       </Group>
     </Card>
+  );
+  return to ? (
+    <Link to={to} style={{ textDecoration: "none", color: "inherit" }}>
+      {card}
+    </Link>
+  ) : (
+    card
   );
 }
 
@@ -112,15 +134,22 @@ export function DashboardPage() {
   const emExec = items.filter((d) => d.status === StatusDemanda.EmExecucao).length;
   const concl = items.filter((d) => d.status === StatusDemanda.Concluida).length;
   const criticas = items.filter((d) => d.urgencia === Urgencia.Critico).length;
+  const activeStatuses = (d: Demand) =>
+    d.status !== StatusDemanda.Concluida && d.status !== StatusDemanda.Recusada;
+  const overdue = items.filter(
+    (d) => activeStatuses(d) && d.deadline && new Date(d.deadline) < new Date(),
+  ).length;
 
-  /* Distribuição por tipo (donut) */
+  /* Distribución por tipo — barras horizontales ordenadas (análise UX) */
   const tipoCounts = new Map<number, number>();
   items.forEach((d) => tipoCounts.set(d.tipo, (tipoCounts.get(d.tipo) ?? 0) + 1));
-  const tipoData = [...tipoCounts.entries()].map(([tipo, n], i) => ({
-    name: L.tipo[tipo],
-    value: n,
-    color: TIPO_COLORS[i % TIPO_COLORS.length],
-  }));
+  const tipoData = [...tipoCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([tipo, n], i) => ({
+      name: L.tipo[tipo],
+      value: n,
+      color: TIPO_COLORS[i % TIPO_COLORS.length],
+    }));
 
   /* Distribuição por urgência (barra) */
   const urgenciaCounts = new Map<number, number>();
@@ -172,14 +201,34 @@ export function DashboardPage() {
         </Button>
       </Group>
 
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-        <KpiCard label={t("kpi_total")} value={total} icon={IconClipboardList} color="abbott" hint={t("kpi_demands")} />
+      {/* KPIs accionables — lo urgente primero (análise UX): críticas y vencidas
+          con énfasis; cada tarjeta navega a la lista filtrada. */}
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing="md">
+        <KpiCard
+          label="Critical"
+          value={criticas}
+          icon={IconAlertTriangle}
+          color="red"
+          emphasized={criticas > 0}
+          hint="Needs attention first"
+          to={`/demandas?urg=${Urgencia.Critico}`}
+        />
+        <KpiCard
+          label="Overdue"
+          value={overdue}
+          icon={IconAlertTriangle}
+          color="orange"
+          emphasized={overdue > 0}
+          hint="Past their deadline"
+          to="/demandas?overdue=1"
+        />
         <KpiCard
           label={t("kpi_new")}
           value={items.filter((d) => d.status <= StatusDemanda.EmAnalise).length}
           icon={IconRocket}
           color="blue"
           hint={t("kpi_new_count", { n: novas })}
+          to={`/demandas?status=${StatusDemanda.Nova}`}
         />
         <KpiCard
           label={t("kpi_inExec")}
@@ -187,33 +236,37 @@ export function DashboardPage() {
           icon={IconTrendingUp}
           color="yellow"
           hint={t("kpi_completed", { n: concl })}
+          to={`/demandas?status=${StatusDemanda.EmExecucao}`}
         />
         <KpiCard
-          label={t("kpi_critical")}
-          value={criticas}
-          icon={IconAlertTriangle}
-          color="red"
-          hint={t("kpi_critical_hint")}
+          label={t("kpi_total")}
+          value={total}
+          icon={IconClipboardList}
+          color="abbott"
+          hint={t("kpi_demands")}
+          to="/demandas"
         />
       </SimpleGrid>
 
       <Grid>
         <Grid.Col span={{ base: 12, md: 5 }}>
           <Card withBorder radius="lg" padding="lg" h="100%">
-            <Text fw={700} mb="xs">
+            <Text fw={700} mb="md">
               {t("chart_byType")}
             </Text>
-            <Center>
-              <DonutChart
-                data={tipoData}
-                size={220}
-                thickness={32}
-                withLabels
-                withTooltip
-                tooltipDataSource="segment"
-                paddingAngle={2}
-              />
-            </Center>
+            {/* Barras horizontales ordenadas (sustituye al donut — análise UX) */}
+            <BarChart
+              h={Math.max(180, tipoData.length * 42)}
+              data={tipoData.map((d) => ({ type: d.name, count: d.value }))}
+              dataKey="type"
+              orientation="vertical"
+              series={[{ name: "count", color: "abbott.6", label: "Requests" }]}
+              withLegend={false}
+              barProps={{ radius: 6 }}
+              gridAxis="x"
+              tickLine="none"
+              yAxisProps={{ width: 150 }}
+            />
           </Card>
         </Grid.Col>
 

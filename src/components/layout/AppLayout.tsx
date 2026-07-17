@@ -95,16 +95,21 @@ export function AppLayout() {
   const canCreate = roles.includes(Role.Solicitante) || isAdmin;
   const gate = [Role.PMO, Role.Diretor, Role.Sponsor, Role.Admin];
 
-  const NAV_MAIN: NavItem[] = [
-    { to: "/", label: "Home", icon: IconLayoutDashboard, end: true },
+  /* Menú agrupado (análise UX): Demands / Tracking / Administration */
+  const NAV_HOME: NavItem[] = [{ to: "/", label: "Home", icon: IconLayoutDashboard, end: true }];
+  const NAV_DEMANDS: NavItem[] = [
     { to: "/aprovacoes", label: "My inbox", icon: IconInbox, badge: pendentes },
-    { to: "/demandas", label: "Requests", icon: IconListDetails },
+    { to: "/demandas", label: "All requests", icon: IconListDetails },
+    { to: "/kanban", label: "Board", icon: IconLayoutKanban },
+  ];
+  const NAV_TRACKING: NavItem[] = [
     { to: "/approvers", label: "Approvers Status", icon: IconChecks, roles: gate },
     { to: "/scoreboard", label: "Score Board", icon: IconChartBar, roles: gate },
-    { to: "/kanban", label: "Board", icon: IconLayoutKanban },
     { to: "/capacity", label: "Capacity", icon: IconClockHour4, roles: [Role.TechLead, Role.PMO, Role.Admin] },
   ];
-  const navVisible = NAV_MAIN.filter((n) => !n.roles || n.roles.some((r) => roles.includes(r)));
+  const byRole = (items: NavItem[]) => items.filter((n) => !n.roles || n.roles.some((r) => roles.includes(r)));
+  const navDemands = byRole(NAV_DEMANDS);
+  const navTracking = byRole(NAV_TRACKING);
 
   const NAV_ADMIN: NavItem[] = [
     { to: "/relatorio", label: "Monthly report", icon: IconPresentation },
@@ -169,7 +174,15 @@ export function AppLayout() {
             </RouterNavLink>
           )}
 
-          {navVisible.map((n) => (
+          {NAV_HOME.map((n) => (
+            <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
+              <n.icon size={19} stroke={1.7} />
+              <span>{n.label}</span>
+            </RouterNavLink>
+          ))}
+
+          <div className={classes.navSection}>Demands</div>
+          {navDemands.map((n) => (
             <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
               <n.icon size={19} stroke={1.7} />
               <span>{n.label}</span>
@@ -179,9 +192,17 @@ export function AppLayout() {
             </RouterNavLink>
           ))}
 
+          {navTracking.length > 0 && <div className={classes.navSection}>Tracking</div>}
+          {navTracking.map((n) => (
+            <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
+              <n.icon size={19} stroke={1.7} />
+              <span>{n.label}</span>
+            </RouterNavLink>
+          ))}
+
           {isAdmin && (
             <>
-              <div className={classes.navSection}>Configuration</div>
+              <div className={classes.navSection}>Administration</div>
               {NAV_ADMIN.map((n) => (
                 <RouterNavLink key={n.to} to={n.to} onClick={close} className={navClass}>
                   <n.icon size={19} stroke={1.7} />

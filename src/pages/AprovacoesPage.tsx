@@ -21,13 +21,31 @@ import {
 } from "@mantine/core";
 import { IconChecks, IconInbox } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
-import { statusLabel, type Demand } from "../data/types";
+import { criticidad, statusLabel, type Demand } from "../data/types";
 import { precisaDeMim } from "../domain/workflow";
 import { ROLE_LABEL } from "../domain/roles";
 import { NextActionCard } from "../components/NextActionCard";
 import { TipoBadge, UrgenciaBadge } from "../components/Badges";
 import { useCurrentUser } from "../lib/useCurrentUser";
 import { formatRelative } from "../lib/format";
+
+/** Par label/valor compacto usado nos cards da bandeja. */
+function InfoBit({ label, value, warn, color }: { label: string; value: string; warn?: boolean; color?: string }) {
+  return (
+    <div>
+      <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={0.5}>
+        {label}
+      </Text>
+      {color ? (
+        <Badge variant="light" color={color} radius="sm">{value}</Badge>
+      ) : (
+        <Text size="sm" fw={600} c={warn ? "red.7" : undefined}>
+          {value}
+        </Text>
+      )}
+    </div>
+  );
+}
 
 export function AprovacoesPage() {
   const user = useCurrentUser();
@@ -112,10 +130,30 @@ export function AprovacoesPage() {
                 </Group>
               </Group>
 
-              <Text size="sm" c="dimmed" mb="md">
+              <Text size="sm" c="dimmed" mb="xs">
                 {demand.areaSolicitante} · {demand.solicitante} ·{" "}
                 {formatRelative(demand.dataSolicitacao)}
               </Text>
+
+              {/* Datos clave para decidir (análise UX): deadline, impacto,
+                  esfuerzo, presupuesto y riesgo. */}
+              <Group gap="lg" mb="md" wrap="wrap">
+                <InfoBit
+                  label="Deadline"
+                  value={demand.deadline ? new Date(demand.deadline).toLocaleDateString("en-US") : "—"}
+                  warn={!!demand.deadline && new Date(demand.deadline) < new Date()}
+                />
+                <InfoBit label="Business impact" value={`${demand.score.businessImpact}/5`} />
+                <InfoBit
+                  label="Estimated effort"
+                  value={demand.horasEstimadas ? `${demand.horasEstimadas}h` : "—"}
+                />
+                <InfoBit
+                  label="Budget"
+                  value={demand.valorEstimado != null ? `US$ ${demand.valorEstimado.toLocaleString("en-US")}` : "—"}
+                />
+                <InfoBit label="Risk" value={criticidad(demand.urgencia).label} color={criticidad(demand.urgencia).color} />
+              </Group>
 
               <NextActionCard
                 demand={demand}
@@ -135,7 +173,7 @@ export function AprovacoesPage() {
         <Group gap="xs">
           <IconInbox size={16} />
           <Text size="sm" c="dimmed">
-            Switch persona above (menu ▾) to see the inbox of each role in the flow.
+            Sign in with another role account to see that role's inbox.
           </Text>
         </Group>
       </Paper>

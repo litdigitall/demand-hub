@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   ActionIcon,
   Anchor,
@@ -52,12 +52,18 @@ import { useLabels } from "../i18n/useLabels";
 export function DemandasPage() {
   const { t } = useT();
   const L = useLabels();
+  const [params] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Demand[]>([]);
   const [q, setQ] = useState("");
+  // Filtros pré-aplicados via URL (KPIs clicáveis do dashboard)
   const [tipoFiltro, setTipoFiltro] = useState<string[]>([]);
-  const [statusFiltro, setStatusFiltro] = useState<string[]>([]);
-  const [urgenciaFiltro, setUrgenciaFiltro] = useState<string | null>(null);
+  const [statusFiltro, setStatusFiltro] = useState<string[]>(() => {
+    const s = params.get("status");
+    return s ? [s] : [];
+  });
+  const [urgenciaFiltro, setUrgenciaFiltro] = useState<string | null>(() => params.get("urg"));
+  const [overdueOnly, setOverdueOnly] = useState(() => params.get("overdue") === "1");
   const [view, setView] = useState<Categoria | "todas">("todas");
 
   useEffect(() => {
@@ -84,20 +90,27 @@ export function DemandasPage() {
       if (tipoFiltro.length > 0 && !tipoFiltro.includes(String(d.tipo))) return false;
       if (statusFiltro.length > 0 && !statusFiltro.includes(String(d.status))) return false;
       if (urgenciaFiltro && String(d.urgencia) !== urgenciaFiltro) return false;
+      if (
+        overdueOnly &&
+        !(d.deadline && new Date(d.deadline) < new Date() &&
+          d.status !== 506970004 && d.status !== 506970005)
+      )
+        return false;
       return true;
     });
-  }, [items, q, view, tipoFiltro, statusFiltro, urgenciaFiltro]);
+  }, [items, q, view, tipoFiltro, statusFiltro, urgenciaFiltro, overdueOnly]);
 
   function clearFilters() {
     setQ("");
     setTipoFiltro([]);
     setStatusFiltro([]);
     setUrgenciaFiltro(null);
+    setOverdueOnly(false);
     setView("todas");
   }
 
   const hasFilter =
-    !!q || tipoFiltro.length > 0 || statusFiltro.length > 0 || !!urgenciaFiltro;
+    !!q || tipoFiltro.length > 0 || statusFiltro.length > 0 || !!urgenciaFiltro || overdueOnly;
 
   return (
     <Stack gap="lg">
@@ -165,6 +178,11 @@ export function DemandasPage() {
             clearable
             w={150}
           />
+          {overdueOnly && (
+            <Badge color="orange" variant="filled" size="lg">
+              Overdue only
+            </Badge>
+          )}
           {hasFilter && (
             <Button
               variant="subtle"

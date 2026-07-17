@@ -202,13 +202,23 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
 
             {modal.acao.campos?.includes("serviceNow") && (
               <>
-                <TextInput
-                  label="RCE — project no. approved by Management"
-                  description="Required identifier on acceptance"
-                  placeholder="e.g.: RCE-2026-0099"
-                  value={modal.ctx.rce ?? ""}
-                  onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, rce: e.currentTarget.value } })}
-                />
+                {/* RCE é capturado no intake (análise UX) — aqui é só informativo,
+                    com input apenas se estiver faltando. */}
+                {demand.rce ? (
+                  <Alert color="gray" variant="light" p="xs">
+                    <Text size="sm">
+                      RCE (from intake): <strong>{demand.rce}</strong>
+                    </Text>
+                  </Alert>
+                ) : (
+                  <TextInput
+                    label="RCE — project no. approved by Management"
+                    description="Not provided at intake — enter it now"
+                    placeholder="e.g.: RCE-2026-0099"
+                    value={modal.ctx.rce ?? ""}
+                    onChange={(e) => setModal({ ...modal, ctx: { ...modal.ctx, rce: e.currentTarget.value } })}
+                  />
+                )}
                 <TextInput
                   label="Project no. (ServiceNow)"
                   placeholder="e.g.: PRJ0012345"

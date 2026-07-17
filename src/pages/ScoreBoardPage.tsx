@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ActionIcon,
@@ -32,7 +32,6 @@ import {
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
 import {
-  SCORE_LABELS,
   SCORE_WEIGHTS,
   rawScoreSum,
   weightedScore,
@@ -65,6 +64,15 @@ export function ScoreBoardPage() {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Demand[]>([]);
   const [soTop, setSoTop] = useState(false); // portfólio: só score alto (≥4,5)
+  // Linhas expandidas ("View score detail") — evita sobrecarga visual (análise UX)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   useEffect(() => {
     refresh();
@@ -189,165 +197,123 @@ export function ScoreBoardPage() {
         </Group>
       </Paper>
 
+      {/* Tabla compacta (análise UX): Demand · Type · Priority · Score · Position
+          + fila expandible "View score detail" con los 7 criterios/validación. */}
       <Card withBorder radius="lg" padding={0}>
-        <Table.ScrollContainer minWidth={1200}>
+        <Table.ScrollContainer minWidth={760}>
           <Table verticalSpacing="sm" highlightOnHover horizontalSpacing="md">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th w={80}>#</Table.Th>
                 <Table.Th>{t("list_demand")}</Table.Th>
                 <Table.Th>{t("list_type")}</Table.Th>
-                <Table.Th>{t("list_urgency").slice(0, 3) + "."}</Table.Th>
-                {SCORE_COLS.map((c) => (
-                  <Table.Th key={c.key} ta="center" w={60}>
-                    {c.short}
-                  </Table.Th>
-                ))}
-                <Table.Th ta="center" w={100}>
-                  {t("list_validation")}
-                </Table.Th>
-                <Table.Th ta="center" w={100}>
-                  {t("list_score")}
-                </Table.Th>
-                <Table.Th w={120} ta="center">
-                  {t("list_final")}
-                </Table.Th>
+                <Table.Th>Priority</Table.Th>
+                <Table.Th ta="center" w={100}>{t("list_score")}</Table.Th>
+                <Table.Th w={120} ta="center">Position</Table.Th>
+                <Table.Th w={140} />
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {visiveis.map((d, i) => {
                 const wScore = weightedScore(d.score);
+                const isOpen = expanded.has(d.id);
+                const v = d.avaliacoes.length;
+                const stack = !!d.stackValidadaPor;
                 return (
-                  <Table.Tr key={d.id}>
-                    <Table.Td>
-                      <Group gap={4}>
-                        <Text fw={700}>{d.finalPriority ?? "—"}</Text>
-                        <Stack gap={0}>
-                          <ActionIcon
-                            size="xs"
-                            variant="subtle"
-                            disabled={i === 0}
-                            onClick={() => move(d.id, -1)}
-                          >
-                            <IconChevronUp size={12} />
-                          </ActionIcon>
-                          <ActionIcon
-                            size="xs"
-                            variant="subtle"
-                            disabled={i === items.length - 1}
-                            onClick={() => move(d.id, 1)}
-                          >
-                            <IconChevronDown size={12} />
-                          </ActionIcon>
-                        </Stack>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td>
-                      <Anchor component={Link} to={`/demandas/${d.id}`} fw={600}>
-                        {d.titulo}
-                      </Anchor>
-                      <Text size="xs" c="dimmed">
-                        {d.numero} · {d.areaSolicitante}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <TipoBadge value={d.tipo} />
-                    </Table.Td>
-                    <Table.Td>
-                      <UrgenciaBadge value={d.urgencia} />
-                    </Table.Td>
-                    {SCORE_COLS.map((c) => (
-                      <Table.Td key={c.key} ta="center">
-                        <Badge
-                          size="sm"
-                          variant="light"
-                          color={
-                            d.score[c.key] >= 4
-                              ? "abbott"
-                              : d.score[c.key] >= 3
-                                ? "blue"
-                                : "gray"
-                          }
-                        >
-                          {d.score[c.key]}
-                        </Badge>
-                      </Table.Td>
-                    ))}
-                    <Table.Td ta="center">
-                      {(() => {
-                        const v = d.avaliacoes.length;
-                        const completo = v === 7;
-                        const stack = !!d.stackValidadaPor;
-                        return (
-                          <Tooltip
-                            label={
-                              <Stack gap={4}>
-                                <Text size="xs">
-                                  Criteria validated: {v}/7
-                                </Text>
-                                <Text size="xs">
-                                  Stack: {stack ? "validated" : "pending"}
-                                </Text>
-                              </Stack>
-                            }
-                          >
-                            <Badge
-                              variant={completo ? "filled" : "outline"}
-                              color={completo ? "teal" : v > 0 ? "yellow" : "gray"}
-                            >
-                              {v}/7
-                              {stack && " ✓"}
-                            </Badge>
-                          </Tooltip>
-                        );
-                      })()}
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      <Tooltip
-                        label={
-                          <Stack gap={4}>
-                            {(Object.keys(SCORE_LABELS) as (keyof Score)[]).map((k) => (
-                              <Text key={k} size="xs">
-                                {SCORE_LABELS[k]}: {d.score[k]} × {SCORE_WEIGHTS[k]} ={" "}
-                                {(d.score[k] * SCORE_WEIGHTS[k]).toFixed(2)}
-                              </Text>
-                            ))}
-                            <Text size="xs" c="dimmed" mt={4}>
-                              Σ raw {rawScoreSum(d.score)}
-                            </Text>
+                  <React.Fragment key={d.id}>
+                    <Table.Tr>
+                      <Table.Td>
+                        <Group gap={4}>
+                          <Text fw={700}>{d.finalPriority ?? "—"}</Text>
+                          <Stack gap={0}>
+                            <ActionIcon size="xs" variant="subtle" disabled={i === 0} onClick={() => move(d.id, -1)}>
+                              <IconChevronUp size={12} />
+                            </ActionIcon>
+                            <ActionIcon size="xs" variant="subtle" disabled={i === items.length - 1} onClick={() => move(d.id, 1)}>
+                              <IconChevronDown size={12} />
+                            </ActionIcon>
                           </Stack>
-                        }
-                      >
-                        <Badge
-                          size="lg"
-                          variant="filled"
-                          color={
-                            wScore >= 4 ? "red" : wScore >= 3 ? "orange" : "abbott"
-                          }
-                        >
+                        </Group>
+                      </Table.Td>
+                      <Table.Td>
+                        <Anchor component={Link} to={`/demandas/${d.id}`} fw={600}>
+                          {d.titulo}
+                        </Anchor>
+                        <Text size="xs" c="dimmed">
+                          {d.numero} · {d.areaSolicitante}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <TipoBadge value={d.tipo} />
+                      </Table.Td>
+                      <Table.Td>
+                        <UrgenciaBadge value={d.urgencia} />
+                      </Table.Td>
+                      <Table.Td ta="center">
+                        <Badge size="lg" variant="filled" color={wScore >= 4 ? "red" : wScore >= 3 ? "orange" : "abbott"}>
                           {wScore.toFixed(2)}
                         </Badge>
-                      </Tooltip>
-                    </Table.Td>
-                    <Table.Td>
-                      <NumberInput
-                        size="xs"
-                        min={1}
-                        max={999}
-                        value={d.finalPriority ?? ""}
-                        onChange={(v) =>
-                          setPriority(d.id, typeof v === "number" ? v : "")
-                        }
-                        styles={{
-                          input: {
-                            textAlign: "center",
-                            fontWeight: 700,
-                            color: `var(--mantine-color-${priorityColor(d.finalPriority)}-7)`,
-                          },
-                        }}
-                      />
-                    </Table.Td>
-                  </Table.Tr>
+                      </Table.Td>
+                      <Table.Td>
+                        <NumberInput
+                          size="xs"
+                          min={1}
+                          max={999}
+                          value={d.finalPriority ?? ""}
+                          onChange={(val) => setPriority(d.id, typeof val === "number" ? val : "")}
+                          styles={{
+                            input: {
+                              textAlign: "center",
+                              fontWeight: 700,
+                              color: `var(--mantine-color-${priorityColor(d.finalPriority)}-7)`,
+                            },
+                          }}
+                        />
+                      </Table.Td>
+                      <Table.Td>
+                        <Button
+                          size="compact-xs"
+                          variant="subtle"
+                          rightSection={isOpen ? <IconChevronUp size={13} /> : <IconChevronDown size={13} />}
+                          onClick={() => toggleExpand(d.id)}
+                        >
+                          {isOpen ? "Hide detail" : "View score detail"}
+                        </Button>
+                      </Table.Td>
+                    </Table.Tr>
+                    {isOpen && (
+                      <Table.Tr bg="gray.0">
+                        <Table.Td colSpan={7}>
+                          <Group gap="lg" wrap="wrap" py={4}>
+                            {SCORE_COLS.map((c) => (
+                              <Stack key={c.key} gap={2} align="center">
+                                <Text size="xs" c="dimmed">
+                                  {c.short} · {(SCORE_WEIGHTS[c.key] * 100).toFixed(0)}%
+                                </Text>
+                                <Badge
+                                  size="sm"
+                                  variant="light"
+                                  color={d.score[c.key] >= 4 ? "abbott" : d.score[c.key] >= 3 ? "blue" : "gray"}
+                                >
+                                  {d.score[c.key]} → {(d.score[c.key] * SCORE_WEIGHTS[c.key]).toFixed(2)}
+                                </Badge>
+                              </Stack>
+                            ))}
+                            <Stack gap={2} align="center">
+                              <Text size="xs" c="dimmed">Validation</Text>
+                              <Badge variant={v === 7 ? "filled" : "outline"} color={v === 7 ? "teal" : v > 0 ? "yellow" : "gray"}>
+                                {v}/7{stack && " ✓ stack"}
+                              </Badge>
+                            </Stack>
+                            <Stack gap={2} align="center">
+                              <Text size="xs" c="dimmed">Σ raw</Text>
+                              <Badge variant="outline" color="gray">{rawScoreSum(d.score)}</Badge>
+                            </Stack>
+                          </Group>
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </Table.Tbody>
