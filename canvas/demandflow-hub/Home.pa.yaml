@@ -1,0 +1,511 @@
+Screens:
+  Home:
+    Properties:
+      Fill: =BrandBg
+    Children:
+      - conRootHm:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =0
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =BrandBg
+          Children:
+            - conAccentLineHm:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Height: =3
+                  FillPortions: =0
+                  AlignInContainer: =AlignInContainer.Stretch
+                  Fill: =BrandBlue
+            - conHeaderHm:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                  LayoutGap: =16
+                  Height: =64
+                  FillPortions: =0
+                  AlignInContainer: =AlignInContainer.Stretch
+                  Fill: =BrandSurface
+                  PaddingLeft: =24
+                  PaddingRight: =24
+                Children:
+                  - conBrandLockupHm:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =12
+                        FillPortions: =0
+                      Children:
+                        - conClientLogoHm:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Width: =118
+                              Height: =20
+                              FillPortions: =0
+                              Fill: =BrandChip
+                              BorderColor: =BrandLine
+                              BorderThickness: =1
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                        - conLockupDividerHm:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Width: =1
+                              Height: =20
+                              FillPortions: =0
+                              Fill: =BrandLine
+                        - conLitMarkHm:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Width: =34
+                              Height: =34
+                              FillPortions: =0
+                              Fill: =BrandChip
+                              BorderColor: =BrandLine
+                              BorderThickness: =1
+                              RadiusTopLeft: =4
+                              RadiusTopRight: =4
+                              RadiusBottomLeft: =4
+                              RadiusBottomRight: =4
+                        - lblLockupCaptionHm:
+                            Control: ModernText
+                            Properties:
+                              Text: ="ABBOTT · IT HUB (DMC) — LIT DIGITALL"
+                              Size: =11
+                              FontWeight: =FontWeight.Semibold
+                              Color: =BrandMuted
+                              AutoHeight: =true
+                              FillPortions: =0
+                  - conNavHm:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =4
+                        FillPortions: =0
+                      Children:
+                        - btnNavHomeHm:
+                            Control: Button
+                            Properties:
+                              Text: ="Home"
+                              Appearance: ='ButtonCanvas.Appearance'.Primary
+                              BasePaletteColor: =BrandBlue
+                              OnSelect: =Navigate(Home)
+                              Height: =36
+                              FillPortions: =0
+                        - btnNavInboxHm:
+                            Control: Button
+                            Properties:
+                              Text: ="Inbox"
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              OnSelect: =Navigate(Inbox)
+                              Height: =36
+                              FillPortions: =0
+                        - btnNavRequestsHm:
+                            Control: Button
+                            Properties:
+                              Text: ="Requests"
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              OnSelect: =Navigate(Requests)
+                              Height: =36
+                              FillPortions: =0
+                        - btnNavNewHm:
+                            Control: Button
+                            Properties:
+                              Text: ="New"
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              OnSelect: =Navigate(NewRequest)
+                              Height: =36
+                              FillPortions: =0
+                        - btnNavScoreHm:
+                            Control: Button
+                            Properties:
+                              Text: ="Score Board"
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              OnSelect: =Navigate(ScoreBoard)
+                              Visible: =fxIsSponsor(varViewRole) || fxIsPMO(varViewRole) || fxIsDirector(varViewRole)
+                              Height: =36
+                              FillPortions: =0
+                        - btnNavApproversHm:
+                            Control: Button
+                            Properties:
+                              Text: ="Approvers"
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              OnSelect: =Navigate(Approvers)
+                              Visible: =fxIsSponsor(varViewRole) || fxIsPMO(varViewRole) || fxIsDirector(varViewRole)
+                              Height: =36
+                              FillPortions: =0
+                        - btnNavCapacityHm:
+                            Control: Button
+                            Properties:
+                              Text: ="Capacity"
+                              Appearance: ='ButtonCanvas.Appearance'.Transparent
+                              OnSelect: =Navigate(Capacity)
+                              Visible: =fxIsTechLead(varViewRole) || fxIsPMO(varViewRole)
+                              Height: =36
+                              FillPortions: =0
+                  - conHeaderRightHm:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =12
+                        FillPortions: =0
+                      Children:
+                        - lblViewAsHm:
+                            Control: ModernText
+                            Properties:
+                              Text: ="VIEW AS"
+                              Size: =11
+                              FontWeight: =FontWeight.Semibold
+                              Color: =BrandMuted
+                              AutoHeight: =true
+                              FillPortions: =0
+                        - ddViewRoleHm:
+                            Control: Classic/DropDown
+                            Properties:
+                              Items: =["Admin","PMO","TechLead","Sponsor","Director","Requester"]
+                              Default: =varViewRole
+                              OnChange: =Set(varViewRole, Self.Selected.Value)
+                              Width: =130
+                              Height: =36
+                              FillPortions: =0
+                              Fill: =BrandSurface
+                              Color: =BrandInk
+                              BorderColor: =BrandLine
+                              BorderThickness: =1
+                              Size: =12
+                              ChevronFill: =BrandMuted
+                              ChevronBackground: =BrandSurface
+                        - lblMyNameHm:
+                            Control: ModernText
+                            Properties:
+                              Text: =MyName
+                              Size: =13
+                              Color: =BrandInk
+                              AutoHeight: =true
+                              FillPortions: =0
+            - conHairlineHm:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Height: =1
+                  FillPortions: =0
+                  AlignInContainer: =AlignInContainer.Stretch
+                  Fill: =BrandLine
+            - conBodyHm:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =24
+                  FillPortions: =1
+                  AlignInContainer: =AlignInContainer.Stretch
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =28
+                  PaddingBottom: =32
+                  PaddingLeft: =32
+                  PaddingRight: =32
+                Children:
+                  - conPageTitleHm:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =4
+                        FillPortions: =0
+                        AlignInContainer: =AlignInContainer.Stretch
+                      Children:
+                        - lblPageKickerHm:
+                            Control: ModernText
+                            Properties:
+                              Text: ="OVERVIEW"
+                              Size: =11
+                              FontWeight: =FontWeight.Bold
+                              Color: =BrandBlue
+                              AutoHeight: =true
+                              FillPortions: =0
+                        - lblPageTitleHm:
+                            Control: ModernText
+                            Properties:
+                              Text: ="Demand pipeline"
+                              Size: =26
+                              FontWeight: =FontWeight.Semibold
+                              Color: =BrandHeading
+                              AutoHeight: =true
+                              FillPortions: =0
+                  - galKpisHm:
+                      Control: Gallery
+                      Variant: Horizontal
+                      Properties:
+                        Items: |-
+                          =Table(
+                            {Key: "critical", KLabel: "CRITICAL", N: CountRows(Filter(colDemands, Urgency = "Critical" && Status <> "Completed" && Status <> "Rejected")), Tone: "danger"},
+                            {Key: "overdue", KLabel: "OVERDUE", N: CountRows(Filter(colDemands, Deadline < Today() && Status <> "Completed" && Status <> "Rejected")), Tone: "amber"},
+                            {Key: "triage", KLabel: "NEW / IN EVALUATION", N: CountRows(Filter(colDemands, Status = "New" || Status = "In evaluation")), Tone: "blue"},
+                            {Key: "exec", KLabel: "IN EXECUTION", N: CountRows(Filter(colDemands, Status = "In execution")), Tone: "blue"},
+                            {Key: "total", KLabel: "TOTAL DEMANDS", N: CountRows(colDemands), Tone: "navy"})
+                        TemplateSize: =(Self.Width - 64) / 5
+                        TemplatePadding: =8
+                        Height: =150
+                        FillPortions: =0
+                        AlignInContainer: =AlignInContainer.Stretch
+                        OnSelect: |-
+                          =Switch(ThisItem.Key,
+                            "critical", Set(varUrgFilter, "Critical"); Set(varStatusFilter, ""); Set(varOverdueOnly, false),
+                            "overdue", Set(varOverdueOnly, true); Set(varUrgFilter, ""); Set(varStatusFilter, ""),
+                            "triage", Set(varStatusFilter, "New+Eval"); Set(varUrgFilter, ""); Set(varOverdueOnly, false),
+                            "exec", Set(varStatusFilter, "In execution"); Set(varUrgFilter, ""); Set(varOverdueOnly, false),
+                            Set(varStatusFilter, ""); Set(varUrgFilter, ""); Set(varOverdueOnly, false));
+                          Navigate(Requests)
+                      Children:
+                        - conKpiCardHm:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutGap: =0
+                              X: =0
+                              Y: =0
+                              Width: =Parent.TemplateWidth
+                              Height: =Parent.TemplateHeight
+                              Fill: =BrandSurface
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              DropShadow: =DropShadow.None
+                              BorderColor: =BrandLine
+                              BorderThickness: =1
+                            Children:
+                              - conKpiAccentHm:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    Width: =4
+                                    FillPortions: =0
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    Fill: =Switch(ThisItem.Tone, "danger", If(ThisItem.N > 0, BrandDanger, BrandSurface), "amber", If(ThisItem.N > 0, BrandAmber, BrandSurface), BrandSurface)
+                              - conKpiBodyHm:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutJustifyContent: =LayoutJustifyContent.SpaceBetween
+                                    LayoutGap: =6
+                                    FillPortions: =1
+                                    AlignInContainer: =AlignInContainer.Stretch
+                                    PaddingTop: =18
+                                    PaddingBottom: =14
+                                    PaddingLeft: =16
+                                    PaddingRight: =16
+                                  Children:
+                                    - lblKpiKickerHm:
+                                        Control: ModernText
+                                        Properties:
+                                          Text: =ThisItem.KLabel
+                                          Size: =11
+                                          FontWeight: =FontWeight.Bold
+                                          Color: =Switch(ThisItem.Tone, "danger", If(ThisItem.N > 0, BrandDanger, BrandMuted), "amber", If(ThisItem.N > 0, BrandAmber, BrandMuted), BrandMuted)
+                                          AutoHeight: =true
+                                          FillPortions: =0
+                                    - lblKpiNumberHm:
+                                        Control: ModernText
+                                        Properties:
+                                          Text: =Text(ThisItem.N)
+                                          Size: =32
+                                          FontWeight: =FontWeight.Semibold
+                                          Color: =Switch(ThisItem.Tone, "danger", If(ThisItem.N > 0, BrandDanger, BrandNavy), "amber", If(ThisItem.N > 0, BrandAmber, BrandNavy), "navy", BrandNavy, BrandNavy)
+                                          AutoHeight: =true
+                                          FillPortions: =0
+                                    - lblKpiFooterHm:
+                                        Control: ModernText
+                                        Properties:
+                                          Text: ="TAP TO FILTER"
+                                          Size: =10
+                                          Color: =BrandMuted
+                                          AutoHeight: =true
+                                          FillPortions: =0
+                  - conTopCardHm:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =12
+                        FillPortions: =0
+                        AlignInContainer: =AlignInContainer.Stretch
+                        Fill: =BrandSurface
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        DropShadow: =DropShadow.None
+                        BorderColor: =BrandLine
+                        BorderThickness: =1
+                        PaddingTop: =24
+                        PaddingBottom: =24
+                        PaddingLeft: =24
+                        PaddingRight: =24
+                      Children:
+                        - lblTopKickerHm:
+                            Control: ModernText
+                            Properties:
+                              Text: ="TOP 5 BY WEIGHTED SCORE"
+                              Size: =11
+                              FontWeight: =FontWeight.Semibold
+                              Color: =BrandMuted
+                              AutoHeight: =true
+                              FillPortions: =0
+                        - galTop5Hm:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              Items: |-
+                                =FirstN(SortByColumns(AddColumns(Filter(colDemands, Status <> "Rejected" && Status <> "Returned"), w, fxWeightedScore(ScoreBusinessImpact, ScoreRisk, ScoreTech, ScoreRevenue, ScoreStrategic, ScoreStakeholder, ScoreUrgency)), "w", SortOrder.Descending), 5)
+                              TemplateSize: =72
+                              TemplatePadding: =0
+                              Height: =CountRows(Self.AllItems) * Self.TemplateHeight
+                              FillPortions: =0
+                              AlignInContainer: =AlignInContainer.Stretch
+                              OnSelect: |-
+                                =Set(varD, LookUp(colDemands, ID = ThisItem.ID));
+                                Navigate(Detail)
+                            Children:
+                              - conTop5RowHm:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutGap: =12
+                                    X: =0
+                                    Y: =0
+                                    Width: =Parent.TemplateWidth
+                                    Height: =Parent.TemplateHeight
+                                    PaddingTop: =8
+                                    PaddingBottom: =8
+                                    PaddingLeft: =4
+                                    PaddingRight: =4
+                                  Children:
+                                    - pilHubNumberHm:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutGap: =0
+                                          PaddingLeft: =10
+                                          PaddingRight: =10
+                                          PaddingTop: =4
+                                          PaddingBottom: =4
+                                          RadiusTopLeft: =999
+                                          RadiusTopRight: =999
+                                          RadiusBottomLeft: =999
+                                          RadiusBottomRight: =999
+                                          Fill: =BrandChip
+                                          FillPortions: =0
+                                        Children:
+                                          - pilHubNumberTextHm:
+                                              Control: ModernText
+                                              Properties:
+                                                Text: =ThisItem.HubNumber
+                                                Size: =11
+                                                FontWeight: =FontWeight.Bold
+                                                Color: =BrandMuted
+                                                AutoHeight: =true
+                                    - conTop5MainHm:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                          FillPortions: =1
+                                        Children:
+                                          - lblTop5TitleHm:
+                                              Control: ModernText
+                                              Properties:
+                                                Text: =ThisItem.Title
+                                                Size: =15
+                                                FontWeight: =FontWeight.Semibold
+                                                Color: =BrandInk
+                                                AutoHeight: =true
+                                                FillPortions: =0
+                                          - lblTop5MetaHm:
+                                              Control: ModernText
+                                              Properties:
+                                                Text: =ThisItem.Area & " · " & ThisItem.Classification
+                                                Size: =12
+                                                Color: =BrandMuted
+                                                AutoHeight: =true
+                                                FillPortions: =0
+                                    - pilTop5ScoreHm:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutGap: =0
+                                          PaddingLeft: =10
+                                          PaddingRight: =10
+                                          PaddingTop: =4
+                                          PaddingBottom: =4
+                                          RadiusTopLeft: =999
+                                          RadiusTopRight: =999
+                                          RadiusBottomLeft: =999
+                                          RadiusBottomRight: =999
+                                          Fill: =fxScoreFill(ThisItem.w)
+                                          FillPortions: =0
+                                        Children:
+                                          - pilTop5ScoreTextHm:
+                                              Control: ModernText
+                                              Properties:
+                                                Text: =Text(ThisItem.w, "0.00")
+                                                Size: =11
+                                                FontWeight: =FontWeight.Bold
+                                                Color: =fxScoreColor(ThisItem.w)
+                                                AutoHeight: =true
+                                    - pilTop5StatusHm:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutGap: =0
+                                          PaddingLeft: =10
+                                          PaddingRight: =10
+                                          PaddingTop: =4
+                                          PaddingBottom: =4
+                                          RadiusTopLeft: =999
+                                          RadiusTopRight: =999
+                                          RadiusBottomLeft: =999
+                                          RadiusBottomRight: =999
+                                          Fill: =fxStatusFill(ThisItem.Status)
+                                          FillPortions: =0
+                                        Children:
+                                          - pilTop5StatusTextHm:
+                                              Control: ModernText
+                                              Properties:
+                                                Text: =Upper(ThisItem.Status)
+                                                Size: =11
+                                                FontWeight: =FontWeight.Bold
+                                                Color: =fxStatusColor(ThisItem.Status)
+                                                AutoHeight: =true

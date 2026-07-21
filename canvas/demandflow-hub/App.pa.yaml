@@ -1,0 +1,305 @@
+App:
+  Properties:
+    StartScreen: =Home
+    Formulas: |-
+      =// ===================================================================
+      // DemandFlow Hub — "LIT Digitall Enterprise" design system tokens
+      // Source: docs/BRAND-IDENTITY-PROMPT.md (light theme). Never hardcode
+      // colors in screens — always reference these named formulas.
+      // ===================================================================
+      BrandBg = RGBA(243, 247, 250, 1);
+      BrandSurface = RGBA(255, 255, 255, 1);
+      BrandInk = RGBA(22, 41, 58, 1);
+      BrandHeading = RGBA(10, 46, 76, 1);
+      BrandMuted = RGBA(88, 112, 133, 1);
+      BrandLine = RGBA(216, 226, 235, 1);
+      BrandBlue = RGBA(0, 114, 188, 1);
+      BrandNavy = RGBA(0, 62, 102, 1);
+      BrandBlueSoft = RGBA(233, 243, 251, 1);
+      BrandAmber = RGBA(194, 122, 16, 1);
+      BrandAmberSoft = RGBA(251, 241, 223, 1);
+      BrandOk = RGBA(14, 127, 110, 1);
+      BrandOkSoft = RGBA(226, 242, 238, 1);
+      BrandDanger = RGBA(192, 57, 43, 1);
+      BrandDangerSoft = RGBA(250, 233, 230, 1);
+      BrandChip = RGBA(240, 246, 251, 1);
+
+      // ===================================================================
+      // Identity (demo: current signed-in user; role comes from varViewRole)
+      // ===================================================================
+      MyEmail = Lower(User().Email);
+      MyName = User().FullName;
+
+      // ===================================================================
+      // Role helpers — PURE functions. Named formulas cannot read variables,
+      // so every call site passes varViewRole, e.g. fxIsPMO(varViewRole).
+      // // SWAP TO SHAREPOINT: derive roles from the 'User Roles' list
+      // (Filter('User Roles', UserEmail = MyEmail)) instead of varViewRole.
+      // ===================================================================
+      fxIsAdmin(vr: Text): Boolean = vr = "Admin";
+      fxIsPMO(vr: Text): Boolean = vr = "Admin" || vr = "PMO";
+      fxIsTechLead(vr: Text): Boolean = vr = "Admin" || vr = "TechLead";
+      fxIsSponsor(vr: Text): Boolean = vr = "Admin" || vr = "Sponsor";
+      fxIsDirector(vr: Text): Boolean = vr = "Admin" || vr = "Director";
+
+      // ===================================================================
+      // Workflow engine helpers (mirror of the prototype's workflow.ts)
+      // ===================================================================
+      fxNeedsMe(vr: Text, st: Text, reqEmail: Text, nextGate: Text): Boolean =
+        Switch(st,
+          "New", fxIsPMO(vr),
+          "In evaluation", fxIsPMO(vr) || fxIsTechLead(vr),
+          "In approval",
+            Switch(nextGate,
+              "Sponsor", fxIsSponsor(vr),
+              "Tech Lead", fxIsTechLead(vr),
+              "Director", fxIsDirector(vr),
+              false),
+          "Prioritized", fxIsPMO(vr) || fxIsTechLead(vr),
+          "In execution", fxIsPMO(vr) || fxIsTechLead(vr),
+          "Returned", Lower(reqEmail) = MyEmail,
+          false);
+
+      // Weighted score — official weights 25/15/10/20/15/10/5
+      fxWeightedScore(bi: Number, risk: Number, tech: Number, rev: Number, strat: Number, stake: Number, urg: Number): Number =
+        Round(
+          Coalesce(bi, 1) * 0.25 +
+          Coalesce(risk, 1) * 0.15 +
+          Coalesce(tech, 1) * 0.10 +
+          Coalesce(rev, 1) * 0.20 +
+          Coalesce(strat, 1) * 0.15 +
+          Coalesce(stake, 1) * 0.10 +
+          Coalesce(urg, 1) * 0.05, 2);
+
+      // Abbott Project Type routing: <80h ME · <=500k Rapid · >500k Phase 0
+      fxProjectType(hours: Number, valueRange: Text): Text =
+        If(hours > 0 && hours < 80, "Minor Enhancement",
+           valueRange = ">500k", "Phase 0",
+           "Rapid");
+
+      fxCriticality(urg: Text): Text =
+        Switch(urg, "Critical", "Critical", "High", "High", "Medium", "Medium", "Low");
+
+      // ===================================================================
+      // Semantic colors (strong tone for text/accents, soft tone for fills)
+      // ===================================================================
+      fxStatusColor(st: Text): Color =
+        Switch(st,
+          "New", BrandBlue,
+          "In evaluation", BrandBlue,
+          "In approval", BrandAmber,
+          "Prioritized", BrandNavy,
+          "In execution", BrandBlue,
+          "Completed", BrandOk,
+          "Returned", BrandAmber,
+          "Rejected", BrandDanger,
+          BrandMuted);
+
+      fxStatusFill(st: Text): Color =
+        Switch(st,
+          "In approval", BrandAmberSoft,
+          "Returned", BrandAmberSoft,
+          "Completed", BrandOkSoft,
+          "Rejected", BrandDangerSoft,
+          BrandBlueSoft);
+
+      fxUrgencyColor(urg: Text): Color =
+        Switch(urg, "Critical", BrandDanger, "High", BrandAmber, "Medium", BrandBlue, BrandMuted);
+
+      fxUrgencyFill(urg: Text): Color =
+        Switch(urg, "Critical", BrandDangerSoft, "High", BrandAmberSoft, "Medium", BrandBlueSoft, BrandChip);
+
+      fxScoreColor(w: Number): Color = If(w >= 4, BrandDanger, w >= 3, BrandAmber, BrandBlue);
+      fxScoreFill(w: Number): Color = If(w >= 4, BrandDangerSoft, w >= 3, BrandAmberSoft, BrandBlueSoft)
+    OnStart: |-
+      =// ===================================================================
+      // DemandFlow Hub — standalone demo data layer.
+      // Every collection mirrors a SharePoint list schema from
+      // CANVAS-DEMANDFLOW-FULL-GUIDE.md §2, so the app compiles and runs
+      // with zero connections.
+      // // SWAP TO SHAREPOINT: replace each seeded ClearCollect below with
+      // the corresponding list (e.g. ClearCollect(colAreas, Areas)) and
+      // point galleries at the delegable list instead of the collection.
+      // ===================================================================
+
+      // ---- Global UI state --------------------------------------------
+      Set(varViewRole, "Admin");
+      Set(varStatusFilter, "");
+      Set(varUrgFilter, "");
+      Set(varOverdueOnly, false);
+      Set(varTopOnly, false);
+      Set(varExpandedId, 0);
+      Set(varStep, 1);
+      Set(varNextGate, "");
+
+      // ---- colUserRoles // SWAP TO SHAREPOINT: 'User Roles' list ------
+      ClearCollect(colUserRoles,
+        {UserEmail: Lower(User().Email), Role: "Admin"});
+
+      // ---- colAreas // SWAP TO SHAREPOINT: 'Areas' list ---------------
+      ClearCollect(colAreas,
+        {Area: "IT", Stakeholder: "Sambini"},
+        {Area: "Facilities", Stakeholder: "Sambini"},
+        {Area: "Sales", Stakeholder: "Carlos Mendes"},
+        {Area: "HR", Stakeholder: "Juliana Costa"},
+        {Area: "Finance", Stakeholder: "Patricia Lima"},
+        {Area: "Operations", Stakeholder: "Rafael Nunes"},
+        {Area: "Supply Chain", Stakeholder: "Beatriz Rocha"},
+        {Area: "Quality", Stakeholder: "Fernanda Alves"},
+        {Area: "Regulatory", Stakeholder: "Otavio Pinto"},
+        {Area: "Marketing", Stakeholder: "Camila Duarte"},
+        {Area: "Legal", Stakeholder: "Renato Farias"});
+
+      // ---- colAppRegistry // SWAP TO SHAREPOINT: 'App Registry' -------
+      ClearCollect(colAppRegistry,
+        {AppCode: "APP-0456", AppName: "SAP S/4HANA"},
+        {AppCode: "APP-0102", AppName: "Salesforce CRM"},
+        {AppCode: "APP-0230", AppName: "ServiceNow ITSM"},
+        {AppCode: "APP-0311", AppName: "Power BI Service"},
+        {AppCode: "APP-0788", AppName: "Blue Yonder WMS"});
+
+      // ---- colCapacity // SWAP TO SHAREPOINT: 'Team Capacity' ---------
+      ClearCollect(colCapacity,
+        {Team: "Internal Delivery", MonthlyHours: 640, CommittedHours: 0, FTE: 4, SyncedAt: DateAdd(Now(), -26, TimeUnit.Hours)},
+        {Team: "External Delivery", MonthlyHours: 960, CommittedHours: 0, FTE: 6, SyncedAt: DateAdd(Now(), -26, TimeUnit.Hours)},
+        {Team: "Support", MonthlyHours: 480, CommittedHours: 0, FTE: 3, SyncedAt: DateAdd(Now(), -26, TimeUnit.Hours)});
+
+      // ---- colDemands // SWAP TO SHAREPOINT: 'Demand Requests' --------
+      // NOTE: collection fields are plain Text/Number/Date — no ".Value"
+      // choice records. When swapping to SharePoint choice columns, add
+      // ".Value" back per the full guide.
+      ClearCollect(colDemands,
+        {ID: 1, HubNumber: "DEM-0001", Title: "SAP invoice OCR automation",
+         Description: "Automate supplier invoice capture in SAP S/4HANA with OCR and posting rules to cut manual AP effort by 60%.",
+         RequesterEmail: "ana.souza@abbott.com", RequesterName: "Ana Souza",
+         Area: "Finance", Category: "Strategic", Classification: "Applications", ClassificationOther: "",
+         ImpactScope: "Department/Organization", ImpactScore: 4, Urgency: "High",
+         Consequence: "Operational disruption, Cost increase", ValueRange: "100k-500k",
+         Deadline: Today() + 45, AppId: "APP-0456", RCE: "RCE-2214", Status: "In execution",
+         ScoreBusinessImpact: 4, ScoreRisk: 3, ScoreTech: 4, ScoreRevenue: 4,
+         ScoreStrategic: 4, ScoreStakeholder: 3, ScoreUrgency: 4,
+         FinalPriority: 1, Team: "Internal Delivery", EstimatedHours: 320,
+         AbbottProjectType: "Rapid", ProjectStage: "Build", ServiceNowId: "PRJ0041233",
+         ReturnReason: "", Created: Today() - 40},
+        {ID: 2, HubNumber: "DEM-0002", Title: "Data center UPS replacement - Building B",
+         Description: "End-of-life UPS units put the Building B server room at risk of unplanned shutdown. Replace and add remote monitoring.",
+         RequesterEmail: "rafael.nunes@abbott.com", RequesterName: "Rafael Nunes",
+         Area: "IT", Category: "Operational", Classification: "Infrastructure", ClassificationOther: "",
+         ImpactScope: "Infrastructure", ImpactScore: 5, Urgency: "Critical",
+         Consequence: "Operational disruption, Security exposure", ValueRange: ">500k",
+         Deadline: Today() + 20, AppId: "", RCE: "RCE-1980", Status: "In approval",
+         ScoreBusinessImpact: 5, ScoreRisk: 5, ScoreTech: 3, ScoreRevenue: 3,
+         ScoreStrategic: 4, ScoreStakeholder: 4, ScoreUrgency: 5,
+         FinalPriority: 0, Team: "External Delivery", EstimatedHours: 480,
+         AbbottProjectType: "Phase 0", ProjectStage: "Discovery", ServiceNowId: "",
+         ReturnReason: "", Created: Today() - 18},
+        {ID: 3, HubNumber: "DEM-0003", Title: "GenAI contract review assistant",
+         Description: "LLM-based assistant to pre-screen supplier contracts against Abbott legal playbooks and flag deviations for Legal review.",
+         RequesterEmail: "mariana.teles@abbott.com", RequesterName: "Mariana Teles",
+         Area: "Legal", Category: "Strategic", Classification: "Artificial Intelligence", ClassificationOther: "",
+         ImpactScope: "Department/Organization", ImpactScore: 4, Urgency: "High",
+         Consequence: "Compliance risk, Cost increase", ValueRange: "100k-500k",
+         Deadline: Today() + 90, AppId: "", RCE: "", Status: "In evaluation",
+         ScoreBusinessImpact: 4, ScoreRisk: 2, ScoreTech: 3, ScoreRevenue: 4,
+         ScoreStrategic: 4, ScoreStakeholder: 3, ScoreUrgency: 3,
+         FinalPriority: 0, Team: "", EstimatedHours: 0,
+         AbbottProjectType: "", ProjectStage: "Discovery", ServiceNowId: "",
+         ReturnReason: "", Created: Today() - 9},
+        {ID: 4, HubNumber: "DEM-0004", Title: "Warehouse label printers refresh",
+         Description: "Replace 14 aging Zebra printers in the Cajamar warehouse; frequent jams delay outbound shipments.",
+         RequesterEmail: "beatriz.rocha@abbott.com", RequesterName: "Beatriz Rocha",
+         Area: "Supply Chain", Category: "Operational", Classification: "Infrastructure", ClassificationOther: "",
+         ImpactScope: "Process", ImpactScore: 3, Urgency: "Medium",
+         Consequence: "Operational disruption", ValueRange: "10k-50k",
+         Deadline: Today() - 6, AppId: "APP-0788", RCE: "", Status: "New",
+         ScoreBusinessImpact: 3, ScoreRisk: 1, ScoreTech: 1, ScoreRevenue: 1,
+         ScoreStrategic: 1, ScoreStakeholder: 1, ScoreUrgency: 1,
+         FinalPriority: 0, Team: "", EstimatedHours: 0,
+         AbbottProjectType: "", ProjectStage: "Discovery", ServiceNowId: "",
+         ReturnReason: "", Created: Today() - 30},
+        {ID: 5, HubNumber: "DEM-0005", Title: "LATAM sales performance dashboard",
+         Description: "Executive Power BI dashboard consolidating LATAM sales KPIs currently maintained in 7 regional spreadsheets.",
+         RequesterEmail: "carlos.mendes@abbott.com", RequesterName: "Carlos Mendes",
+         Area: "Sales", Category: "Strategic", Classification: "Applications", ClassificationOther: "",
+         ImpactScope: "Department/Organization", ImpactScore: 4, Urgency: "High",
+         Consequence: "Revenue loss, Customer dissatisfaction", ValueRange: "50k-100k",
+         Deadline: Today() + 60, AppId: "APP-0311", RCE: "RCE-2307", Status: "Prioritized",
+         ScoreBusinessImpact: 4, ScoreRisk: 2, ScoreTech: 3, ScoreRevenue: 5,
+         ScoreStrategic: 4, ScoreStakeholder: 4, ScoreUrgency: 3,
+         FinalPriority: 2, Team: "Internal Delivery", EstimatedHours: 120,
+         AbbottProjectType: "Rapid", ProjectStage: "Discovery", ServiceNowId: "",
+         ReturnReason: "", Created: Today() - 25},
+        {ID: 6, HubNumber: "DEM-0006", Title: "HR onboarding portal quick wins",
+         Description: "Small UX fixes and two new document templates on the HR onboarding portal.",
+         RequesterEmail: "juliana.costa@abbott.com", RequesterName: "Juliana Costa",
+         Area: "HR", Category: "Operational", Classification: "Applications", ClassificationOther: "",
+         ImpactScope: "User", ImpactScore: 2, Urgency: "Low",
+         Consequence: "Customer dissatisfaction", ValueRange: "<10k",
+         Deadline: Today() - 10, AppId: "", RCE: "", Status: "Completed",
+         ScoreBusinessImpact: 2, ScoreRisk: 1, ScoreTech: 2, ScoreRevenue: 2,
+         ScoreStrategic: 2, ScoreStakeholder: 3, ScoreUrgency: 2,
+         FinalPriority: 3, Team: "Internal Delivery", EstimatedHours: 64,
+         AbbottProjectType: "Minor Enhancement", ProjectStage: "Done", ServiceNowId: "PRJ0038871",
+         ReturnReason: "", Created: Today() - 120},
+        {ID: 7, HubNumber: "DEM-0007", Title: "IT service desk chatbot",
+         Description: "Chatbot to deflect password reset and access request tickets from the service desk.",
+         RequesterEmail: Lower(User().Email), RequesterName: User().FullName,
+         Area: "IT", Category: "Operational", Classification: "Artificial Intelligence", ClassificationOther: "",
+         ImpactScope: "Process", ImpactScore: 3, Urgency: "Medium",
+         Consequence: "Cost increase", ValueRange: "10k-50k",
+         Deadline: Today() + 75, AppId: "APP-0230", RCE: "", Status: "Returned",
+         ScoreBusinessImpact: 3, ScoreRisk: 1, ScoreTech: 1, ScoreRevenue: 1,
+         ScoreStrategic: 1, ScoreStakeholder: 1, ScoreUrgency: 2,
+         FinalPriority: 0, Team: "", EstimatedHours: 0,
+         AbbottProjectType: "", ProjectStage: "Discovery", ServiceNowId: "",
+         ReturnReason: "Scope overlaps the ServiceNow virtual agent initiative - align with IT Ops and resubmit.",
+         Created: Today() - 14},
+        {ID: 8, HubNumber: "DEM-0008", Title: "Legacy FTP server decommission",
+         Description: "Decommission the legacy FTP server used for partner file drops and migrate remaining feeds.",
+         RequesterEmail: "pedro.ramos@abbott.com", RequesterName: "Pedro Ramos",
+         Area: "IT", Category: "Operational", Classification: "Infrastructure", ClassificationOther: "",
+         ImpactScope: "Process", ImpactScore: 3, Urgency: "Low",
+         Consequence: "Security exposure", ValueRange: "<10k",
+         Deadline: Today() + 120, AppId: "", RCE: "", Status: "Rejected",
+         ScoreBusinessImpact: 3, ScoreRisk: 2, ScoreTech: 2, ScoreRevenue: 1,
+         ScoreStrategic: 1, ScoreStakeholder: 1, ScoreUrgency: 1,
+         FinalPriority: 0, Team: "", EstimatedHours: 0,
+         AbbottProjectType: "", ProjectStage: "Discovery", ServiceNowId: "",
+         ReturnReason: "Rejected at Sponsor gate - superseded by the MFT migration program.",
+         Created: Today() - 60});
+
+      // ---- colApprovals // SWAP TO SHAREPOINT: 'Demand Approvals' -----
+      ClearCollect(colApprovals,
+        {DemandID: 1, Level: "Sponsor", LevelOrder: 1, Approver: "Patricia Lima", Status: "Approved", Comment: "Clear efficiency case.", ActionAt: DateAdd(Now(), -32, TimeUnit.Days)},
+        {DemandID: 1, Level: "Tech Lead", LevelOrder: 2, Approver: "Daniela Bastos", Status: "Approved", Comment: "Capacity confirmed with the Wipro squad.", ActionAt: DateAdd(Now(), -31, TimeUnit.Days)},
+        {DemandID: 1, Level: "Director", LevelOrder: 3, Approver: "Marcelo Tavares", Status: "Approved", Comment: "Approved for the Q3 window.", ActionAt: DateAdd(Now(), -30, TimeUnit.Days)},
+        {DemandID: 2, Level: "Sponsor", LevelOrder: 1, Approver: "Sambini", Status: "Approved", Comment: "Critical site risk - proceed.", ActionAt: DateAdd(Now(), -2, TimeUnit.Days)},
+        {DemandID: 2, Level: "Tech Lead", LevelOrder: 2, Approver: "Daniela Bastos", Status: "Pending", Comment: "", ActionAt: If(false, Now())},
+        {DemandID: 2, Level: "Director", LevelOrder: 3, Approver: "Marcelo Tavares", Status: "Pending", Comment: "", ActionAt: If(false, Now())},
+        {DemandID: 5, Level: "Sponsor", LevelOrder: 1, Approver: "Carlos Mendes", Status: "Approved", Comment: "Revenue visibility is a regional ask.", ActionAt: DateAdd(Now(), -12, TimeUnit.Days)},
+        {DemandID: 5, Level: "Tech Lead", LevelOrder: 2, Approver: "Daniela Bastos", Status: "Approved", Comment: "Fits internal squad capacity.", ActionAt: DateAdd(Now(), -11, TimeUnit.Days)},
+        {DemandID: 5, Level: "Director", LevelOrder: 3, Approver: "Marcelo Tavares", Status: "Approved", Comment: "Prioritize after DEM-0001.", ActionAt: DateAdd(Now(), -10, TimeUnit.Days)},
+        {DemandID: 6, Level: "Sponsor", LevelOrder: 1, Approver: "Juliana Costa", Status: "Approved", Comment: "", ActionAt: DateAdd(Now(), -100, TimeUnit.Days)},
+        {DemandID: 6, Level: "Tech Lead", LevelOrder: 2, Approver: "Daniela Bastos", Status: "Approved", Comment: "", ActionAt: DateAdd(Now(), -99, TimeUnit.Days)},
+        {DemandID: 6, Level: "Director", LevelOrder: 3, Approver: "Marcelo Tavares", Status: "Approved", Comment: "", ActionAt: DateAdd(Now(), -98, TimeUnit.Days)},
+        {DemandID: 8, Level: "Sponsor", LevelOrder: 1, Approver: "Sambini", Status: "Rejected", Comment: "Superseded by the MFT migration program.", ActionAt: DateAdd(Now(), -45, TimeUnit.Days)},
+        {DemandID: 8, Level: "Tech Lead", LevelOrder: 2, Approver: "Daniela Bastos", Status: "Pending", Comment: "", ActionAt: If(false, Now())},
+        {DemandID: 8, Level: "Director", LevelOrder: 3, Approver: "Marcelo Tavares", Status: "Pending", Comment: "", ActionAt: If(false, Now())});
+
+      // ---- colValidations // SWAP TO SHAREPOINT: 'Score Validations' --
+      ClearCollect(colValidations,
+        {DemandID: 1, Criterion: "BusinessImpact", Station: "Business", ValidatedBy: "Patricia Lima", ValidatedAt: DateAdd(Now(), -33, TimeUnit.Days)},
+        {DemandID: 1, Criterion: "Tech", Station: "Technical", ValidatedBy: "Daniela Bastos", ValidatedAt: DateAdd(Now(), -32, TimeUnit.Days)},
+        {DemandID: 1, Criterion: "Stakeholder", Station: "PMO", ValidatedBy: "Rodrigo Paes", ValidatedAt: DateAdd(Now(), -32, TimeUnit.Days)},
+        {DemandID: 5, Criterion: "Revenue", Station: "Business", ValidatedBy: "Carlos Mendes", ValidatedAt: DateAdd(Now(), -13, TimeUnit.Days)},
+        {DemandID: 3, Criterion: "Risk", Station: "Technical", ValidatedBy: "Daniela Bastos", ValidatedAt: DateAdd(Now(), -2, TimeUnit.Days)});
+
+      // ---- colComments // SWAP TO SHAREPOINT: 'Demand Comments' -------
+      ClearCollect(colComments,
+        {DemandID: 2, Author: "Rodrigo Paes (PMO)", Body: "Facilities confirmed the UPS end-of-life report. Escalating to the Tech Lead gate.", CreatedAt: DateAdd(Now(), -2, TimeUnit.Days)},
+        {DemandID: 3, Author: "Daniela Bastos", Body: "POC scheduled with the vendor for next sprint - sizing pending.", CreatedAt: DateAdd(Now(), -3, TimeUnit.Days)},
+        {DemandID: 3, Author: "Renato Farias", Body: "Legal ops can free two reviewers for UAT in September.", CreatedAt: DateAdd(Now(), -1, TimeUnit.Days)},
+        {DemandID: 7, Author: "Rodrigo Paes (PMO)", Body: "Returned - please align scope with IT Ops before resubmitting.", CreatedAt: DateAdd(Now(), -5, TimeUnit.Days)});
+
+      // ---- Selection context ------------------------------------------
+      Set(varD, First(colDemands))
