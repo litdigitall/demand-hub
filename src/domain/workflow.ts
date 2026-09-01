@@ -28,7 +28,7 @@ import {
   type AprovacaoStep,
   type NivelAprovacao,
 } from "../data/types";
-import { Role, ROLE_LABEL } from "./roles";
+import { Role, ROLE_LABEL_CURTO } from "./roles";
 
 /* Mapeia o nível de aprovação (dado da demanda) para o papel RBAC.
    Fluxo de 4 atores: o gate único de aprovação é do DECISOR DA ÁREA. */
@@ -38,7 +38,6 @@ export const NIVEL_PARA_PAPEL: Record<NivelAprovacao, Role> = {
 
 /* ---------------- Etapas do pipeline (para a timeline) ------ */
 export const PIPELINE: { status: number; label: string; descricao: string }[] = [
-  { status: StatusDemanda.Rascunho, label: "Draft", descricao: "Requester completing the request." },
   { status: StatusDemanda.Nova, label: "Triage", descricao: "PMO checks whether the request is complete enough." },
   { status: StatusDemanda.EmAnalise, label: "Evaluation", descricao: "Technical team scores the criteria and defines team/hours; PMO validates urgency." },
   { status: StatusDemanda.EmAprovacao, label: "Approval", descricao: "Area decisor decides: Infra → Sambini · Apps → Gabriela · AI → AI Decisor." },
@@ -125,6 +124,11 @@ export interface Acao {
   campos?: Array<"capacity" | "prioridade" | "serviceNow">;
   /** Guarda: retorna true se liberada, ou string com o motivo do bloqueio. */
   guarda: (d: Demand) => true | string;
+  /** A ação está DISPONÍVEL x a ação é uma PENDÊNCIA da pessoa.
+      Sem isso, ações com guarda sempre-verdadeira (definir capacity, definir
+      prioridade, concluir) fazem a demanda aparecer para sempre na caixa de
+      entrada de alguém. Ausente = é pendência. */
+  pendencia?: (d: Demand) => boolean;
   /** Produz as mudanças a aplicar na demanda. */
   apply: (d: Demand, ator: string, ctx: AcaoContexto) => Partial<Demand>;
 }
@@ -150,21 +154,6 @@ function decidirAprovacao(
 
 /* Catálogo de todas as ações do fluxo, indexado por estado de origem. */
 export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
-  /* -------- Rascunho -------- */
-  [StatusDemanda.Rascunho]: [
-    {
-      id: "submeter",
-      label: "Submit request",
-      papeis: [Role.Solicitante],
-      cor: "blue",
-      guarda: (d) =>
-        d.titulo.trim() && d.descricao.trim() && d.areaSolicitante.trim()
-          ? true
-          : "Fill in title, description and area before submitting.",
-      apply: () => ({ status: StatusDemanda.Nova }),
-    },
-  ],
-
   /* -------- Em triagem (Nova) -------- */
   [StatusDemanda.Nova]: [
     {
@@ -206,6 +195,18 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
         d.titulo.trim() && d.descricao.trim() ? true : "Fill in title and description.",
       apply: () => ({ status: StatusDemanda.Nova }),
     },
+    {
+      // Sem isto, uma demanda devolvida que o solicitante abandona fica órfã
+      // para sempre na base — não havia saída para nenhum papel.
+      id: "cancelarDevolvida",
+      label: "Cancel request",
+      papeis: [Role.PMO],
+      cor: "red",
+      exigeComentario: true,
+      guarda: () => true,
+      pendencia: () => false,
+      apply: () => ({ status: StatusDemanda.Recusada }),
+    },
   ],
 
   /* -------- Em avaliação (scoring + capacity) -------- */
@@ -217,6 +218,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       cor: "violet",
       campos: ["capacity"],
       guarda: () => true,
+      pendencia: (d) => !capacityDefinido(d),
       apply: (_d, _ator, ctx) => {
         const horasEstimadas = ctx.horasEstimadas ?? _d.horasEstimadas;
         // Abbott Project Type derivado automaticamente do esforço/valor.
@@ -267,9 +269,11 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       restritaAreaDecisor: true,
       cor: "green",
       campos: ["serviceNow"], // capturado no aceite (decisor)
-      guarda: (d) => (proximaAprovacao(d) ? true : "No pending gate."),
+      // Se o gate veio vazio (dado legado/import), recria em vez de travar.
+      guarda: () => true,
       apply: (d, ator, ctx) => {
-        const aprovacoes = decidirAprovacao(d, "aprovado", ator, ctx.comentario ?? "");
+        const base = proximaAprovacao(d) ? d : { ...d, aprovacoes: aprovacoesPadrao(d) };
+        const aprovacoes = decidirAprovacao(base, "aprovado", ator, ctx.comentario ?? "");
         // Gate único: a decisão do decisor da área ACEITA a demanda (DMC)
         const changes: Partial<Demand> = {
           aprovacoes,
@@ -291,9 +295,14 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       restritaAreaDecisor: true,
       cor: "red",
       exigeComentario: true,
-      guarda: (d) => (proximaAprovacao(d) ? true : "No pending gate."),
+      guarda: () => true,
       apply: (d, ator, ctx) => ({
-        aprovacoes: decidirAprovacao(d, "recusado", ator, ctx.comentario ?? ""),
+        aprovacoes: decidirAprovacao(
+          proximaAprovacao(d) ? d : { ...d, aprovacoes: aprovacoesPadrao(d) },
+          "recusado",
+          ator,
+          ctx.comentario ?? "",
+        ),
         status: StatusDemanda.Recusada,
         dmcAprovado: false,
         dmcData: agora(),
@@ -311,6 +320,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
       cor: "teal",
       campos: ["prioridade"],
       guarda: () => true,
+      pendencia: (d) => d.finalPriority == null,
       apply: (_d, _ator, ctx) => ({ finalPriority: ctx.finalPriority ?? _d.finalPriority }),
     },
     {
@@ -331,16 +341,32 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   /* -------- Em execução -------- */
   [StatusDemanda.EmExecucao]: [
     {
+      id: "cancelarExecucao",
+      label: "Cancel request",
+      papeis: [Role.PMO],
+      cor: "red",
+      exigeComentario: true,
+      guarda: () => true,
+      pendencia: () => false,
+      apply: () => ({ status: StatusDemanda.Recusada }),
+    },
+    {
       id: "concluir",
       label: "Complete request",
       papeis: [Role.TechLead, Role.PMO],
       cor: "green",
       campos: ["serviceNow"],
       guarda: () => true,
+      // Execução dura semanas: não fica piscando como pendência na inbox.
+      pendencia: () => false,
       apply: (_d, _ator, ctx) => ({
         status: StatusDemanda.Concluida,
         projectStage: "Done",
+        // antes só idProjeto era gravado: RCE e ServiceNow digitados no modal
+        // eram descartados silenciosamente.
         idProjeto: ctx.idProjeto ?? _d.idProjeto,
+        idServiceNow: ctx.idServiceNow ?? _d.idServiceNow,
+        rce: ctx.rce ?? _d.rce,
       }),
     },
   ],
@@ -373,9 +399,41 @@ export function proximasAcoes(d: Demand, papeis: Role[], decisorDe?: Categoria[]
   });
 }
 
-/** Verdadeiro se ALGUMA ação do estado atual está liberada para o usuário. */
+/** Verdadeiro se alguma ação do estado atual é uma PENDÊNCIA REAL do usuário
+    (liberada pela guarda E marcada como pendência). Ver Acao.pendencia. */
 export function precisaDeMim(d: Demand, papeis: Role[], decisorDe?: Categoria[]): boolean {
-  return proximasAcoes(d, papeis, decisorDe).some((a) => a.guarda(d) === true);
+  return proximasAcoes(d, papeis, decisorDe).some(
+    (a) => a.guarda(d) === true && (a.pendencia ? a.pendencia(d) : true),
+  );
+}
+
+/** Aplica uma ação do motor, carimbando a marca de tempo do status.
+    TODA transição deve passar por aqui — é o que alimenta SLA e aging
+    (modifiedon do Dataverse não serve: qualquer edição o reseta). */
+export function aplicarAcao(
+  acao: Acao,
+  d: Demand,
+  ator: string,
+  ctx: AcaoContexto,
+): Partial<Demand> {
+  const mudancas = acao.apply(d, ator, ctx);
+  if (mudancas.status !== undefined && mudancas.status !== d.status) {
+    mudancas.statusDesde = agora();
+  }
+  /* A justificativa exigida (devolver, recusar, cancelar, decidir o gate) vira
+     COMENTÁRIO na demanda. Antes ela era coletada no modal e descartada: o
+     solicitante recebia a demanda de volta sem saber o motivo. */
+  const texto = (ctx.comentario ?? "").trim();
+  if (acao.exigeComentario && texto) {
+    const registro = {
+      id: `com-${Math.random().toString(36).slice(2, 9)}`,
+      autor: ator,
+      data: agora(),
+      texto: `${acao.label}: ${texto}`,
+    };
+    mudancas.comentarios = [...(mudancas.comentarios ?? d.comentarios), registro];
+  }
+  return mudancas;
 }
 
 /** Texto curto do que a demanda aguarda agora (para listas/cards). */
@@ -391,5 +449,5 @@ export function aguardando(d: Demand): string {
     if (prox) return `Waiting on ${prox.responsavel}`;
   }
   const papeis = new Set(acoes.flatMap((a) => a.papeis));
-  return `Waiting on ${[...papeis].map((p) => ROLE_LABEL[p]).join(" / ")}`;
+  return `Waiting on ${[...papeis].map((p) => ROLE_LABEL_CURTO[p]).join(" / ")}`;
 }

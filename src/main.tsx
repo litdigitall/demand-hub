@@ -4,9 +4,7 @@ import { createRoot } from "react-dom/client";
 /* Fontes via Google Fonts CDN (preload no index.html) — corta ~12 arquivos
    do bundle e elimina FOIT. */
 import "@mantine/core/styles.css";
-import "@mantine/charts/styles.css";
 import "@mantine/dates/styles.css";
-import "@mantine/dropzone/styles.css";
 import "@mantine/notifications/styles.css";
 import "./styles.css";
 

@@ -37,6 +37,7 @@ import {
 import {
   acoesDoEstado,
   aguardando,
+  aplicarAcao,
   proximasAcoes,
   type Acao,
   type AcaoContexto,
@@ -75,7 +76,8 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
   }
 
   async function aplicar(acao: Acao, ctx: AcaoContexto) {
-    const changes = acao.apply(demand, ator, ctx);
+    // aplicarAcao carimba statusDesde em toda transição (base de SLA)
+    const changes = aplicarAcao(acao, demand, ator, ctx);
     await onSave(changes);
     notifications.show({ color: "teal", title: "Action applied", message: acao.label });
     setModal(null);

@@ -9,6 +9,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { PERSONAS, personaById, type Persona, type Role } from "../domain/roles";
 import type { Categoria } from "../data/types";
+import { MODO_DEMO, resolveIdentidade } from "./identity";
+import { resolvePapeis, resolveDecisorDe } from "./papeis";
 
 const LS_KEY = "demand-system.persona.v1";
 
@@ -32,6 +34,10 @@ export const DEMO_PASSWORD = "demand2026";
 interface AuthCtx {
   user: AuthSession | null;
   roles: Role[];
+  /** Produção: aguardando o host do Power Apps devolver a identidade. */
+  resolvendo: boolean;
+  /** true = personas (dev/demo); false = identidade real do host. */
+  modoDemo: boolean;
   personas: Persona[];
   /** Login real por papel: e-mail + senha. */
   signIn: (email: string, password: string) => boolean;
@@ -57,6 +63,23 @@ function sessionFromPersona(p: Persona): AuthSession {
   };
 }
 
+/** Sessão a partir da identidade real do host (produção). Os papéis vêm da
+    configuração publicada em src/auth/papeis.ts — quem não está na lista é
+    Requester e só enxerga as próprias demandas. */
+function sessionDoHost(nome: string, email: string): AuthSession {
+  return {
+    personaId: "host",
+    username: email,
+    displayName: nome,
+    email,
+    area: "",
+    cargo: "",
+    roles: resolvePapeis(email),
+    decisorDe: resolveDecisorDe(email),
+    signedAt: new Date().toISOString(),
+  };
+}
+
 function loadSession(): AuthSession | null {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -70,9 +93,29 @@ function loadSession(): AuthSession | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthSession | null>(() => loadSession());
+  const [user, setUser] = useState<AuthSession | null>(() =>
+    MODO_DEMO ? loadSession() : null,
+  );
+  /* Em produção esperamos o host do Power Apps responder quem é o usuário. */
+  const [resolvendo, setResolvendo] = useState(!MODO_DEMO);
 
   useEffect(() => {
+    if (MODO_DEMO) return;
+    let vivo = true;
+    resolveIdentidade()
+      .then((id) => {
+        if (!vivo) return;
+        if (id) setUser(sessionDoHost(id.nome, id.email));
+      })
+      .finally(() => vivo && setResolvendo(false));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    // A persona só é lembrada no modo demo; em produção a identidade é do host.
+    if (!MODO_DEMO) return;
     if (user) localStorage.setItem(LS_KEY, JSON.stringify({ personaId: user.personaId }));
     else localStorage.removeItem(LS_KEY);
   }, [user]);
@@ -108,6 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         roles,
+        resolvendo,
+        modoDemo: MODO_DEMO,
         personas: PERSONAS,
         signIn,
         signInAs,
@@ -121,6 +166,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* Padrão de Context: o provider e o hook moram juntos de propósito.
+   O aviso é só do fast-refresh do dev server. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(Context);
   if (!ctx) throw new Error("useAuth precisa estar dentro de <AuthProvider>");

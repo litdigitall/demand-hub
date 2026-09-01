@@ -18,19 +18,15 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
-import { Button } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import {
   IconAlertTriangle,
   IconBuildingFactory2,
   IconCheck,
   IconClock,
-  IconCloudComputing,
   IconExchange,
   IconUsersGroup,
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
-import { getFteAvailability } from "../integrations/serviceNow";
 import {
   CAPACIDADE_PADRAO_HORAS,
   StatusDemanda,
@@ -39,6 +35,7 @@ import {
   type TimeImplantacao,
 } from "../data/types";
 import { useT } from "../i18n";
+import { formatNumber, plural } from "../lib/format";
 
 interface TeamStats {
   time: TimeImplantacao;
@@ -77,8 +74,6 @@ export function CapacityPage() {
   const { t } = useT();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Demand[]>([]);
-  const [syncEm, setSyncEm] = useState<string | null>(null);
-  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     demandService
@@ -86,21 +81,6 @@ export function CapacityPage() {
       .then(setItems)
       .finally(() => setLoading(false));
   }, []);
-
-  function syncServiceNow() {
-    setSyncing(true);
-    // Usa a camada de integração isolada (src/integrations/serviceNow.ts).
-    getFteAvailability()
-      .then(() => {
-        setSyncEm(new Date().toLocaleString("en-US"));
-        notifications.show({
-          color: "teal",
-          title: "Capacity synced",
-          message: "FTE updated via ServiceNow API (simulated).",
-        });
-      })
-      .finally(() => setSyncing(false));
-  }
 
   const stats: TeamStats[] = useMemo(() => {
     return TIMES_IMPLANTACAO.map((time) => {
@@ -144,20 +124,6 @@ export function CapacityPage() {
           <Text c="dimmed" mt={4}>
             {t("cap_subtitle")}
           </Text>
-          <Group gap="xs" mt={6}>
-            <Button
-              size="xs"
-              variant="light"
-              leftSection={<IconCloudComputing size={14} />}
-              loading={syncing}
-              onClick={syncServiceNow}
-            >
-              Sync with ServiceNow
-            </Button>
-            <Badge variant="dot" color={syncEm ? "teal" : "gray"}>
-              {syncEm ? `Source: ServiceNow (simulated) · ${syncEm}` : "Source: app estimates"}
-            </Badge>
-          </Group>
         </div>
         <Card withBorder radius="lg" padding="md">
           <Group gap="md">
@@ -184,10 +150,10 @@ export function CapacityPage() {
                 {t("cap_total_utilization")}
               </Text>
               <Text fw={800} fz="lg">
-                {totalAlocado.toLocaleString()} / {totalCapacidade.toLocaleString()} h
+                {formatNumber(totalAlocado)} / {formatNumber(totalCapacidade)} h
               </Text>
               <Text size="xs" c="dimmed">
-                {(totalCapacidade - totalAlocado).toLocaleString()} h {t("cap_available").toLowerCase()}
+                {formatNumber((totalCapacidade - totalAlocado))} h {t("cap_available").toLowerCase()}
               </Text>
             </div>
           </Group>
@@ -202,14 +168,14 @@ export function CapacityPage() {
           const isHot = s.utilizacao > 90;
           return (
             <Card key={s.time} withBorder radius="lg" padding="lg">
-              <Group justify="space-between" mb="sm">
-                <Group gap="sm">
+              <Group justify="space-between" mb="sm" wrap="nowrap" align="flex-start">
+                <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
                   <ThemeIcon size={42} radius="md" variant="light" color={color}>
                     <Icon size={22} />
                   </ThemeIcon>
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <Text fw={700}>{t(labelKeyFor(s.time))}</Text>
-                    <Text size="xs" c="dimmed">
+                    <Text size="xs" c="dimmed" lineClamp={2}>
                       {t(helpKeyFor(s.time))}
                     </Text>
                   </div>
@@ -235,7 +201,7 @@ export function CapacityPage() {
                     {t("cap_capacity")}
                   </Text>
                   <Text fw={800} fz="lg">
-                    {s.capacidade.toLocaleString()} h
+                    {formatNumber(s.capacidade)} h
                   </Text>
                 </Box>
                 <Box>
@@ -243,7 +209,7 @@ export function CapacityPage() {
                     {t("cap_allocated")}
                   </Text>
                   <Text fw={800} fz="lg" c={isOver ? "red" : isHot ? "orange" : "dark"}>
-                    {s.alocado.toLocaleString()} h
+                    {formatNumber(s.alocado)} h
                   </Text>
                 </Box>
               </SimpleGrid>
@@ -266,8 +232,8 @@ export function CapacityPage() {
                 radius="xl"
               />
               <Text size="xs" c="dimmed" mt={4}>
-                {s.disponivel.toLocaleString()} h {t("cap_available").toLowerCase()} ·{" "}
-                {s.demandasAtivas.length} {t("cap_demands")}
+                {formatNumber(s.disponivel)} h {t("cap_available").toLowerCase()} ·{" "}
+                {plural(s.demandasAtivas.length, "demand")}
               </Text>
 
               {s.demandasAtivas.length > 0 && (
@@ -287,10 +253,10 @@ export function CapacityPage() {
                               {d.numero}
                             </Text>
                           </Table.Td>
-                          <Table.Td ta="right">
-                            <Badge variant="light" color={color}>
+                          <Table.Td ta="right" w={64}>
+                            <Text size="sm" fw={700} style={{ whiteSpace: "nowrap" }}>
                               {d.horasEstimadas} h
-                            </Badge>
+                            </Text>
                           </Table.Td>
                         </Table.Tr>
                       ))}

@@ -7,7 +7,7 @@ import {
   StatusDemanda,
   TipoDemanda,
   Urgencia,
-  aprovacoesPadrao,
+  novaDemandaBase,
   emptyScore,
   type Anexo,
   type AprovacaoStep,
@@ -66,7 +66,13 @@ const SELECT_FIELDS = [
   "ardx_scorestrategic",
   "ardx_scorestakeholder",
   "ardx_scoreurgency",
-  "ardx_scoreflags",
+  "ardx_impactoabrangencia",
+  "ardx_clasificacion",
+  "ardx_rce",
+  "ardx_appid",
+  "ardx_statusdesde",
+  "ardx_requerenteupn",
+  "ardx_decisorupn",
   "ardx_comentariosjson",
   "ardx_anexosjson",
   "ardx_avaliacoesjson",
@@ -113,8 +119,23 @@ function csvToFlagArr(s: string | null | undefined): ScoreFlag[] {
     .filter(Boolean) as ScoreFlag[];
 }
 
+/* Picklist ardx_clasificacion: 506970000..3 <-> infra/ia/app/otro */
+const CLASSIFICACAO_BASE = 506970000;
+const CLASSIFICACAO_ORDEM = ["infra", "ia", "app", "otro"] as const;
+
+function dvParaClassificacao(v: number | undefined): string | undefined {
+  if (v == null) return undefined;
+  return CLASSIFICACAO_ORDEM[v - CLASSIFICACAO_BASE];
+}
+function classificacaoParaDv(v: string | undefined): number | null {
+  if (!v) return null;
+  const i = CLASSIFICACAO_ORDEM.indexOf(v as (typeof CLASSIFICACAO_ORDEM)[number]);
+  return i < 0 ? null : CLASSIFICACAO_BASE + i;
+}
+
 /** Dataverse -> modelo de domínio. */
 function fromDv(r: Ardx_demandas): Demand {
+  const novo = r as unknown as Record<string, unknown>;
   const score = emptyScore();
   /* Modelo de 3 critérios sobre as colunas existentes do Dataverse:
      impacto → scorebusinessimpact · urgência → scoreurgency ·
@@ -159,6 +180,18 @@ function fromDv(r: Ardx_demandas): Demand {
     impactaSeguranca: !!r.ardx_impactaseguranca,
     requerAuditoria: !!r.ardx_requerauditoria,
     esforcoEstimado: (r.ardx_esforcoestimado as number | undefined) ?? null,
+    /* Campos que faltavam no mapeamento — sem eles o gate era roteado pelo
+       fallback do tipo e o score nascia no piso.
+       O acesso é via `novo` (Record) porque o modelo tipado em src/generated é
+       gerado A PARTIR da tabela: estas colunas só entram no tipo depois de rodar
+       dataverse/Setup-DemandaTable.ps1 e `pac code add-data-source`. */
+    impactoAbrangencia: (novo.ardx_impactoabrangencia as number | undefined) ?? undefined,
+    clasificacion: dvParaClassificacao(novo.ardx_clasificacion as number | undefined),
+    rce: (novo.ardx_rce as string | undefined) ?? "",
+    appId: (novo.ardx_appid as string | undefined) ?? "",
+    statusDesde: (novo.ardx_statusdesde as string | undefined) ?? "",
+    requerenteUpn: (novo.ardx_requerenteupn as string | undefined) ?? "",
+    decisorUpn: (novo.ardx_decisorupn as string | undefined) ?? "",
     anexos: parseJsonArray<Anexo>(r.ardx_anexosjson),
     status: (r.ardx_status as number | undefined) ?? StatusDemanda.Nova,
     score: baseScore,
@@ -274,6 +307,16 @@ function toDv(input: Partial<Demand>): Record<string, unknown> {
     r.ardx_dmccomentario = input.dmcComentario;
   if (input.idServiceNow !== undefined) r.ardx_idservicenow = input.idServiceNow;
   if (input.idProjeto !== undefined) r.ardx_idprojeto = input.idProjeto;
+  if (input.impactoAbrangencia !== undefined)
+    r.ardx_impactoabrangencia = input.impactoAbrangencia;
+  if (input.clasificacion !== undefined)
+    r.ardx_clasificacion = classificacaoParaDv(input.clasificacion);
+  if (input.rce !== undefined) r.ardx_rce = input.rce;
+  if (input.appId !== undefined) r.ardx_appid = input.appId;
+  if (input.statusDesde !== undefined)
+    r.ardx_statusdesde = input.statusDesde ? input.statusDesde.slice(0, 10) : null;
+  if (input.requerenteUpn !== undefined) r.ardx_requerenteupn = input.requerenteUpn;
+  if (input.decisorUpn !== undefined) r.ardx_decisorupn = input.decisorUpn;
   return r;
 }
 
@@ -336,27 +379,12 @@ class DataverseDemandService implements DemandService {
   async create(input: DemandInput): Promise<Demand> {
     const now = new Date().toISOString();
     const numero = await nextNumero();
+    /* MESMA regra de criação do mock (novaDemandaBase): o score nasce derivado
+       do intake. Antes gravava emptyScore() e toda demanda nascia 1.00. */
     const rec: Partial<Demand> = {
       ...input,
+      ...novaDemandaBase(input, now),
       numero,
-      dataSolicitacao: now,
-      status: StatusDemanda.Nova,
-      score: emptyScore(),
-      scoreFlags: [],
-      projectStage: "Discovery",
-      finalPriority: null,
-      comentarios: [],
-      anexos: [],
-      avaliacoes: [],
-      stackValidadaPor: "",
-      stackValidadaEm: "",
-      aprovacoes: aprovacoesPadrao(input),
-      respostaBusiness: "",
-      dmcAprovado: null,
-      dmcData: "",
-      dmcComentario: "",
-      idServiceNow: "",
-      idProjeto: "",
     };
     const res = await Ardx_demandasService.create(toDv(rec) as DvRecord);
     if (!res.success || !res.data)

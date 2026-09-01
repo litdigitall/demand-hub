@@ -12,14 +12,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "@fontsource/inter": "^5.2.8",
-    "@mantine/charts": "^9.2.1",
     "@mantine/core": "^9.2.1",
     "@mantine/dates": "^9.2.1",
-    "@mantine/dropzone": "^9.2.1",
     "@mantine/hooks": "^9.2.1",
     "@mantine/notifications": "^9.2.1",
     "@microsoft/power-apps": "^1.1.3",
@@ -28,8 +23,7 @@
     "pptxgenjs": "^4.0.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.1",
-    "recharts": "^3.8.1"
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

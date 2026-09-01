@@ -51,6 +51,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/* Padrão de Context: o provider e o hook moram juntos de propósito.
+   O aviso é só do fast-refresh do dev server. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useT() {
   const ctx = useContext(Context);
   if (!ctx) throw new Error("useT precisa estar dentro de <I18nProvider>");

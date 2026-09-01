@@ -7,7 +7,7 @@
 import { Badge, Card, Group, Stack, Text, ThemeIcon } from "@mantine/core";
 import { IconCheck, IconPointFilled, IconArrowBackUp, IconX } from "@tabler/icons-react";
 import { StatusDemanda, type Demand } from "../data/types";
-import { PIPELINE, pipelineIndex, aguardando } from "../domain/workflow";
+import { PIPELINE, pipelineIndex } from "../domain/workflow";
 
 export function LifecycleTimeline({ demand }: { demand: Demand }) {
   const devolvida = demand.status === StatusDemanda.Devolvida;
@@ -19,12 +19,11 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
 
   return (
     <Card withBorder radius="lg" padding="lg">
-      <Group justify="space-between" mb="md">
-        <Text fw={700}>Lifecycle</Text>
-        <Badge variant="light" color={recusada ? "red" : devolvida ? "yellow" : "gray"}>
-          {aguardando(demand)}
-        </Badge>
-      </Group>
+      {/* Quem está devendo a próxima ação já aparece no CTA e no card do gate;
+          aqui só interessa em que etapa a demanda está. */}
+      <Text fw={700} mb="md">
+        Lifecycle
+      </Text>
       {/* (textos abaixo em español) */}
 
       {(devolvida || recusada) && (

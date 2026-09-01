@@ -9,7 +9,6 @@ import {
   Card,
   Center,
   Divider,
-  FileButton,
   Grid,
   Group,
   Loader,
@@ -17,27 +16,23 @@ import {
   Paper,
   SimpleGrid,
   Stack,
-  Table,
   Tabs,
   Text,
   Textarea,
   ThemeIcon,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
   IconArrowLeft,
   IconChecks,
   IconClipboardCheck,
-  IconDownload,
-  IconFile,
   IconMessage2,
   IconNotebook,
-  IconPaperclip,
   IconShieldCheck,
   IconStar,
   IconTrash,
-  IconUpload,
   IconX,
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
@@ -46,16 +41,15 @@ import { ScoringPanel } from "../components/ScoringPanel";
 import { ApprovalsPanel } from "../components/ApprovalsPanel";
 import { LifecycleTimeline } from "../components/LifecycleTimeline";
 import { NextActionCard } from "../components/NextActionCard";
-import { NotifyButton } from "../components/NotifyButton";
 import { useT } from "../i18n";
+import { Role } from "../domain/roles";
 import {
   abrangenciaLabel,
+  tipoImpactoLabel,
   appName,
-  categoryLabel,
   CATEGORIA_COR_VIEW,
   CATEGORIA_VIEW_LABEL,
   clasificacionEfetiva,
-  criticidad,
   processoRecomendado,
   weightedScore,
   TIME_DESCRICAO,
@@ -66,7 +60,6 @@ import {
   EsforcoBadge,
   ImpactoBadge,
   StatusBadge,
-  TipoBadge,
   UrgenciaBadge,
 } from "../components/Badges";
 import {
@@ -75,12 +68,6 @@ import {
   formatDateTime,
   initialsFromName,
 } from "../lib/format";
-
-function fmtBytes(b: number): string {
-  if (b < 1024) return `${b} B`;
-  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
-  return `${(b / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 export function DemandaDetailPage() {
   const { id } = useParams();
@@ -158,30 +145,7 @@ export function DemandaDetailPage() {
     setNewComment("");
   }
 
-  async function handleUpload(file: File | null) {
-    if (!file || !demand) return;
-    if (file.size > 10 * 1024 * 1024) {
-      notifications.show({
-        color: "red",
-        title: "File too large",
-        message: `${file.name} exceeds the 10 MB limit.`,
-      });
-      return;
-    }
-    const updated = await demandService.addAnexo(demand.id, file.name, file.size);
-    setDemand(updated);
-    notifications.show({
-      color: "teal",
-      title: t("detail_files_uploaded"),
-      message: file.name,
-    });
-  }
 
-  async function handleRemoveAnexo(anexoId: string) {
-    if (!demand) return;
-    const updated = await demandService.removeAnexo(demand.id, anexoId);
-    setDemand(updated);
-  }
 
 
   const wScore = weightedScore(demand.score);
@@ -190,37 +154,19 @@ export function DemandaDetailPage() {
     <Stack gap="lg">
       <Group justify="space-between" align="flex-end" wrap="wrap">
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* 3 sinais: identidade, onde está e de quem é a decisão.
+              Tipo/urgência/impacto/project type vivem no card Impact ao lado —
+              repetir aqui era ruído (eram 9 badges na mesma linha). */}
           <Group gap="sm">
             <Badge color="abbott" size="lg" radius="sm" variant="filled">
               {demand.numero}
             </Badge>
             <StatusBadge value={demand.status} />
-            {demand.category && (
-              <Badge variant="outline" color="indigo" radius="sm">
-                {categoryLabel[demand.category] ?? demand.category}
-              </Badge>
-            )}
             <Badge variant="light" color={CATEGORIA_COR_VIEW[clasificacionEfetiva(demand)]} radius="sm">
               {clasificacionEfetiva(demand) === "otro" && demand.clasificacionOtro
                 ? demand.clasificacionOtro
                 : CATEGORIA_VIEW_LABEL[clasificacionEfetiva(demand)]}
             </Badge>
-            {(() => {
-              const c = criticidad(demand.urgencia);
-              return (
-                <Badge variant="filled" color={c.color} radius="sm">
-                  Criticality: {c.label}
-                </Badge>
-              );
-            })()}
-            <TipoBadge value={demand.tipo} />
-            {demand.abbottProjectType && (
-              <Badge variant="dot" color="grape" radius="sm">
-                {demand.abbottProjectType}
-              </Badge>
-            )}
-            <UrgenciaBadge value={demand.urgencia} />
-            <ImpactoBadge value={demand.impactoNivel} />
           </Group>
           <Title order={2} mt="xs">
             {demand.titulo}
@@ -239,15 +185,17 @@ export function DemandaDetailPage() {
           >
             {t("back")}
           </Button>
-          <NotifyButton demand={demand} />
-          <Button
-            color="red"
-            variant="outline"
-            leftSection={<IconTrash size={16} />}
-            onClick={() => setDeleteOpen(true)}
-          >
-            {t("delete")}
-          </Button>
+          <Tooltip label={t("delete")} withArrow>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              size="lg"
+              aria-label={t("delete")}
+              onClick={() => setDeleteOpen(true)}
+            >
+              <IconTrash size={17} />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       </Group>
 
@@ -259,60 +207,12 @@ export function DemandaDetailPage() {
         onSave={(changes) => persist(changes, { silent: true })}
       />
 
-      {/* Stepper do fluxo de aprovação (gate único do Decisor da área) */}
-      {demand.aprovacoes.length > 0 && (() => {
-        const nextIdx = demand.aprovacoes.findIndex((a) => a.status === "pendente");
-        return (
-          <Card withBorder radius="lg" padding="lg">
-            <Group justify="space-between" mb="md">
-              <Text fw={700}>Approval flow — DMC · IT Hub Committee</Text>
-              <Badge variant="light" color="gray">
-                {demand.aprovacoes.filter((a) => a.status === "aprovado").length}/{demand.aprovacoes.length} approved
-              </Badge>
-            </Group>
-            <Group gap={0} align="flex-start" wrap="nowrap" style={{ overflowX: "auto" }}>
-              {demand.aprovacoes.map((a, i) => {
-                const label =
-                  a.nivel === "decisor" ? "Area Decisor" : a.nivel === "sponsor" ? "Sponsor" : a.nivel === "techlead" ? "Tech Lead" : "Director (DMC)";
-                const approved = a.status === "aprovado";
-                const rejected = a.status === "recusado";
-                const isNext = i === nextIdx;
-                const color = approved ? "teal" : rejected ? "red" : isNext ? "abbott" : "gray";
-                return (
-                  <Group key={a.nivel} gap={0} wrap="nowrap" align="flex-start" style={{ flex: 1, minWidth: 150 }}>
-                    <Stack gap={6} align="center" style={{ flex: 1 }}>
-                      <ThemeIcon
-                        size={44}
-                        radius="xl"
-                        variant={approved || rejected || isNext ? "filled" : "light"}
-                        color={color}
-                        style={isNext ? { boxShadow: "0 0 0 4px var(--mantine-color-abbott-1)" } : undefined}
-                      >
-                        {approved ? <IconChecks size={20} /> : rejected ? <IconX size={20} /> : <Text fw={800}>{i + 1}</Text>}
-                      </ThemeIcon>
-                      <Text fw={700} size="sm" ta="center">{label}</Text>
-                      <Text size="xs" c="dimmed" ta="center" lineClamp={1}>{a.responsavel}</Text>
-                      <Badge size="sm" variant="light" color={color}>
-                        {approved ? "Approved" : rejected ? "Rejected" : isNext ? "Waiting" : "Pending"}
-                      </Badge>
-                    </Stack>
-                    {i < demand.aprovacoes.length - 1 && (
-                      <div style={{ flexShrink: 0, alignSelf: "flex-start", marginTop: 21, width: 40, height: 3, borderRadius: 2,
-                        background: approved ? "var(--mantine-color-teal-4)" : "var(--mantine-color-gray-3)" }} />
-                    )}
-                  </Group>
-                );
-              })}
-            </Group>
-          </Card>
-        );
-      })()}
-
-      <Grid>
+      <Grid align="flex-start">
         <Grid.Col span={{ base: 12, md: 8 }}>
+          <Stack gap="md">
           {/* Banner do score ponderado */}
-          <Paper withBorder radius="lg" p="md" bg="abbott.0" h="100%">
-            <Group justify="space-between" wrap="wrap" h="100%">
+          <Paper withBorder radius="lg" p="md" bg="abbott.0">
+            <Group justify="space-between" wrap="wrap">
               <Group gap="sm">
                 <IconShieldCheck size={26} color="var(--mantine-color-abbott-7)" />
                 <div>
@@ -320,7 +220,7 @@ export function DemandaDetailPage() {
                     {t("detail_score_label")}
                   </Text>
                   <Text fz={28} fw={800}>
-                    {wScore.toFixed(2)} <Text component="span" size="sm" c="dimmed">/ 5,00</Text>
+                    {wScore.toFixed(2)} <Text component="span" size="sm" c="dimmed">/ 5.00</Text>
                   </Text>
                 </div>
               </Group>
@@ -373,13 +273,7 @@ export function DemandaDetailPage() {
               </Group>
             </Group>
           </Paper>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <LifecycleTimeline demand={demand} />
-        </Grid.Col>
-      </Grid>
-
-      <Tabs value={activeTab} onChange={setActiveTab} variant="pills" radius="md">
+          <Tabs value={activeTab} onChange={setActiveTab} variant="pills" radius="md">
         <Tabs.List>
           <Tabs.Tab value="overview" leftSection={<IconNotebook size={16} />}>
             {t("detail_overview")}
@@ -403,49 +297,49 @@ export function DemandaDetailPage() {
           <Tabs.Tab value="comments" leftSection={<IconMessage2 size={16} />}>
             {t("detail_comments")} ({demand.comentarios.length})
           </Tabs.Tab>
-          <Tabs.Tab value="files" leftSection={<IconPaperclip size={16} />}>
-            {t("detail_files")} ({demand.anexos.length})
-          </Tabs.Tab>
         </Tabs.List>
 
         {/* ---------- Visão geral ---------- */}
         <Tabs.Panel value="overview" pt="lg">
           <Grid>
-            <Grid.Col span={{ base: 12, md: 8 }}>
+            <Grid.Col span={{ base: 12, lg: 7 }}>
               <Card withBorder radius="lg" padding="lg" mb="md">
-                <SectionLabel n={1} title={t("detail_section_basic")} />
+                <SectionLabel title={t("detail_section_basic")} />
                 <KV k={t("detail_label_title")} v={demand.titulo} />
                 <KV k={t("detail_label_description")} v={demand.descricao} multiline />
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mt="sm">
                   <KV k={t("detail_label_area")} v={demand.areaSolicitante} />
                   <KV k={t("detail_label_requester")} v={demand.solicitante} />
                   <KV k={t("detail_label_email")} v={demand.email} />
-                  <KV k={t("detail_label_phone")} v={demand.telefone || "—"} />
+                  <KV k={t("detail_label_phone")} v={demand.telefone} />
                 </SimpleGrid>
               </Card>
 
               <Card withBorder radius="lg" padding="lg" mb="md">
-                <SectionLabel n={2} title={t("detail_section_objective")} />
+                <SectionLabel title={t("detail_section_objective")} />
                 <KV k={t("detail_label_problem")} v={demand.problemaResolve} multiline />
                 <KV k={t("detail_label_objective")} v={demand.objetivoPrincipal} multiline />
                 <KV k={t("detail_label_processes")} v={demand.processosImpactados} multiline />
                 <KV k={t("detail_label_consequence")} v={demand.consequenciaNaoExecucao} multiline />
               </Card>
 
-              <Card withBorder radius="lg" padding="lg" mb="md">
-                <SectionLabel n={6} title={t("detail_section_scope")} />
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                  <KV k={t("detail_label_systems")} v={demand.sistemasEnvolvidos} multiline />
-                  <KV k={t("detail_label_integrations")} v={demand.integracoesNecessarias} multiline />
-                  <KV k={t("detail_label_reqs")} v={demand.requisitosPrincipais} multiline />
-                  <KV k={t("detail_label_solution")} v={demand.solucaoProposta} multiline />
-                </SimpleGrid>
-              </Card>
+              {/* Detalhe técnico: o solicitante não preenche (não sabe) — quem
+                  completa é o Time Técnico durante a Avaliação. Em leitura,
+                  campos vazios não aparecem: card sem nada preenchido some. */}
+              <ScopeCard
+                demand={demand}
+                podeEditar={
+                  user.roles.includes(Role.TechLead) ||
+                  user.roles.includes(Role.PMO) ||
+                  user.roles.includes(Role.Admin)
+                }
+                onSave={(changes) => persist(changes)}
+              />
             </Grid.Col>
 
-            <Grid.Col span={{ base: 12, md: 4 }}>
+            <Grid.Col span={{ base: 12, lg: 5 }}>
               <Card withBorder radius="lg" padding="lg" mb="md">
-                <SectionLabel n={4} title={t("detail_section_impact")} />
+                <SectionLabel title={t("detail_section_impact")} />
                 {demand.impactoAbrangencia ? (
                   <KV k="Reach (automatic score)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
                 ) : null}
@@ -454,35 +348,26 @@ export function DemandaDetailPage() {
                 {demand.roiEstimado != null && (
                   <KV k="Estimated ROI" v={`${demand.roiEstimado}%`} />
                 )}
-                <Text size="xs" c="dimmed" mt={4}>
-                  {t("detail_label_impactTypes")}
-                </Text>
-                <Group gap={6} mt={4}>
-                  {demand.tiposImpacto.map((t) => (
-                    <Badge key={t} variant="dot" color="cyan">
-                      {t === 1
-                        ? "Revenue"
-                        : t === 2
-                          ? "Cost reduction"
-                          : t === 3
-                            ? "Efficiency"
-                            : t === 4
-                              ? "Risk / compliance"
-                              : "Customer experience"}
-                    </Badge>
-                  ))}
-                  {demand.tiposImpacto.length === 0 && (
-                    <Text size="xs" c="dimmed">
-                      —
-                    </Text>
-                  )}
-                </Group>
+                {demand.tiposImpacto.length > 0 && (
+                  <KV
+                    k={t("detail_label_impactTypes")}
+                    v={
+                      <Group gap={6}>
+                        {demand.tiposImpacto.map((ti) => (
+                          <Badge key={ti} variant="dot" color="cyan">
+                            {tipoImpactoLabel[ti]}
+                          </Badge>
+                        ))}
+                      </Group>
+                    }
+                  />
+                )}
               </Card>
 
               <Card withBorder radius="lg" padding="lg" mb="md">
-                <SectionLabel n={5} title={t("detail_section_urgency")} />
+                <SectionLabel title={t("detail_section_urgency")} />
                 <KV k={t("detail_label_urgency")} v={<UrgenciaBadge value={demand.urgencia} />} />
-                <KV k={t("detail_label_deadline")} v={demand.deadline ? formatDate(demand.deadline) : "—"} />
+                <KV k={t("detail_label_deadline")} v={demand.deadline ? formatDate(demand.deadline) : ""} />
                 <KV k={t("detail_label_effort")} v={<EsforcoBadge value={demand.esforcoEstimado} />} />
                 {(() => {
                   const p = processoRecomendado(demand);
@@ -505,15 +390,18 @@ export function DemandaDetailPage() {
                 )}
               </Card>
 
-              <Card withBorder radius="lg" padding="lg" mb="md">
-                <SectionLabel n={7} title={t("detail_section_stakeholders")} />
-                <KV k={t("detail_label_sponsor")} v={demand.sponsor} />
-                <KV k={t("detail_label_processOwner")} v={demand.donoProcesso || "—"} />
-                <KV k={t("detail_label_areasInvolved")} v={demand.areasEnvolvidas || "—"} />
-              </Card>
+              {/* Card só aparece se houver alguém para mostrar. */}
+              {(demand.sponsor || demand.donoProcesso || demand.areasEnvolvidas) && (
+                <Card withBorder radius="lg" padding="lg" mb="md">
+                  <SectionLabel title={t("detail_section_stakeholders")} />
+                  <KV k={t("detail_label_sponsor")} v={demand.sponsor} />
+                  <KV k={t("detail_label_processOwner")} v={demand.donoProcesso} />
+                  <KV k={t("detail_label_areasInvolved")} v={demand.areasEnvolvidas} />
+                </Card>
+              )}
 
               <Card withBorder radius="lg" padding="lg">
-                <SectionLabel n={8} title={t("detail_section_compliance")} />
+                <SectionLabel title={t("detail_section_compliance")} />
                 <Stack gap={6}>
                   <ChipRow label={t("detail_label_pii")} on={demand.dadosSensiveis} yes={t("yes")} no={t("no")} />
                   <ChipRow label={t("detail_label_security")} on={demand.impactaSeguranca} yes={t("yes")} no={t("no")} />
@@ -607,77 +495,55 @@ export function DemandaDetailPage() {
         </Tabs.Panel>
 
         {/* ---------- Anexos ---------- */}
-        <Tabs.Panel value="files" pt="lg">
-          <Card withBorder radius="lg" padding="lg">
-            <Group justify="space-between" mb="md">
-              <Text fw={700}>{t("detail_files_count", { n: demand.anexos.length })}</Text>
-              <Group gap="xs">
-                <Text size="xs" c="dimmed">max. 10 MB</Text>
-                <FileButton onChange={handleUpload}>
-                  {(props) => (
-                    <Button leftSection={<IconUpload size={16} />} {...props}>
-                      {t("upload")}
-                    </Button>
+          </Tabs>
+          </Stack>
+        </Grid.Col>
+
+        {/* Coluna de contexto: quem decide e onde a demanda está. */}
+        <Grid.Col span={{ base: 12, md: 4 }}>
+          <Stack gap="md" style={{ position: "sticky", top: 78 }}>
+            {/* Gate único: uma linha diz quem decide e em que pé está.
+                Antes era um stepper de 44px com linhas conectoras para UM passo. */}
+            {demand.aprovacoes.length > 0 && (() => {
+              const gate = demand.aprovacoes[demand.aprovacoes.length - 1];
+              const aprovado = gate.status === "aprovado";
+              const recusado = gate.status === "recusado";
+              const cor = aprovado ? "teal" : recusado ? "red" : "abbott";
+              return (
+                <Card withBorder radius="lg" padding="md" style={{ borderColor: `var(--mantine-color-${cor}-3)` }}>
+                  <Group justify="space-between" wrap="wrap" gap="sm">
+                    <Group gap="sm">
+                      <ThemeIcon size={32} radius="md" variant="light" color={cor}>
+                        {aprovado ? <IconChecks size={18} /> : recusado ? <IconX size={18} /> : <IconShieldCheck size={18} />}
+                      </ThemeIcon>
+                      <div>
+                        <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                          Area decision
+                        </Text>
+                        <Text fw={700}>{gate.responsavel}</Text>
+                      </div>
+                    </Group>
+                    <Group gap="sm">
+                      {gate.acaoEm && (
+                        <Text size="sm" c="dimmed">{formatDate(gate.acaoEm)}</Text>
+                      )}
+                      <Badge color={cor} variant={aprovado || recusado ? "filled" : "light"} size="lg">
+                        {aprovado ? "Approved" : recusado ? "Rejected" : "Waiting for decision"}
+                      </Badge>
+                    </Group>
+                  </Group>
+                  {gate.comentario && (
+                    <Text size="sm" c="dimmed" mt="sm" style={{ whiteSpace: "pre-wrap" }}>
+                      "{gate.comentario}"
+                    </Text>
                   )}
-                </FileButton>
-              </Group>
-            </Group>
-            {demand.anexos.length === 0 ? (
-              <Center py="xl">
-                <Stack align="center" gap="xs">
-                  <IconFile size={32} color="var(--mantine-color-gray-5)" />
-                  <Text size="sm" c="dimmed">
-                    {t("detail_files_none")}
-                  </Text>
-                </Stack>
-              </Center>
-            ) : (
-              <Table verticalSpacing="sm">
-                <Table.Tbody>
-                  {demand.anexos.map((a) => (
-                    <Table.Tr key={a.id}>
-                      <Table.Td>
-                        <Group gap={8}>
-                          <IconFile size={18} />
-                          <Text fw={500}>{a.nomeArquivo}</Text>
-                        </Group>
-                      </Table.Td>
-                      <Table.Td c="dimmed" w={120}>
-                        {fmtBytes(a.tamanhoBytes)}
-                      </Table.Td>
-                      <Table.Td c="dimmed" w={140}>
-                        {formatDate(a.uploadEm)}
-                      </Table.Td>
-                      <Table.Td w={80} ta="right">
-                        <ActionIcon
-                          variant="subtle"
-                          color="gray"
-                          onClick={() =>
-                            notifications.show({
-                              color: "abbott",
-                              title: t("detail_files_downloadSimulated"),
-                              message: `${a.nomeArquivo} (mock)`,
-                            })
-                          }
-                        >
-                          <IconDownload size={16} />
-                        </ActionIcon>
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          onClick={() => handleRemoveAnexo(a.id)}
-                        >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
-            )}
-          </Card>
-        </Tabs.Panel>
-      </Tabs>
+                </Card>
+              );
+            })()}
+            <LifecycleTimeline demand={demand} />
+          </Stack>
+        </Grid.Col>
+      </Grid>
 
       <Text size="xs" c="dimmed">
         {t("detail_lastUpdate")}: {formatDateTime(demand.modificadoEm)}
@@ -702,14 +568,11 @@ export function DemandaDetailPage() {
   );
 }
 
-function SectionLabel({ n, title }: { n: number; title: string }) {
+function SectionLabel({ title }: { title: string }) {
   return (
-    <Group gap={8} mb="sm">
-      <Badge color="abbott" variant="light" radius="sm" size="sm">
-        {n}
-      </Badge>
-      <Text fw={700}>{title}</Text>
-    </Group>
+    <Text fw={700} mb="sm">
+      {title}
+    </Text>
   );
 }
 
@@ -722,13 +585,24 @@ function KV({
   v: React.ReactNode;
   multiline?: boolean;
 }) {
+  /* Campo vazio não vira linha: uma ficha cheia de "—" só ocupa espaço e
+     esconde o que de fato foi informado. */
+  if (v == null || (typeof v === "string" && !v.trim())) return null;
   return (
-    <Box mb="sm">
+    <Box mb="sm" style={{ minWidth: 0 }}>
       <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
         {k}
       </Text>
       {typeof v === "string" ? (
-        <Text style={multiline ? { whiteSpace: "pre-wrap" } : undefined}>{v || "—"}</Text>
+        <Text
+          style={
+            multiline
+              ? { whiteSpace: "pre-wrap", overflowWrap: "anywhere" }
+              : { overflowWrap: "anywhere" }
+          }
+        >
+          {v}
+        </Text>
       ) : (
         <Box mt={4}>{v}</Box>
       )}
@@ -754,5 +628,94 @@ function ChipRow({
       </Badge>
       <Text size="sm">{label}</Text>
     </Group>
+  );
+}
+
+/* ---------- Detalhe técnico, preenchido pelo Time Técnico ---------- */
+function ScopeCard({
+  demand,
+  podeEditar,
+  onSave,
+}: {
+  demand: Demand;
+  podeEditar: boolean;
+  onSave: (changes: Partial<Demand>) => Promise<void> | void;
+}) {
+  const [editando, setEditando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [form, setForm] = useState({
+    sistemasEnvolvidos: demand.sistemasEnvolvidos,
+    integracoesNecessarias: demand.integracoesNecessarias,
+    requisitosPrincipais: demand.requisitosPrincipais,
+    solucaoProposta: demand.solucaoProposta,
+  });
+
+  const campos = [
+    ["sistemasEnvolvidos", "Systems involved"],
+    ["integracoesNecessarias", "Required integrations"],
+    ["requisitosPrincipais", "Main requirements"],
+    ["solucaoProposta", "Proposed solution"],
+  ] as const;
+
+  const preenchidos = campos.filter(([k]) => (demand[k] ?? "").trim().length > 0);
+  // Nada preenchido e sem permissão de editar: o card não existe.
+  if (preenchidos.length === 0 && !podeEditar) return null;
+
+  async function salvar() {
+    setSalvando(true);
+    try {
+      await onSave(form);
+      setEditando(false);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <Card withBorder radius="lg" padding="lg" mb="md">
+      <Group justify="space-between" align="center" mb="xs">
+        <SectionLabel title="Technical detail" />
+        {podeEditar &&
+          (editando ? (
+            <Group gap="xs">
+              <Button size="xs" variant="default" onClick={() => setEditando(false)}>
+                Cancel
+              </Button>
+              <Button size="xs" loading={salvando} onClick={salvar}>
+                Save
+              </Button>
+            </Group>
+          ) : (
+            <Button size="xs" variant="light" onClick={() => setEditando(true)}>
+              {preenchidos.length ? "Edit" : "Add technical detail"}
+            </Button>
+          ))}
+      </Group>
+
+      {editando ? (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+          {campos.map(([chave, rotulo]) => (
+            <Textarea
+              key={chave}
+              label={rotulo}
+              autosize
+              minRows={2}
+              value={form[chave]}
+              onChange={(e) => setForm({ ...form, [chave]: e.currentTarget.value })}
+            />
+          ))}
+        </SimpleGrid>
+      ) : preenchidos.length ? (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+          {preenchidos.map(([chave, rotulo]) => (
+            <KV key={chave} k={rotulo} v={demand[chave]} multiline />
+          ))}
+        </SimpleGrid>
+      ) : (
+        <Text size="sm" c="dimmed">
+          Filled in by the technical team during the evaluation.
+        </Text>
+      )}
+    </Card>
   );
 }

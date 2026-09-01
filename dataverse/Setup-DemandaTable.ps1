@@ -363,8 +363,30 @@ Add-Attr (PicklistAttr "${PublisherPrefix}_Status" 'Status' @(
   (Opt 'Priorizada' ($b+2)),
   (Opt 'Em execucao' ($b+3)),
   (Opt 'Concluida' ($b+4)),
-  (Opt 'Recusada' ($b+5))
+  (Opt 'Recusada' ($b+5)),
+  (Opt 'Em aprovacao' ($b+7)),
+  (Opt 'Devolvida' ($b+8))
 ))
+
+# --- Campos exigidos pelo motor de ciclo de vida (roteamento, score e SLA) ---
+# Sem estes o app publica mas grava errado: o gate vai para o decisor errado e o
+# score nasce 1.00. Ver src/data/dataverseDemandService.ts (fromDv/toDv).
+Add-Attr (IntNum "${PublisherPrefix}_ImpactoAbrangencia" 'Impacto - Abrangencia' 1 4)
+Add-Attr (PicklistAttr "${PublisherPrefix}_Clasificacion" 'Classificacao do portfolio' @(
+  (Opt 'Infraestrutura' ($b+0)),
+  (Opt 'Inteligencia Artificial' ($b+1)),
+  (Opt 'Aplicacoes' ($b+2)),
+  (Opt 'Outro' ($b+3))
+))
+Add-Attr (Str "${PublisherPrefix}_Rce" 'RCE' 100)
+Add-Attr (Str "${PublisherPrefix}_AppId" 'APP ID' 50)
+# Marca de tempo da ULTIMA MUDANCA DE STATUS (modifiedon nao serve: qualquer
+# edicao o reseta e zera o relogio de SLA de uma aprovacao parada).
+Add-Attr (DateOnly "${PublisherPrefix}_StatusDesde" 'Status desde')
+# UPNs resolvidos na transicao — permitem que os flows enderecem a pessoa
+# direto do gatilho, sem join com tabela de roteamento.
+Add-Attr (Str "${PublisherPrefix}_RequerenteUpn" 'Requerente (UPN)' 200)
+Add-Attr (Str "${PublisherPrefix}_DecisorUpn" 'Decisor (UPN)' 200)
 Add-Attr (Str "${PublisherPrefix}_ProjectStage" 'Project Stage' 60)
 Add-Attr (IntNum "${PublisherPrefix}_FinalPriority" 'Final Priority' 0 9999)
 Add-Attr (IntNum "${PublisherPrefix}_ScoreBusinessImpact" 'Score Business Impact' 1 5)
@@ -419,7 +441,8 @@ $schemaInfo = [ordered]@{
     impactoNivel  = @{ Alto=($b+0); Medio=($b+1); Baixo=($b+2) }
     urgencia      = @{ Critico=($b+0); Alto=($b+1); Medio=($b+2); Baixo=($b+3) }
     esforco       = @{ Pequeno=($b+0); Medio=($b+1); Grande=($b+2) }
-    status        = @{ Nova=($b+0); EmAnalise=($b+1); Priorizada=($b+2); EmExecucao=($b+3); Concluida=($b+4); Recusada=($b+5) }
+    status        = @{ Nova=($b+0); EmAnalise=($b+1); Priorizada=($b+2); EmExecucao=($b+3); Concluida=($b+4); Recusada=($b+5); EmAprovacao=($b+7); Devolvida=($b+8) }
+    clasificacion = @{ infra=($b+0); ia=($b+1); app=($b+2); otro=($b+3) }
   }
 }
 $schemaInfo | ConvertTo-Json -Depth 6 | Set-Content -Path "$PSScriptRoot/schema-info.json" -Encoding utf8

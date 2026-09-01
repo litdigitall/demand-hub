@@ -23,6 +23,18 @@ const dia = (offset: number) => {
   return d.toISOString();
 };
 
+/** nome.sobrenome@litdigitall.com.br a partir do nome do solicitante. */
+function emailDe(nome: string): string {
+  const slug = nome
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .split(/\s+/)
+    .join(".");
+  return slug ? `${slug}@litdigitall.com.br` : "";
+}
+
 function base(n: number, extra: Partial<Demand>): Demand {
   const abr = extra.impactoAbrangencia ?? ImpactoAbrangencia.Processo;
   const criadoEm = extra.dataSolicitacao ?? dia(-10);
@@ -33,7 +45,7 @@ function base(n: number, extra: Partial<Demand>): Demand {
     descricao: "",
     areaSolicitante: "",
     solicitante: "Ana Ribeiro",
-    email: "ana.ribeiro@litdigitall.com.br",
+    email: "",
     telefone: "",
     dataSolicitacao: criadoEm,
     problemaResolve: "",
@@ -90,6 +102,8 @@ function base(n: number, extra: Partial<Demand>): Demand {
     modificadoEm: criadoEm,
     ...extra,
   };
+  // O e-mail acompanha quem pediu (antes toda demanda herdava o mesmo endereço)
+  if (!d.email) d.email = emailDe(d.solicitante);
   // As 3 notas saem automaticamente dos campos do intake (modelo simplificado)
   d.score = scoreAutomatico(d);
   // Gate coerente com a classificação, se não veio pronto no extra
