@@ -172,7 +172,7 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
         </Text>
       </Tooltip>
 
-      <Box style={{ flexShrink: 0 }}>
+      <Box className="inbox-status">
         <StatusBadge value={d.status} />
       </Box>
 
@@ -181,7 +181,8 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
         wrap="nowrap"
         justify="flex-end"
         visibleFrom="sm"
-        style={{ flexShrink: 0, opacity: hover ? 1 : 0, transition: "opacity 120ms ease" }}
+        className="inbox-actions"
+        style={{ opacity: hover ? 1 : 0, transition: "opacity 120ms ease" }}
       >
         {acao ? (
           <Button
