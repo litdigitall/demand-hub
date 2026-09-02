@@ -100,6 +100,9 @@ function base(n: number, extra: Partial<Demand>): Demand {
     rce: "",
     criadoEm,
     modificadoEm: criadoEm,
+    /* Relógio do estado atual: é daqui que sai "parada há N dias" na tela e o
+       flow de SLA no Power Automate. Sem isto, demanda semeada nasce sem idade. */
+    statusDesde: extra.statusDesde ?? extra.modificadoEm ?? criadoEm,
     ...extra,
   };
   // O e-mail acompanha quem pediu (antes toda demanda herdava o mesmo endereço)
