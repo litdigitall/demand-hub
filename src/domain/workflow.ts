@@ -213,7 +213,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.EmAnalise]: [
     {
       id: "definirCapacity",
-      label: "Define team & hours (capacity)",
+      label: "Define team & hours",
       papeis: [Role.TechLead],
       cor: "violet",
       campos: ["capacity"],
@@ -232,7 +232,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "enviarParaAprovacao",
-      label: "Complete evaluation → send to approval",
+      label: "Send to approval",
       // PMO orquestra, mas o Tech Lead que definiu o capacity também pode empurrar.
       papeis: [Role.PMO, Role.TechLead],
       cor: "teal",
@@ -264,7 +264,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
   [StatusDemanda.EmAprovacao]: [
     {
       id: "aprovarGate",
-      label: "Approve (area decision)",
+      label: "Approve",
       papeis: [Role.Decisor],
       restritaAreaDecisor: true,
       cor: "green",
@@ -290,7 +290,7 @@ export const ACOES_POR_ESTADO: Record<number, Acao[]> = {
     },
     {
       id: "recusarGate",
-      label: "Reject (area decision)",
+      label: "Reject",
       papeis: [Role.Decisor],
       restritaAreaDecisor: true,
       cor: "red",

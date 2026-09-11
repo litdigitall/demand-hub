@@ -247,16 +247,19 @@ export function RequestsPage() {
       ) : view === "board" ? (
         <RequestsBoard items={r.items} />
       ) : (
-        <Card withBorder radius="lg" padding={0}>
+        /* overflow visible: o Card do Mantine recorta por padrão, e um
+           ancestral recortado captura o position:sticky do cabeçalho. */
+        <Card withBorder radius="lg" padding={0} style={{ overflow: "visible" }}>
           {view === "priority" ? (
             <RequestsPriority items={r.items} onChanged={() => void r.refresh()} />
           ) : (
             <>
-              {/* Tabela no desktop, cartões no celular — a mesma lista. */}
-              <Box visibleFrom="md">
+              {/* Tabela no desktop (lg+, onde as 12 colunas cabem), cartões
+                  abaixo disso — a mesma lista, sem scroll lateral. */}
+              <Box visibleFrom="lg">
                 <RequestsTable items={r.items} groupBy={groupBy} />
               </Box>
-              <Box hiddenFrom="md">
+              <Box hiddenFrom="lg">
                 <RequestsCards items={r.items} />
               </Box>
             </>

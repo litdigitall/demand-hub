@@ -43,6 +43,9 @@ const grape: MantineColorsTuple = [
 ];
 
 export const theme = createTheme({
+  /* xxl: monitor de 1700px+. O app é de uso desktop, e entre 1408 e 1920 há
+     espaço para mais duas colunas sem espremer o título. */
+  breakpoints: { xs: "36em", sm: "48em", md: "62em", lg: "75em", xl: "88em", xxl: "106.25em" },
   primaryColor: "abbott",
   primaryShade: 6,
   colors: { abbott, grape },

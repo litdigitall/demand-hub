@@ -1,11 +1,15 @@
 /* ============================================================
    Requests · Table — lista densa, uma linha por demanda.
-   Colunas: Number · Title · Area · Status · Waiting on · Score · Deadline.
-   A linha inteira abre o detalhe.
+
+   Desktop primeiro: a tabela tinha 8 colunas e sobrava meia tela, com a
+   coluna Title esticada em 840px e o prazo quebrando em duas linhas. Agora
+   as colunas que o PMO usa para decidir (urgência, idade no estado, horas,
+   quem pediu) ocupam esse espaço, o prazo não quebra e o cabeçalho gruda no
+   topo — com 48 linhas, perder o cabeçalho ao rolar é perder a referência.
    ============================================================ */
 import { Fragment, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Box, Group, Table, Text } from "@mantine/core";
+import { Badge, Box, Group, Table, Text, Tooltip } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
 import {
   CATEGORIA_COR_VIEW,
@@ -16,12 +20,13 @@ import {
   type Demand,
 } from "../../data/types";
 import { pipelineIndex } from "../../domain/workflow";
-import { StatusBadge } from "../../components/Badges";
+import { StatusBadge, UrgenciaBadge } from "../../components/Badges";
 import { useLabels } from "../../i18n/useLabels";
 import { formatDate } from "../../lib/format";
+import { sla } from "../../domain/sla";
 import { isOverdue, waitingLabel, type GroupBy } from "./useRequests";
 
-const COLS = 8;
+const COLS = 12;
 
 interface RowGroup {
   key: string;
@@ -47,6 +52,14 @@ function groupOf(
   return { key: w, label: w, order: 0 };
 }
 
+/** "parada há 8 de 5 dias-meta" — a coluna é estreita, o tooltip explica. */
+function tituloIdade(d: Demand): string {
+  const { dias, alvo } = sla(d);
+  return alvo === undefined
+    ? `In this stage for ${dias} day${dias === 1 ? "" : "s"}`
+    : `In this stage for ${dias} of ${alvo} target days`;
+}
+
 export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: GroupBy }) {
   const navigate = useNavigate();
   const L = useLabels();
@@ -70,21 +83,46 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
     navigate(`/demandas/${id}`);
   }
 
+  /* Sem Table.ScrollContainer de propósito: ele cria um contexto de rolagem
+     próprio e o cabeçalho "fixo" passa a grudar DENTRO dele, aparecendo no meio
+     das linhas. Esta tabela só renderiza a partir de lg, onde as colunas cabem;
+     abaixo disso a tela usa RequestsCards. */
   return (
-    <Table.ScrollContainer minWidth={900}>
-      <Table highlightOnHover verticalSpacing={8} horizontalSpacing="md" layout="fixed">
-        <Table.Thead>
+    <Box>
+      <Table
+        highlightOnHover
+        verticalSpacing={5}
+        horizontalSpacing="sm"
+        layout="fixed"
+        stickyHeader
+        stickyHeaderOffset={62}
+      >
+        <Table.Thead bg="var(--mantine-color-gray-0)">
           <Table.Tr>
-            <Table.Th w={104}>Number</Table.Th>
+            <Table.Th w={92}>Number</Table.Th>
             <Table.Th>Title</Table.Th>
-            <Table.Th w={158}>Area</Table.Th>
-            <Table.Th w={140}>Status</Table.Th>
-            <Table.Th w={170}>Waiting on</Table.Th>
-            <Table.Th w={72} ta="right">
+            <Table.Th w={96} visibleFrom="xl">
+              Urgency
+            </Table.Th>
+            <Table.Th w={134}>Area</Table.Th>
+            <Table.Th w={62} ta="right">
+              Age
+            </Table.Th>
+            <Table.Th w={62} ta="right" visibleFrom="xxl">
+              Hours
+            </Table.Th>
+            <Table.Th w={104} visibleFrom="xl">
+              Due
+            </Table.Th>
+            <Table.Th w={64} ta="right">
               Score
             </Table.Th>
-            <Table.Th w={112}>Deadline</Table.Th>
-            <Table.Th w={36} />
+            <Table.Th w={122}>Status</Table.Th>
+            <Table.Th w={136}>Waiting on</Table.Th>
+            <Table.Th w={132} visibleFrom="xxl">
+              Requester
+            </Table.Th>
+            <Table.Th w={34} />
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -118,6 +156,7 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
               {g.items.map((d) => {
                 const cat = clasificacionEfetiva(d);
                 const late = isOverdue(d);
+                const idade = sla(d);
                 return (
                   <Table.Tr
                     key={d.id}
@@ -138,17 +177,44 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
                         {d.titulo}
                       </Text>
                     </Table.Td>
+                    <Table.Td visibleFrom="xl">
+                      <UrgenciaBadge value={d.urgencia} />
+                    </Table.Td>
                     <Table.Td>
                       <Badge variant="light" radius="sm" color={CATEGORIA_COR_VIEW[cat]}>
                         {CATEGORIA_VIEW_LABEL[cat]}
                       </Badge>
                     </Table.Td>
-                    <Table.Td>
-                      <StatusBadge value={d.status} />
+                    <Table.Td ta="right">
+                      <Tooltip label={tituloIdade(d)} openDelay={300} withArrow>
+                        <Text
+                          size="xs"
+                          fw={idade.tom === "ok" ? 400 : 700}
+                          c={
+                            idade.tom === "estourado"
+                              ? "red.7"
+                              : idade.tom === "atencao"
+                                ? "orange.7"
+                                : "dimmed"
+                          }
+                        >
+                          {idade.dias}d
+                        </Text>
+                      </Tooltip>
                     </Table.Td>
-                    <Table.Td>
-                      <Text size="sm" c="dimmed" truncate>
-                        {waitingLabel(d)}
+                    <Table.Td ta="right" visibleFrom="xxl">
+                      <Text size="xs" c="dimmed">
+                        {d.horasEstimadas ? `${d.horasEstimadas}h` : "—"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td visibleFrom="xl">
+                      <Text
+                        size="xs"
+                        fw={late ? 700 : 400}
+                        c={late ? "red.7" : "dimmed"}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        {formatDate(d.deadline)}
                       </Text>
                     </Table.Td>
                     <Table.Td ta="right">
@@ -157,8 +223,16 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
                       </Text>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm" fw={late ? 600 : 400} c={late ? "red.7" : "dimmed"}>
-                        {formatDate(d.deadline)}
+                      <StatusBadge value={d.status} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="xs" c="dimmed" truncate>
+                        {waitingLabel(d)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td visibleFrom="xxl">
+                      <Text size="xs" c="dimmed" truncate>
+                        {d.solicitante || "—"}
                       </Text>
                     </Table.Td>
                     <Table.Td>
@@ -173,6 +247,6 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
           ))}
         </Table.Tbody>
       </Table>
-    </Table.ScrollContainer>
+    </Box>
   );
 }

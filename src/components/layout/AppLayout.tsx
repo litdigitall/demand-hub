@@ -108,7 +108,13 @@ export function AppLayout() {
       navbar={{ width: 248, breakpoint: "sm", collapsed: { mobile: !opened } }}
       padding="lg"
     >
-      <AppShell.Header className="glass" withBorder={false} style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}>
+      <AppShell.Header
+        withBorder={false}
+        style={{
+          background: "var(--mantine-color-body)",
+          borderBottom: "1px solid var(--mantine-color-gray-2)",
+        }}
+      >
         <Group h="100%" px="lg" gap="sm" wrap="nowrap" justify="space-between">
           <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />

@@ -19,6 +19,7 @@ import {
   type Demand,
 } from "../../data/types";
 import { aguardando } from "../../domain/workflow";
+import { isOverdue } from "../../domain/sla";
 import { Role } from "../../domain/roles";
 import { useCurrentUser } from "../../lib/useCurrentUser";
 
@@ -35,13 +36,9 @@ export const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "number", label: "Number" },
 ];
 
-/** Demanda com prazo vencido e ainda viva. */
-export function isOverdue(d: Demand): boolean {
-  if (!d.deadline) return false;
-  if (d.status === StatusDemanda.Concluida || d.status === StatusDemanda.Recusada) return false;
-  const dl = new Date(d.deadline);
-  return !Number.isNaN(dl.getTime()) && dl < new Date();
-}
+/* A regra de atraso é uma só no app — mora em domain/sla; reexportada aqui
+   porque as três views já a importam por este módulo. */
+export { isOverdue };
 
 /** `aguardando()` sem o prefixo — a coluna já se chama "Waiting on". */
 export function waitingLabel(d: Demand): string {

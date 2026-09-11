@@ -1,9 +1,13 @@
 /* ============================================================
    Inbox — rota index. "O que precisa de mim agora".
 
-   Uma única fila, dividida em seções condicionais (seção vazia
-   não renderiza). Toda transição sai do motor de ciclo de vida
-   (proximasAcoes → aplicarAcao); nada muda status por fora.
+   Densidade de desktop: uma linha por demanda, colunas de verdade
+   e cabeçalho, em vez de dois textos empilhados com 700px de branco
+   no meio. A ação fica SEMPRE visível — em desktop com mouse, ação
+   escondida no hover esconde justamente o ponto da tela.
+
+   Toda transição sai do motor de ciclo de vida (proximasAcoes →
+   aplicarAcao); nada muda status por fora.
    ============================================================ */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -39,39 +43,37 @@ import {
   proximasAcoes,
   type Acao,
 } from "../domain/workflow";
+import { isOverdue, porPrioridadeDeTrabalho, sla } from "../domain/sla";
 import { Role } from "../domain/roles";
-import { StatusBadge } from "../components/Badges";
+import { StatusBadge, UrgenciaBadge } from "../components/Badges";
 import { formatDate } from "../lib/format";
 import { useCurrentUser } from "../lib/useCurrentUser";
 
 const BORDER = "1px solid var(--mantine-color-gray-2)";
-const WAITING_PREVIEW = 6;
+const WAITING_PREVIEW = 8;
+
+/* Larguras das colunas num lugar só: cabeçalho e linha não podem divergir. */
+const COL = {
+  num: 76,
+  urgencia: 86,
+  area: 128,
+  idade: 62,
+  horas: 54,
+  score: 46,
+  prazo: 84,
+  status: 112,
+  acao: 236,
+} as const;
 
 /** Linha pronta para render: a demanda + o contexto que a seção dá a ela. */
 interface InboxItem {
   d: Demand;
-  /** O que a pessoa precisa fazer (label da 1ª ação disponível). */
-  emphasis?: string;
-  /** Área + em quem a demanda está parada. */
-  muted: string;
-  /** Ação de um clique (sem campos extras) — executada pelo motor. */
+  /** Ação de um clique (sem campos extras) — executada aqui pelo motor. */
   acao?: Acao;
-}
-
-function isOverdue(d: Demand): boolean {
-  if (!d.deadline) return false;
-  if (d.status === StatusDemanda.Concluida || d.status === StatusDemanda.Recusada) return false;
-  const t = new Date(d.deadline).getTime();
-  return !Number.isNaN(t) && t < Date.now();
-}
-
-/** Mais urgente primeiro: atrasadas, depois score, depois mais antigas. */
-function porUrgencia(a: Demand, b: Demand): number {
-  const atraso = Number(isOverdue(b)) - Number(isOverdue(a));
-  if (atraso !== 0) return atraso;
-  const score = weightedScore(b.score) - weightedScore(a.score);
-  if (score !== 0) return score;
-  return a.dataSolicitacao.localeCompare(b.dataSolicitacao);
+  /** Rótulo da pendência, mesmo quando ela exige abrir o detalhe. */
+  acaoLabel?: string;
+  /** Texto da coluna de ação quando não há nada a fazer aqui. */
+  contexto?: string;
 }
 
 function greeting(): string {
@@ -79,6 +81,86 @@ function greeting(): string {
   if (h < 12) return "Good morning";
   if (h < 18) return "Good afternoon";
   return "Good evening";
+}
+
+/* ---------------- Cabeçalho de colunas ---------------------- */
+
+function ColHead({ children, w, ta = "left", from }: {
+  children: ReactNode;
+  w: number;
+  ta?: "left" | "right" | "center";
+  from?: "sm" | "md" | "lg" | "xl";
+}) {
+  return (
+    <Text
+      fz={10}
+      fw={700}
+      tt="uppercase"
+      lts={0.6}
+      c="dimmed"
+      w={w}
+      ta={ta}
+      visibleFrom={from}
+      style={{ flexShrink: 0 }}
+    >
+      {children}
+    </Text>
+  );
+}
+
+function HeaderRow({ acaoLabel }: { acaoLabel: string }) {
+  return (
+    <Group
+      wrap="nowrap"
+      gap="sm"
+      px="md"
+      py={7}
+      bg="var(--mantine-color-gray-0)"
+      /* Gruda abaixo do header do app: com 30 linhas, rolar sem cabeçalho é
+         perder a referência de qual coluna é qual. */
+      style={{
+        borderBottom: BORDER,
+        position: "sticky",
+        top: 62,
+        zIndex: 2,
+        borderTopLeftRadius: "var(--mantine-radius-lg)",
+        borderTopRightRadius: "var(--mantine-radius-lg)",
+      }}
+    >
+      <Box w={7} style={{ flexShrink: 0 }} />
+      <ColHead w={COL.num} from="sm">
+        No.
+      </ColHead>
+      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed" style={{ flex: 1, minWidth: 0 }}>
+        Request
+      </Text>
+      <ColHead w={COL.urgencia} from="lg">
+        Urgency
+      </ColHead>
+      <ColHead w={COL.area} from="xl">
+        Area
+      </ColHead>
+      <ColHead w={COL.idade} ta="right" from="md">
+        Age
+      </ColHead>
+      <ColHead w={COL.horas} ta="right" from="xl">
+        Hours
+      </ColHead>
+      <ColHead w={COL.prazo} from="xl">
+        Due
+      </ColHead>
+      <ColHead w={COL.score} ta="right">
+        Score
+      </ColHead>
+      <ColHead w={COL.status} from="sm">
+        Status
+      </ColHead>
+      <ColHead w={COL.acao} from="sm">
+        {acaoLabel}
+      </ColHead>
+      <Box w={26} style={{ flexShrink: 0 }} visibleFrom="sm" />
+    </Group>
+  );
 }
 
 /* ---------------- Linha da caixa de entrada ----------------- */
@@ -92,23 +174,29 @@ interface RowProps {
 
 function InboxRow({ item, divider, busy, onRun }: RowProps) {
   const [hover, setHover] = useState(false);
-  const { d, emphasis, muted, acao } = item;
+  const { d, acao, acaoLabel, contexto } = item;
   const cat = clasificacionEfetiva(d);
   const atrasada = isOverdue(d);
+  const { dias, alvo, tom } = sla(d);
+
+  const corIdade = tom === "estourado" ? "red.7" : tom === "atencao" ? "orange.7" : "dimmed";
+  const tituloIdade =
+    alvo === undefined
+      ? `In this stage for ${dias} day${dias === 1 ? "" : "s"}`
+      : `In this stage for ${dias} of ${alvo} target days`;
 
   return (
     <Group
       wrap="nowrap"
       gap="sm"
       px="md"
-      py={9}
+      py={6}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      onFocus={() => setHover(true)}
-      onBlur={() => setHover(false)}
       style={{
         borderTop: divider ? BORDER : undefined,
         backgroundColor: hover ? "var(--mantine-color-gray-0)" : undefined,
+        minHeight: 38,
       }}
     >
       <Tooltip label={CATEGORIA_VIEW_LABEL[cat]} openDelay={400} withArrow>
@@ -124,77 +212,105 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
         ff="monospace"
         fz={11}
         c="dimmed"
-        w={64}
+        w={COL.num}
         visibleFrom="sm"
         style={{ flexShrink: 0 }}
       >
         {d.numero}
       </Text>
 
-      <Box style={{ flex: 1, minWidth: 0 }}>
-        <Anchor
-          component={Link}
-          to={`/demandas/${d.id}`}
-          c="dark.8"
-          fw={600}
-          fz="sm"
-          display="block"
-          truncate="end"
-        >
-          {d.titulo}
-        </Anchor>
-        <Text fz={11} c="dimmed" truncate="end">
-          {emphasis ? (
-            <Text span inherit fw={600} c="abbott.7">
-              {emphasis}
-              {" · "}
-            </Text>
-          ) : null}
-          {muted}
-        </Text>
+      <Anchor
+        component={Link}
+        to={`/demandas/${d.id}`}
+        c="dark.8"
+        fw={500}
+        fz="sm"
+        truncate="end"
+        style={{ flex: 1, minWidth: 0 }}
+      >
+        {d.titulo}
+      </Anchor>
+
+      <Box w={COL.urgencia} visibleFrom="lg" style={{ flexShrink: 0 }}>
+        <UrgenciaBadge value={d.urgencia} />
       </Box>
 
+      <Text fz="xs" c="dimmed" w={COL.area} visibleFrom="xl" truncate style={{ flexShrink: 0 }}>
+        {d.areaSolicitante || CATEGORIA_VIEW_LABEL[cat]}
+      </Text>
+
+      <Tooltip label={tituloIdade} openDelay={300} withArrow>
+        <Text
+          fz="xs"
+          fw={tom === "ok" ? 400 : 700}
+          c={corIdade}
+          w={COL.idade}
+          ta="right"
+          visibleFrom="md"
+          style={{ flexShrink: 0 }}
+        >
+          {dias}d
+        </Text>
+      </Tooltip>
+
+      <Text fz="xs" c="dimmed" w={COL.horas} ta="right" visibleFrom="xl" style={{ flexShrink: 0 }}>
+        {d.horasEstimadas ? `${d.horasEstimadas}h` : "—"}
+      </Text>
+
       <Text
-        fz={11}
-        w={76}
-        ta="right"
+        fz="xs"
+        w={COL.prazo}
         c={atrasada ? "red.7" : "dimmed"}
         fw={atrasada ? 700 : 400}
-        visibleFrom="md"
+        visibleFrom="xl"
         style={{ flexShrink: 0 }}
       >
-        {d.deadline ? formatDate(d.deadline) : ""}
+        {d.deadline ? formatDate(d.deadline) : "—"}
       </Text>
 
       <Tooltip label="Priority score" openDelay={400} withArrow>
-        <Text fz={11} fw={700} c="abbott.7" w={32} ta="right" style={{ flexShrink: 0 }}>
+        <Text fz="xs" fw={700} c="abbott.7" w={COL.score} ta="right" style={{ flexShrink: 0 }}>
           {weightedScore(d.score).toFixed(2)}
         </Text>
       </Tooltip>
 
-      <Box className="inbox-status">
+      <Box w={COL.status} visibleFrom="sm" style={{ flexShrink: 0 }}>
         <StatusBadge value={d.status} />
       </Box>
 
-      <Group
-        gap={4}
-        wrap="nowrap"
-        justify="flex-end"
-        visibleFrom="sm"
-        className="inbox-actions"
-        style={{ opacity: hover ? 1 : 0, transition: "opacity 120ms ease" }}
-      >
+      {/* Coluna de ação: sempre visível. Se a pendência exige preencher campos,
+          o botão leva ao detalhe em vez de fingir que resolve com um clique. */}
+      <Box w={COL.acao} visibleFrom="sm" style={{ flexShrink: 0 }}>
         {acao ? (
           <Button
             size="compact-xs"
             variant="light"
             color={acao.cor}
             loading={busy}
+            fullWidth
             onClick={() => onRun(d, acao)}
           >
             {acao.label}
           </Button>
+        ) : acaoLabel ? (
+          <Button
+            size="compact-xs"
+            variant="light"
+            color="gray"
+            component={Link}
+            to={`/demandas/${d.id}`}
+            fullWidth
+          >
+            {acaoLabel}
+          </Button>
+        ) : contexto ? (
+          <Text fz="xs" c="dimmed" truncate>
+            {contexto}
+          </Text>
         ) : null}
+      </Box>
+
+      <Box w={26} visibleFrom="sm" style={{ flexShrink: 0, textAlign: "right" }}>
         <ActionIcon
           component={Link}
           to={`/demandas/${d.id}`}
@@ -205,7 +321,7 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
         >
           <IconArrowRight size={15} />
         </ActionIcon>
-      </Group>
+      </Box>
     </Group>
   );
 }
@@ -214,13 +330,14 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
 
 interface SectionProps {
   label: string;
+  acaoLabel: string;
   items: InboxItem[];
   busyId: string | null;
   onRun: (d: Demand, acao: Acao) => void;
   footer?: ReactNode;
 }
 
-function Section({ label, items, busyId, onRun, footer }: SectionProps) {
+function Section({ label, acaoLabel, items, busyId, onRun, footer }: SectionProps) {
   if (items.length === 0) return null;
   return (
     <Box>
@@ -232,7 +349,8 @@ function Section({ label, items, busyId, onRun, footer }: SectionProps) {
           {items.length}
         </Text>
       </Group>
-      <Card withBorder radius="lg" padding={0}>
+      <Card withBorder radius="lg" padding={0} style={{ overflow: "visible" }}>
+        <HeaderRow acaoLabel={acaoLabel} />
         {items.map((it, i) => (
           <InboxRow
             key={it.d.id}
@@ -340,40 +458,47 @@ export function InboxPage() {
       }
     }
 
-    devolvidas.sort(porUrgencia);
-    precisam.sort(porUrgencia);
-    executando.sort(porUrgencia);
-    esperando.sort(porUrgencia);
-
-    const area = (d: Demand) => d.areaSolicitante || CATEGORIA_VIEW_LABEL[clasificacionEfetiva(d)];
+    /* Ordem de trabalho: prazo estourado, depois SLA da etapa, depois score. */
+    const ordem = (a: Demand, b: Demand) =>
+      porPrioridadeDeTrabalho(a, b, (d) => weightedScore(d.score));
+    devolvidas.sort(ordem);
+    precisam.sort(ordem);
+    executando.sort(ordem);
+    esperando.sort(ordem);
 
     const needsYou: InboxItem[] = precisam.map((d) => {
       const acoes = pendentes(d);
       return {
         d,
-        emphasis: acoes[0]?.label,
-        muted: `${area(d)} · ${aguardando(d)}`,
         acao: umClique(acoes[0]),
+        acaoLabel: acoes[0]?.label,
       };
     });
 
     const returned: InboxItem[] = devolvidas.map((d) => {
-      const motivo = d.comentarios[d.comentarios.length - 1]?.texto;
+      const acoes = pendentes(d);
       return {
         d,
-        muted: motivo ? `${area(d)} · “${motivo}”` : area(d),
-        acao: umClique(pendentes(d)[0]),
+        acao: umClique(acoes[0]),
+        acaoLabel: acoes[0]?.label ?? "Review and resend",
       };
     });
 
+    /* A coluna já se chama "Waiting on": repetir o prefixo em cada linha só
+       gasta largura. */
+    const semPrefixo = (d: Demand) => {
+      const raw = aguardando(d);
+      return raw.startsWith("Waiting on ") ? raw.slice(11) : raw;
+    };
+
     const waiting: InboxItem[] = esperando.map((d) => ({
       d,
-      muted: `${area(d)} · ${aguardando(d)}`,
+      contexto: semPrefixo(d),
     }));
 
     const running: InboxItem[] = executando.map((d) => ({
       d,
-      muted: d.time ? `${area(d)} · ${d.time}` : area(d),
+      contexto: d.time || semPrefixo(d),
     }));
 
     return { needsYou, returned, waiting, running, total: needsYou.length + returned.length };
@@ -421,18 +546,19 @@ export function InboxPage() {
         <Box>
           <Skeleton h={10} w={110} radius="sm" mb={10} />
           <Card withBorder radius="lg" padding={0}>
-            {[0, 1, 2, 3].map((i) => (
+            {[0, 1, 2, 3, 4, 5].map((i) => (
               <Group
                 key={i}
                 wrap="nowrap"
                 gap="sm"
                 px="md"
-                py={14}
+                py={11}
                 style={{ borderTop: i ? BORDER : undefined }}
               >
                 <Skeleton h={10} w={60} radius="sm" />
                 <Skeleton h={10} radius="sm" style={{ flex: 1 }} />
                 <Skeleton h={10} w={90} radius="sm" />
+                <Skeleton h={10} w={180} radius="sm" />
               </Group>
             ))}
           </Card>
@@ -482,10 +608,23 @@ export function InboxPage() {
         ) : null}
       </Group>
 
-      <Section label="Needs you now" items={secoes.needsYou} busyId={busyId} onRun={run} />
-      <Section label="Returned to you" items={secoes.returned} busyId={busyId} onRun={run} />
+      <Section
+        label="Needs you now"
+        acaoLabel="Next action"
+        items={secoes.needsYou}
+        busyId={busyId}
+        onRun={run}
+      />
+      <Section
+        label="Returned to you"
+        acaoLabel="Next action"
+        items={secoes.returned}
+        busyId={busyId}
+        onRun={run}
+      />
       <Section
         label="Waiting on others"
+        acaoLabel="Waiting on"
         items={waitingVisivel}
         busyId={busyId}
         onRun={run}
@@ -503,7 +642,13 @@ export function InboxPage() {
           ) : undefined
         }
       />
-      <Section label="In execution" items={secoes.running} busyId={busyId} onRun={run} />
+      <Section
+        label="In execution"
+        acaoLabel="Delivery team"
+        items={secoes.running}
+        busyId={busyId}
+        onRun={run}
+      />
     </Stack>
   );
 }
