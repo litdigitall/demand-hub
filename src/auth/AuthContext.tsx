@@ -10,7 +10,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { PERSONAS, personaById, type Persona, type Role } from "../domain/roles";
 import type { Categoria } from "../data/types";
 import { MODO_DEMO, resolveIdentidade } from "./identity";
-import { resolvePapeis, resolveDecisorDe } from "./papeis";
+import { resolverPapeis } from "./papeis";
+import { perfilService, type Perfil } from "../data/perfilService";
 
 const LS_KEY = "demand-system.persona.v1";
 
@@ -63,10 +64,11 @@ function sessionFromPersona(p: Persona): AuthSession {
   };
 }
 
-/** Sessão a partir da identidade real do host (produção). Os papéis vêm da
-    configuração publicada em src/auth/papeis.ts — quem não está na lista é
-    Requester e só enxerga as próprias demandas. */
-function sessionDoHost(nome: string, email: string): AuthSession {
+/** Sessão a partir da identidade real do host (produção). A identidade vem do
+    M365; os PAPÉIS vêm do cadastro em ardx_perfil (Settings → People). Quem
+    não está cadastrado é Requester e só enxerga as próprias demandas. */
+function sessionDoHost(nome: string, email: string, perfis: Perfil[]): AuthSession {
+  const { papeis, decisorDe } = resolverPapeis(email, perfis);
   return {
     personaId: "host",
     username: email,
@@ -74,8 +76,8 @@ function sessionDoHost(nome: string, email: string): AuthSession {
     email,
     area: "",
     cargo: "",
-    roles: resolvePapeis(email),
-    decisorDe: resolveDecisorDe(email),
+    roles: papeis,
+    decisorDe,
     signedAt: new Date().toISOString(),
   };
 }
@@ -102,10 +104,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (MODO_DEMO) return;
     let vivo = true;
-    resolveIdentidade()
-      .then((id) => {
-        if (!vivo) return;
-        if (id) setUser(sessionDoHost(id.nome, id.email));
+    /* Identidade e cadastro em paralelo: um não depende do outro, e a tela
+       só pode decidir o que mostrar quando tem os dois. */
+    Promise.all([resolveIdentidade(), perfilService.listar()])
+      .then(([id, perfis]) => {
+        if (!vivo || !id) return;
+        setUser(sessionDoHost(id.nome, id.email, perfis));
+      })
+      .catch(() => {
+        /* Falha no cadastro não tranca ninguém do lado de fora: entra como
+           Requester e o módulo administrativo mostra o problema. */
       })
       .finally(() => vivo && setResolvendo(false));
     return () => {

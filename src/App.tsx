@@ -1,11 +1,12 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { Center, Loader } from "@mantine/core";
+import { Button, Center, Group, Loader, Stack, Text, Title } from "@mantine/core";
 import { AppLayout } from "./components/layout/AppLayout";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { RequireRole } from "./components/RequireRole";
 import { Role } from "./domain/roles";
 import { LoginPage } from "./pages/LoginPage";
+import { MODO_DEMO } from "./auth/identity";
 import { SolicitarPage } from "./pages/SolicitarPage";
 
 /* Cada rota carrega o próprio chunk sob demanda. */
@@ -40,12 +41,40 @@ function RequireAuth({ children }: { children: ReactNode }) {
   const { user, resolvendo } = useAuth();
   const loc = useLocation();
   /* Em produção a identidade vem do host do Power Apps: enquanto ela não
-     chega não dá para decidir entre "logado" e "mandar para o login". */
+     chega não dá para decidir o que mostrar. */
   if (resolvendo) return <PageLoader />;
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: loc.pathname }} />;
+    /* Dentro do Power Apps NÃO existe tela de login: se o host não devolveu
+       identidade, é falha de contexto, não falta de credencial. Mandar para
+       um formulário de login aqui seria pedir uma senha que o app não tem
+       como validar. */
+    return MODO_DEMO ? (
+      <Navigate to="/login" replace state={{ from: loc.pathname }} />
+    ) : (
+      <SemIdentidade />
+    );
   }
   return <>{children}</>;
+}
+
+/** Produção sem identidade do host: diz o que houve, sem inventar login. */
+function SemIdentidade() {
+  return (
+    <Center h="100vh" px="md">
+      <Stack gap="xs" maw={460} ta="center">
+        <Title order={3}>We could not identify you</Title>
+        <Text c="dimmed" size="sm">
+          Intake Forms uses your Microsoft 365 sign-in — there is no separate
+          password. Open the app from Power Apps, or reload this page.
+        </Text>
+        <Group justify="center" mt="sm">
+          <Button variant="light" onClick={() => window.location.reload()}>
+            Reload
+          </Button>
+        </Group>
+      </Stack>
+    </Center>
+  );
 }
 
 function L({ children }: { children: ReactNode }) {
@@ -57,7 +86,9 @@ export default function App() {
     <AuthProvider>
       <HashRouter>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          {/* Login só existe fora do Power Apps (dev e build de demonstração):
+              no app publicado quem autentica é o host. */}
+          {MODO_DEMO && <Route path="/login" element={<LoginPage />} />}
           {/* Porta de entrada pública (usada enquanto o Canvas externo não
               estiver publicado — ver VITE_INTAKE_FORM_URL em AppLayout). */}
           <Route path="/solicitar" element={<SolicitarPage />} />

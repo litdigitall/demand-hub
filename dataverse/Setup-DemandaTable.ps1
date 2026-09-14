@@ -420,15 +420,83 @@ Add-Attr (Memo "${PublisherPrefix}_DmcComentario" 'Comentario do DMC' 4000)
 Add-Attr (Str  "${PublisherPrefix}_IdServiceNow" 'ID ServiceNow' 100)
 Add-Attr (Str  "${PublisherPrefix}_IdProjeto" 'ID Projeto' 100)
 
+
+# ==================================================================
+#  TABELA DE PERFIS  (ardx_perfil)
+#
+#  Quem e PMO, quem e do time tecnico, quem decide qual frente.
+#  Antes isso morava em src/auth/papeis.ts: cadastrar um decisor novo
+#  exigia editar TypeScript e republicar o app. No Power Apps a
+#  identidade vem do host (M365), mas o PAPEL de cada pessoa e dado
+#  de negocio e tem que ser cadastravel pelo administrador na tela.
+# ==================================================================
+$perfilLogical = "${PublisherPrefix}_perfil"
+$perfilExists  = $true
+try { Dv GET "EntityDefinitions(LogicalName='$perfilLogical')?`$select=LogicalName" | Out-Null }
+catch { $perfilExists = $false }
+
+if (-not $perfilExists) {
+  $perfilEntity = @{
+    '@odata.type'         = 'Microsoft.Dynamics.CRM.EntityMetadata'
+    SchemaName            = "${PublisherPrefix}_Perfil"
+    DisplayName           = (L 'Perfil de acesso')
+    DisplayCollectionName = (L 'Perfis de acesso')
+    Description           = (L 'Papeis do Intake Forms por pessoa (UPN). Cadastrado no modulo administrativo do app.')
+    OwnershipType         = 'UserOwned'
+    IsActivity            = $false
+    HasActivities         = $false
+    HasNotes              = $false
+    IsAuditEnabled        = @{ Value = $true }
+    Attributes            = @(
+      @{
+        '@odata.type'     = 'Microsoft.Dynamics.CRM.StringAttributeMetadata'
+        SchemaName        = "${PublisherPrefix}_Upn"
+        AttributeType     = 'String'
+        AttributeTypeName = @{ Value = 'StringType' }
+        MaxLength         = 200
+        IsPrimaryName     = $true
+        DisplayName       = (L 'UPN')
+        RequiredLevel     = @{ Value = 'ApplicationRequired' }
+      }
+    )
+  }
+  Dv POST "EntityDefinitions" $perfilEntity $solHeader | Out-Null
+  Write-Host "Tabela criada: $perfilLogical"
+} else {
+  Write-Host "Tabela ja existe: $perfilLogical"
+}
+
+$perfilExisting = @((Dv GET "EntityDefinitions(LogicalName='$perfilLogical')/Attributes?`$select=SchemaName").value.SchemaName)
+function Add-PerfilAttr($def) {
+  if ($perfilExisting -contains $def.SchemaName) { Write-Host "  = $($def.SchemaName)"; return }
+  Dv POST "EntityDefinitions(LogicalName='$perfilLogical')/Attributes" $def $solHeader | Out-Null
+  Write-Host "  + $($def.SchemaName)"
+}
+
+Add-PerfilAttr (Str "${PublisherPrefix}_Nome" 'Nome' 200)
+# JSON, seguindo a convencao que a tabela de demanda ja usa para listas
+# (AprovacoesJson, AvaliacoesJson): array de papeis e array de frentes.
+Add-PerfilAttr (Str "${PublisherPrefix}_PapeisJson" 'Papeis (JSON)' 400)
+Add-PerfilAttr (Str "${PublisherPrefix}_FrentesJson" 'Frentes do decisor (JSON)' 200)
+Add-PerfilAttr (YesNo "${PublisherPrefix}_Ativo" 'Ativo')
+
+
 # --- publicar ---
 Write-Host "Publicando customizacoes..."
 Dv POST "PublishAllXml" @{} | Out-Null
 
 # --- resumo / schema-info ---
 $meta = Dv GET "EntityDefinitions(LogicalName='$entityLogical')?`$select=LogicalName,EntitySetName,PrimaryIdAttribute,PrimaryNameAttribute"
+$perfilMeta = Dv GET "EntityDefinitions(LogicalName='$perfilLogical')?`$select=LogicalName,EntitySetName,PrimaryIdAttribute,PrimaryNameAttribute"
 $schemaInfo = [ordered]@{
   environmentOrgUrl = $OrgUrl
   solution          = $SolutionUniqueName
+  perfilTable       = @{
+    logicalName        = $perfilMeta.LogicalName
+    entitySetName      = $perfilMeta.EntitySetName
+    primaryIdAttribute = $perfilMeta.PrimaryIdAttribute
+    primaryName        = $perfilMeta.PrimaryNameAttribute
+  }
   table             = @{
     logicalName        = $meta.LogicalName
     entitySetName      = $meta.EntitySetName
@@ -451,9 +519,10 @@ $schemaInfo | ConvertTo-Json -Depth 6 | Set-Content -Path "$PSScriptRoot/schema-
 
 Write-Host ""
 Write-Host "=================================================================="
-Write-Host "  TABELA PRONTA"
+Write-Host "  TABELAS PRONTAS"
 Write-Host "  logicalName   : $($meta.LogicalName)"
 Write-Host "  entitySetName : $($meta.EntitySetName)"
 Write-Host "  solution      : $SolutionUniqueName"
+Write-Host "  perfis        : $($perfilMeta.LogicalName) ($($perfilMeta.EntitySetName))"
 Write-Host "  schema-info   : dataverse/schema-info.json"
 Write-Host "=================================================================="

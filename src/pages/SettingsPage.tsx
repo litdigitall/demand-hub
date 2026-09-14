@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Alert,
   Box,
   ActionIcon,
   Badge,
@@ -16,10 +15,10 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconAlertTriangle, IconCheck, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import { IconCheck, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import { adminLookupService } from "../data/adminLookupService";
 import { MODO_DEMO } from "../auth/identity";
-import { PAPEIS_CONFIGURADOS } from "../auth/papeis";
+import { PeoplePanel } from "./settings/PeoplePanel";
 import { formatNumber } from "../lib/format";
 import {
   AREA_STAKEHOLDER,  CAPACIDADE_PADRAO_HORAS,
@@ -217,26 +216,18 @@ export function SettingsPage() {
     <Stack gap="lg">
       <Title order={2}>Settings</Title>
 
-      {/* Sem o mapa de papéis publicado, TODO MUNDO entra como Requester e o
-          app parece vazio. É uma falha silenciosa: melhor dizer na cara. */}
-      {!MODO_DEMO && !PAPEIS_CONFIGURADOS && (
-        <Alert color="orange" variant="light" icon={<IconAlertTriangle size={18} />}>
-          <Text fw={600} size="sm">
-            No roles configured
-          </Text>
-          <Text size="sm">
-            Everyone signing in is treated as a Requester and sees only their own
-            requests. Fill in <b>src/auth/papeis.ts</b> and publish again — see
-            docs/GO-LIVE.md §5.1.
-          </Text>
-        </Alert>
-      )}
-
-      <Tabs defaultValue="catalogs" variant="outline" keepMounted={false}>
+      <Tabs defaultValue="people" variant="outline" keepMounted={false}>
         <Tabs.List mb="lg">
+          <Tabs.Tab value="people">People</Tabs.Tab>
           <Tabs.Tab value="catalogs">Catalogs</Tabs.Tab>
           <Tabs.Tab value="routing">Routing</Tabs.Tab>
         </Tabs.List>
+
+        {/* ---------------- People (módulo administrativo) ----------------
+            Identidade vem do M365; aqui se diz o PAPEL de cada pessoa. */}
+        <Tabs.Panel value="people">
+          <PeoplePanel />
+        </Tabs.Panel>
 
         {/* ---------------- Catalogs ----------------
             A edição destas listas grava no navegador (adminLookupService).

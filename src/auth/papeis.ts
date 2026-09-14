@@ -1,43 +1,63 @@
 /* ============================================================
-   Mapa de papéis por pessoa — configuração de produção.
+   Resolução de papéis — a partir do CADASTRO, não do código.
 
-   Em produção a identidade vem do host do Power Apps (identity.ts),
-   mas o app ainda precisa saber QUAL PAPEL cada pessoa tem. Enquanto
-   não existir uma tabela de papéis no Dataverse, a fonte é este
-   arquivo: explícito, versionado e revisável.
+   No Power Apps a identidade vem do host (M365): não há tela de
+   login. O que o app precisa decidir é o PAPEL de quem entrou, e
+   isso é dado de negócio — entra gente, troca decisor, alguém sai.
 
-   PREENCHER ANTES DE PUBLICAR NO CLIENTE (ver docs/GO-LIVE.md §5).
-   Quem não estiver na lista entra como Requester — pode abrir e
-   acompanhar as próprias demandas, e mais nada.
+   Antes este arquivo era um mapa `Record<email, Role[]>` escrito à
+   mão: cadastrar um decisor novo exigia editar TypeScript, buildar
+   e republicar. Agora ele só interpreta o que está na tabela
+   ardx_perfil, mantida no módulo administrativo (Settings → People).
+
+   Quem não está cadastrado entra como Requester: abre e acompanha
+   as próprias demandas, e mais nada. É o padrão seguro — ninguém
+   ganha acesso por omissão.
    ============================================================ */
 import { Role } from "../domain/roles";
 import type { Categoria } from "../data/types";
+import type { Perfil } from "../data/perfilService";
 
-/** e-mail (UPN, minúsculo) → papéis no app. */
-export const PAPEIS_POR_EMAIL: Record<string, Role[]> = {
-  // "paula.nakamura@abbott.com": [Role.PMO],
-  // "daniela.bastos@abbott.com": [Role.TechLead],
-  // "sambini@abbott.com": [Role.Decisor],
-  // "gabriela@abbott.com": [Role.Decisor],
-  // "ti.admin@abbott.com": [Role.Admin],
-};
-
-/** e-mail do decisor → frentes do portfólio que ele decide. */
-export const DECISOR_POR_EMAIL: Record<string, Categoria[]> = {
-  // "sambini@abbott.com": ["infra"],
-  // "gabriela@abbott.com": ["app"],
-  // "ai.decisor@abbott.com": ["ia"],
-};
-
-/** Papéis de quem está logado. Sem mapeamento = apenas Requester. */
-export function resolvePapeis(email: string): Role[] {
-  return PAPEIS_POR_EMAIL[email.trim().toLowerCase()] ?? [Role.Solicitante];
+/** O que o app precisa saber sobre quem entrou. */
+export interface PapeisResolvidos {
+  papeis: Role[];
+  decisorDe: Categoria[];
 }
 
-/** Frentes que a pessoa decide (vazio se não for decisor). */
-export function resolveDecisorDe(email: string): Categoria[] {
-  return DECISOR_POR_EMAIL[email.trim().toLowerCase()] ?? [];
+export const APENAS_REQUERENTE: PapeisResolvidos = {
+  papeis: [Role.Solicitante],
+  decisorDe: [],
+};
+
+/** Comparação de UPN: o host pode devolver com caixa diferente do cadastro. */
+function mesmo(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-/** Há configuração de papéis publicada? (a tela de Settings mostra isso) */
-export const PAPEIS_CONFIGURADOS = Object.keys(PAPEIS_POR_EMAIL).length > 0;
+/**
+ * Papéis de quem entrou, a partir da lista de perfis cadastrados.
+ * Perfil inativo é tratado como não cadastrado — é assim que se tira
+ * o acesso de alguém sem apagar o histórico de quem era.
+ */
+export function resolverPapeis(email: string, perfis: Perfil[]): PapeisResolvidos {
+  if (!email.trim()) return APENAS_REQUERENTE;
+
+  const meu = perfis.find((p) => p.ativo && mesmo(p.upn, email));
+  if (!meu || meu.papeis.length === 0) return APENAS_REQUERENTE;
+
+  /* Todo mundo continua podendo abrir demanda: os papéis do fluxo se somam
+     ao de solicitante, nunca o substituem. */
+  const papeis = meu.papeis.includes(Role.Solicitante)
+    ? meu.papeis
+    : [...meu.papeis, Role.Solicitante];
+
+  return {
+    papeis,
+    decisorDe: meu.papeis.includes(Role.Decisor) ? meu.frentes : [],
+  };
+}
+
+/** Há cadastro publicado? A tela de Settings avisa quando não há. */
+export function haCadastro(perfis: Perfil[]): boolean {
+  return perfis.some((p) => p.ativo && p.papeis.length > 0);
+}
