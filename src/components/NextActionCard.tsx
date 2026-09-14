@@ -7,10 +7,11 @@
    campos que precisa (comentário, capacity, prioridade, ServiceNow)
    antes de aplicar. Nada de status é alterado fora daqui.
    ============================================================ */
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Alert,
   Badge,
+  Box,
   Button,
   Card,
   Group,
@@ -47,12 +48,14 @@ import { useCurrentUser } from "../lib/useCurrentUser";
 
 interface Props {
   demand: Demand;
+  /** Números da demanda, renderizados à direita das ações em telas largas. */
+  fatos?: ReactNode;
   roles: Role[];
   ator: string;
   onSave: (changes: Partial<Demand>) => Promise<void> | void;
 }
 
-export function NextActionCard({ demand, roles, ator, onSave }: Props) {
+export function NextActionCard({ demand, fatos, roles, ator, onSave }: Props) {
   const { decisorDe } = useCurrentUser();
   const minhas = proximasAcoes(demand, roles, decisorDe);
   const haEstado = acoesDoEstado(demand.status).length > 0;
@@ -90,22 +93,32 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
       padding="lg"
       style={{ borderColor: minhas.length ? "var(--mantine-color-abbott-4)" : undefined, borderWidth: minhas.length ? 2 : 1 }}
     >
-      <Group justify="space-between" wrap="wrap" mb="sm">
-        <Group gap="sm">
-          <ThemeIcon size={38} radius="md" variant="light" color={minhas.length ? "abbott" : "gray"}>
-            {minhas.length ? <IconBolt size={20} /> : <IconLock size={18} />}
-          </ThemeIcon>
-          <div>
-            <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-              Current stage
-            </Text>
-            <Text fw={700}>{statusLabel[demand.status]}</Text>
-          </div>
-        </Group>
-        <Badge size="lg" variant="light" color="gray">
-          {aguardando(demand)}
-        </Badge>
-      </Group>
+      <Group justify="space-between" wrap="nowrap" align="flex-start" gap="xl">
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Group justify="space-between" wrap="wrap" mb="sm">
+            <Group gap="sm">
+              <ThemeIcon
+                size={38}
+                radius="md"
+                variant="light"
+                color={minhas.length ? "abbott" : "gray"}
+              >
+                {minhas.length ? <IconBolt size={20} /> : <IconLock size={18} />}
+              </ThemeIcon>
+              <div>
+                <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                  Current stage
+                </Text>
+                <Text fw={700}>{statusLabel[demand.status]}</Text>
+              </div>
+            </Group>
+            {/* Sem `fatos` (telas estreitas) o "aguardando" continua aqui. */}
+            {!fatos && (
+              <Badge size="lg" variant="light" color="gray">
+                {aguardando(demand)}
+              </Badge>
+            )}
+          </Group>
 
       {minhas.length > 0 ? (
         <Stack gap="xs">
@@ -148,6 +161,17 @@ export function NextActionCard({ demand, roles, ator, onSave }: Props) {
               : "No actions configured for this stage."}
         </Alert>
       )}
+        </Box>
+
+        {/* Faixa de fatos: num monitor largo, o card de ação tinha 1.600px de
+            largura para dois botões. Os números que a decisão exige passam a
+            ocupar esse espaço em vez de virar mais uma faixa abaixo. */}
+        {fatos ? (
+          <Box visibleFrom="lg" style={{ flexShrink: 0 }}>
+            {fatos}
+          </Box>
+        ) : null}
+      </Group>
 
       {/* Modal de coleta de campos da ação */}
       <Modal

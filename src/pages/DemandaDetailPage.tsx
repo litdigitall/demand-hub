@@ -43,6 +43,8 @@ import { LifecycleTimeline } from "../components/LifecycleTimeline";
 import { NextActionCard } from "../components/NextActionCard";
 import { useT } from "../i18n";
 import { Role } from "../domain/roles";
+import { aguardando } from "../domain/workflow";
+import { sla } from "../domain/sla";
 import {
   abrangenciaLabel,
   tipoImpactoLabel,
@@ -149,6 +151,9 @@ export function DemandaDetailPage() {
 
 
   const wScore = weightedScore(demand.score);
+  /* Idade no estado: a outra metade da decisão. Score diz o que importa,
+     isto diz há quanto tempo está parado esperando alguém. */
+  const idade = sla(demand);
 
   return (
     <Stack gap="lg">
@@ -199,80 +204,63 @@ export function DemandaDetailPage() {
         </Group>
       </Group>
 
-      {/* CTA: o que precisa de mim agora (motor de ciclo de vida) */}
+      {/* CTA + faixa de fatos na MESMA banda: eram duas faixas, cada uma com
+          ~1.400px de branco. Agora a ação fica à esquerda e os números que a
+          decisão exige ocupam a direita. */}
       <NextActionCard
         demand={demand}
         roles={user.roles}
         ator={user.name}
         onSave={(changes) => persist(changes, { silent: true })}
+        fatos={
+          <Group gap="xl" wrap="nowrap" align="flex-start">
+            <Fato label={t("detail_score_label")}>
+              {wScore.toFixed(2)}
+              <Text component="span" size="sm" c="dimmed" fw={500}>
+                {" "}
+                / 5.00
+              </Text>
+            </Fato>
+            <Fato
+              label="In this stage"
+              tone={
+                idade.tom === "estourado"
+                  ? "red.7"
+                  : idade.tom === "atencao"
+                    ? "orange.7"
+                    : undefined
+              }
+            >
+              {idade.dias}d
+              {idade.alvo !== undefined && (
+                <Text component="span" size="sm" c="dimmed" fw={500}>
+                  {" "}
+                  / {idade.alvo}
+                </Text>
+              )}
+            </Fato>
+            <Fato label={t("detail_project_stage")}>{demand.projectStage || "—"}</Fato>
+            {demand.finalPriority != null && demand.finalPriority > 0 && (
+              <Fato label="Priority">#{demand.finalPriority}</Fato>
+            )}
+            {demand.rce && <Fato label="RCE">{demand.rce}</Fato>}
+            {demand.appId && (
+              <Fato label="App">
+                {demand.appName || appName(demand.appId) || demand.appId}
+              </Fato>
+            )}
+            <Fato label="Waiting on">
+              <Text component="span" fz="sm" fw={600}>
+                {aguardando(demand).replace("Waiting on ", "")}
+              </Text>
+            </Fato>
+          </Group>
+        }
       />
 
       <Grid align="flex-start">
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack gap="md">
-          {/* Banner do score ponderado */}
-          <Paper withBorder radius="lg" p="md" bg="abbott.0">
-            <Group justify="space-between" wrap="wrap">
-              <Group gap="sm">
-                <IconShieldCheck size={26} color="var(--mantine-color-abbott-7)" />
-                <div>
-                  <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                    {t("detail_score_label")}
-                  </Text>
-                  <Text fz={28} fw={800}>
-                    {wScore.toFixed(2)} <Text component="span" size="sm" c="dimmed">/ 5.00</Text>
-                  </Text>
-                </div>
-              </Group>
-              <Group gap="lg">
-                <div>
-                  <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                    {t("detail_project_stage")}
-                  </Text>
-                  <Text fw={700}>{demand.projectStage || "—"}</Text>
-                </div>
-                {demand.finalPriority != null && demand.finalPriority > 0 && (
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                      Priority
-                    </Text>
-                    <Text fw={700}>#{demand.finalPriority}</Text>
-                  </div>
-                )}
-                {demand.rce && (
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                      RCE
-                    </Text>
-                    <Text fw={700}>{demand.rce}</Text>
-                  </div>
-                )}
-                {demand.idServiceNow && (
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                      ServiceNow
-                    </Text>
-                    <Text fw={700}>{demand.idServiceNow}</Text>
-                  </div>
-                )}
-                {demand.appId && (
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
-                      APP ID
-                    </Text>
-                    <Text fw={700}>
-                      {demand.appId}
-                      {(demand.appName || appName(demand.appId)) && (
-                        <Text component="span" c="dimmed" fw={500}>
-                          {" "}· {demand.appName || appName(demand.appId)}
-                        </Text>
-                      )}
-                    </Text>
-                  </div>
-                )}
-              </Group>
-            </Group>
-          </Paper>
           <Tabs value={activeTab} onChange={setActiveTab} variant="pills" radius="md">
         <Tabs.List>
           <Tabs.Tab value="overview" leftSection={<IconNotebook size={16} />}>
@@ -565,6 +553,28 @@ export function DemandaDetailPage() {
         </Stack>
       </Modal>
     </Stack>
+  );
+}
+
+/** Um número da faixa de fatos: rótulo pequeno em cima, valor grande embaixo. */
+function Fato({
+  label,
+  children,
+  tone,
+}: {
+  label: string;
+  children: React.ReactNode;
+  tone?: string;
+}) {
+  return (
+    <Box ta="right">
+      <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} style={{ whiteSpace: "nowrap" }}>
+        {label}
+      </Text>
+      <Text fw={700} fz="lg" c={tone} style={{ whiteSpace: "nowrap" }}>
+        {children}
+      </Text>
+    </Box>
   );
 }
 
