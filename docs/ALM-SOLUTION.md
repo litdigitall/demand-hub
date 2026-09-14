@@ -58,6 +58,50 @@ As quatro de SLA cobrem exatamente as quatro etapas com meta em `SLA_DIAS`.
 
 ---
 
+## 1.0 Prefixo: `intake`, não `ardx`
+
+`ardx` veio do nome antigo (ARDX Demand System). O projeto é **Intake Forms**,
+então as tabelas passam a ser `intake_demanda` e `intake_perfil`.
+
+O prefixo vem do **publisher**, e no Dataverse **não se renomeia** o nome lógico
+de uma tabela depois de criada — por isso é recriação, não renomeação.
+
+Já feito no ambiente:
+- Publisher `intakepublisher` (prefixo `intake`) criado.
+- **OptionValuePrefix 50697**, o mesmo do `ardxpublisher`. É de onde saem os
+  `506970000…` de todos os option sets: com faixa diferente, o import das
+  picklists é recusado e as ~40 constantes de `src/data/types.ts` teriam que
+  mudar. O Dataverse aceitou os dois publishers na mesma faixa.
+- Tabela `intake_perfil` criada.
+
+Falta `intake_demanda`: o import por XML de solution falha sem mensagem
+(*"An unexpected error occurred"*). A entidade tem 78 atributos, 6 picklists,
+15 memos e 8 datas; a de perfil, com 22 atributos, entrou na mesma estrutura.
+Em vez de bissectar atributo por atributo às cegas, use o script — ele fala com
+a API de metadados, que devolve erro legível:
+
+```powershell
+pwsh dataverse/Setup-DemandaTable.ps1 -Stage all `
+  -PublisherPrefix intake -SolutionUniqueName IntakeForms -OptionValuePrefix 50697
+```
+
+`-Stage all` faz login e deploy no mesmo comando: o device code expira em 15
+minutos e separar em dois passos virava corrida contra o relógio.
+
+### Limpeza depois (destrutivo — confirmar antes)
+
+O ambiente ficou com sobras das tentativas:
+
+| Objeto | O que fazer |
+|---|---|
+| Tabela `ardx_demanda` | apagar depois que `intake_demanda` existir e o app apontar para ela |
+| Tabela `ardx_perfil` | apagar — foi substituída por `intake_perfil` |
+| Solution `ARDXDemandSystem` | apagar depois de mover/recriar tudo em `IntakeForms` |
+| Solution `IntakeFormsPub` | apagar — só existiu para criar/ajustar o publisher |
+| Publisher `ardxpublisher` | manter enquanto houver componente `ardx_` |
+
+---
+
 ## 1.1 Estado do ambiente de DEV (Ambiente do Leonardo · `aa9aa103…`)
 
 Executado e verificado em 14/09/2026:

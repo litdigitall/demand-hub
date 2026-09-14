@@ -14,7 +14,7 @@
   --------------------------------------------------------------------------
 #>
 param(
-  [ValidateSet('auth','deploy')] [string]$Stage = 'deploy',
+  [ValidateSet('auth','deploy','all')] [string]$Stage = 'deploy',
   [string]$OrgUrl             = 'https://org2713c0e4.crm2.dynamics.com',
   [string]$TenantId           = '3926f3db-74b5-47bb-809a-a87b1dca77e1',
   [string]$ClientId           = '04b07795-8ddb-461a-bbee-02f9e1bf7b46',
@@ -27,7 +27,9 @@ $ErrorActionPreference = 'Stop'
 $OrgUrl = $OrgUrl.TrimEnd('/')
 
 # ===================== STAGE: auth =====================
-if ($Stage -eq 'auth') {
+# 'all' faz auth e deploy no mesmo comando: o device code expira em 15 min, e
+# separar em dois passos criava uma corrida contra o relogio.
+if ($Stage -eq 'auth' -or $Stage -eq 'all') {
   $resp = Invoke-RestMethod -Method Post `
     -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/devicecode" `
     -Body @{ client_id = $ClientId; scope = "$OrgUrl/.default offline_access" }
@@ -39,9 +41,14 @@ if ($Stage -eq 'auth') {
     client_id   = $ClientId
     org_url     = $OrgUrl
   } | ConvertTo-Json | Set-Content -Path $AuthFile -Encoding utf8
-  Write-Host "  Abra: $($resp.verification_uri)"
-  Write-Host "  Codigo: $($resp.user_code)"
-  return
+  Write-Host ""
+  Write-Host "  =============================================="
+  Write-Host "   Abra   : $($resp.verification_uri)"
+  Write-Host "   Codigo : $($resp.user_code)"
+  Write-Host "  =============================================="
+  Write-Host ""
+  if ($Stage -eq 'auth') { return }
+  Write-Host "Entre no navegador. Este script espera e continua sozinho." -ForegroundColor Cyan
 }
 
 # ===================== STAGE: deploy =====================
