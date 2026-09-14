@@ -135,7 +135,6 @@ function classificacaoParaDv(v: string | undefined): number | null {
 
 /** Dataverse -> modelo de domínio. */
 function fromDv(r: Ardx_demandas): Demand {
-  const novo = r as unknown as Record<string, unknown>;
   const score = emptyScore();
   /* Modelo de 3 critérios sobre as colunas existentes do Dataverse:
      impacto → scorebusinessimpact · urgência → scoreurgency ·
@@ -185,13 +184,16 @@ function fromDv(r: Ardx_demandas): Demand {
        O acesso é via `novo` (Record) porque o modelo tipado em src/generated é
        gerado A PARTIR da tabela: estas colunas só entram no tipo depois de rodar
        dataverse/Setup-DemandaTable.ps1 e `pac code add-data-source`. */
-    impactoAbrangencia: (novo.ardx_impactoabrangencia as number | undefined) ?? undefined,
-    clasificacion: dvParaClassificacao(novo.ardx_clasificacion as number | undefined),
-    rce: (novo.ardx_rce as string | undefined) ?? "",
-    appId: (novo.ardx_appid as string | undefined) ?? "",
-    statusDesde: (novo.ardx_statusdesde as string | undefined) ?? "",
-    requerenteUpn: (novo.ardx_requerenteupn as string | undefined) ?? "",
-    decisorUpn: (novo.ardx_decisorupn as string | undefined) ?? "",
+    /* Colunas tipadas desde que a tabela foi atualizada e o modelo regerado
+       (pac code add-data-source). Antes viviam atrás de um cast porque não
+       existiam no ambiente. */
+    impactoAbrangencia: r.ardx_impactoabrangencia ?? undefined,
+    clasificacion: dvParaClassificacao(r.ardx_clasificacion),
+    rce: r.ardx_rce ?? "",
+    appId: r.ardx_appid ?? "",
+    statusDesde: r.ardx_statusdesde ?? "",
+    requerenteUpn: r.ardx_requerenteupn ?? "",
+    decisorUpn: r.ardx_decisorupn ?? "",
     anexos: parseJsonArray<Anexo>(r.ardx_anexosjson),
     status: (r.ardx_status as number | undefined) ?? StatusDemanda.Nova,
     score: baseScore,

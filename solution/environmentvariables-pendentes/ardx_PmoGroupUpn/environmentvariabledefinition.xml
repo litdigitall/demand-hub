@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<environmentvariabledefinition schemaname="ardx_NotificationSender">
+<environmentvariabledefinition schemaname="ardx_PmoGroupUpn">
   <defaultvalue></defaultvalue>
-  <description>Conta de servico que envia as notificacoes dos flows N1-N5 (precisa de Send As).</description>
-  <displayname>Notification sender</displayname>
+  <description>Destinatario das notificacoes de triagem (flows N1 e N5).</description>
+  <displayname>PMO mailbox or group</displayname>
   <introducedversion>1.0</introducedversion>
   <iscustomizable>1</iscustomizable>
-  <isrequired>1</isrequired>
+  <isrequired>0</isrequired>
   <secretstore>0</secretstore>
   <type>100000000</type>
   <environmentvariablevalues />

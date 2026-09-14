@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<environmentvariabledefinition schemaname="ardx_DecisorAppsUpn">
+<environmentvariabledefinition schemaname="ardx_NotificationSender">
   <defaultvalue></defaultvalue>
-  <description>UPN de quem decide a frente Applications. Usado pelo flow N3.</description>
-  <displayname>Area decisor - Applications</displayname>
+  <description>Conta de servico que envia as notificacoes dos flows N1-N5 (precisa de Send As).</description>
+  <displayname>Notification sender</displayname>
   <introducedversion>1.0</introducedversion>
   <iscustomizable>1</iscustomizable>
-  <isrequired>1</isrequired>
+  <isrequired>0</isrequired>
   <secretstore>0</secretstore>
   <type>100000000</type>
   <environmentvariablevalues />

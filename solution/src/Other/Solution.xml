@@ -1,37 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ImportExportXml version="9.1.0.643" SolutionPackageVersion="9.1" languagecode="1033" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.2.26085.142" SolutionPackageVersion="9.2" languagecode="1046" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26085.142" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26085.00142">
   <SolutionManifest>
-    <!-- Unique Name of Cds Solution-->
-    <UniqueName>IntakeForms</UniqueName>
+    <UniqueName>ARDXDemandSystem</UniqueName>
     <LocalizedNames>
-      <!-- Localized Solution Name in language code -->
-      <LocalizedName description="Intake Forms" languagecode="1033" />
+      <LocalizedName description="Intake Forms" languagecode="1046" />
     </LocalizedNames>
-    <Descriptions>
-      <Description description="Gestao do funil de demandas de TI: intake, triagem, avaliacao tecnica, decisao por area e priorizacao por capacidade. LIT Digitall." languagecode="1033" />
-    </Descriptions>
-    <Version>1.0</Version>
-    <!-- Solution Package Type: Unmanaged(0)/Managed(1)/Both(2)-->
-    <Managed>2</Managed>
+    <Descriptions />
+    <Version>1.1.0.0</Version>
+    <Managed>0</Managed>
     <Publisher>
-      <!-- Unique Publisher Name of Cds Solution -->
       <UniqueName>ardxpublisher</UniqueName>
       <LocalizedNames>
-        <!-- Localized Cds Publisher Name in language code-->
-        <LocalizedName description="ARDX" languagecode="1033" />
+        <LocalizedName description="ARDX" languagecode="1046" />
       </LocalizedNames>
-      <Descriptions>
-        <!-- Description of Cds Publisher in language code -->
-        <Description description="LIT Digitall - Abbott IT Hub" languagecode="1033" />
-      </Descriptions>
+      <Descriptions />
       <EMailAddress xsi:nil="true"></EMailAddress>
       <SupportingWebsiteUrl xsi:nil="true"></SupportingWebsiteUrl>
-      <!-- Customization Prefix for the Cds Publisher-->
       <CustomizationPrefix>ardx</CustomizationPrefix>
-      <!-- Derived Option Value Prefix for the Customization Prefix of Cds Publisher -->
       <CustomizationOptionValuePrefix>50697</CustomizationOptionValuePrefix>
       <Addresses>
-        <!-- Address of the Publisher-->
         <Address>
           <AddressNumber>1</AddressNumber>
           <AddressTypeCode>1</AddressTypeCode>
@@ -91,16 +78,7 @@
       </Addresses>
     </Publisher>
     <RootComponents>
-      <RootComponent type="380" schemaName="ardx_IntakeFormUrl" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_NotificationSender" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_DecisorInfraUpn" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_DecisorAppsUpn" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_DecisorAiUpn" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_PmoGroupUpn" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_SlaTriageDays" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_SlaEvaluationDays" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_SlaDecisionDays" behavior="0" />
-      <RootComponent type="380" schemaName="ardx_SlaReturnedDays" behavior="0" />
+      <RootComponent type="1" schemaName="ardx_demanda" behavior="0" />
     </RootComponents>
     <MissingDependencies />
   </SolutionManifest>

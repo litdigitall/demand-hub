@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<environmentvariabledefinition schemaname="ardx_DecisorAiUpn">
+<environmentvariabledefinition schemaname="ardx_DecisorAppsUpn">
   <defaultvalue></defaultvalue>
-  <description>UPN de quem decide a frente AI. Usado pelo flow N3.</description>
-  <displayname>Area decisor - AI</displayname>
+  <description>UPN de quem decide a frente Applications. Usado pelo flow N3.</description>
+  <displayname>Area decisor - Applications</displayname>
   <introducedversion>1.0</introducedversion>
   <iscustomizable>1</iscustomizable>
-  <isrequired>1</isrequired>
+  <isrequired>0</isrequired>
   <secretstore>0</secretstore>
   <type>100000000</type>
   <environmentvariablevalues />

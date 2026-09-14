@@ -10,8 +10,8 @@
     "preview:demo": "vite preview --outDir dist-demo",
     "lint": "eslint .",
     "preview": "vite preview",
-    "solution:pack": "pac solution pack --zipfile solution/out/IntakeForms.zip --folder solution/src --packagetype Both",
-    "solution:check": "pac solution unpack --zipfile solution/out/IntakeForms.zip --folder solution/out/roundtrip --packagetype Both"
+    "solution:pack": "pac solution pack --zipfile solution/out/IntakeForms.zip --folder solution/src --packagetype Unmanaged",
+    "solution:check": "pac solution unpack --zipfile solution/out/IntakeForms.zip --folder solution/out/roundtrip --packagetype Unmanaged"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
