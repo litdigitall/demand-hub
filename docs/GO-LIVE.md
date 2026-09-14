@@ -174,6 +174,25 @@ quem protege o dado é o Dataverse.
 
 ---
 
+## 6.1 Avaliar as telas com volume (opcional, só em dev/demo)
+
+As 5 demandas-semente não exercitam nada do que depende de volume: SLA, "parada
+há N dias", cabeçalho fixo, capacidade estourada. Para ver as telas como o
+cliente vai ver depois de um mês de uso:
+
+1. abra o app e faça login
+2. F12 → Console
+3. cole o conteúdo de `scripts/carregar-volume.js` e dê Enter
+
+Carrega 48 demandas clonadas das próprias sementes (forma real do objeto, nada
+inventado), espalhadas por todos os estados e com idades de 0 a 34 dias. Para
+voltar: `localStorage.removeItem("demand-system.demands.v4"); location.reload();`
+
+> É ferramenta de inspeção, fora do bundle: o app não tem — e não deve ter —
+> botão de "carregar dados de exemplo".
+
+---
+
 ## 7. Checklist final antes de liberar aos usuários
 
 - [ ] Tabela criada com o option set completo (9 estados)
