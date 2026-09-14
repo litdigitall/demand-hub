@@ -58,6 +58,29 @@ As quatro de SLA cobrem exatamente as quatro etapas com meta em `SLA_DIAS`.
 
 ---
 
+## 1.1 Estado do ambiente de DEV (Ambiente do Leonardo · `aa9aa103…`)
+
+Executado e verificado em 14/09/2026:
+
+| Item | Estado |
+|---|---|
+| Solution `ARDXDemandSystem` (exibida como **Intake Forms**) | existe, v1.1.0.0 |
+| Publisher `ardx` · OptionValuePrefix **50697** | confere |
+| Tabela `ardx_demanda` — 78 colunas | **atualizada** |
+| `ardx_Status` com 506970007 e 506970008 | **corrigido** |
+| As 7 colunas do motor (Clasificacion, StatusDesde, …) | **criadas** |
+| Modelo tipado `Ardx_demandasModel.ts` regerado | sim |
+| Code App publicado (`pac code push`) | sim |
+| 10 environment variables | **não** — ver §2.1 |
+| Flows N1–N5 | **não** — ver §2.2 |
+
+> O ambiente estava atrás do código: a tabela publicada tinha 6 valores de
+> status e nenhuma das 7 colunas. Nesse estado o app publica mas grava errado —
+> "enviar para aprovação" e "devolver" falham, e o gate vai para o decisor
+> errado por falta de `Clasificacion`.
+
+---
+
 ## 2. O que ainda NÃO está no projeto (e por quê)
 
 Estes componentes existem no Dataverse, não em arquivo: só entram no projeto
@@ -74,6 +97,34 @@ em sessão automatizada.
 
 Depois de tudo criado, um `pac solution sync` traz a definição declarativa para
 `solution/src/` e aí sim o pacote inteiro passa a ser versionado.
+
+### 2.1 Environment variables — o XML à mão não passa
+
+Escrevi as 10 definições à mão e o Dataverse recusou o import (async operation
+*Failed*, sem mensagem). Testei sem `isrequired` e com `environmentvariabledefinitionid`
+preenchido; falhou dos dois jeitos. Não há nenhuma variável de ambiente neste
+tenant para usar de molde.
+
+**O caminho é o inverso:** criar cada uma no maker portal *dentro da solution*
+e trazer para o repositório com `pac solution export` + `unpack`. O XML vem no
+formato exato que o servidor aceita.
+
+As definições ficaram em `solution/environmentvariables-pendentes/` como
+especificação — nome, tipo, padrão e consumidor de cada uma estão na tabela §1.
+
+### 2.2 Flows — falta a conexão de e-mail
+
+`pac connection list` no ambiente mostra Dataverse, SharePoint, Teams,
+Approvals, OneDrive e Excel conectados. **Não existe conexão do Office 365
+Outlook** (`shared_office365`), e os cinco flows N1–N5 são todos de e-mail.
+
+Criar essa conexão exige consentimento OAuth no navegador — não tem caminho
+automatizado. O plugin de Power Automate do Claude Code também não serve aqui:
+ele depende de `az login`, e o Azure CLI não está instalado nesta máquina.
+
+**Passo humano, uma vez:** criar a conexão *Office 365 Outlook* no ambiente
+(make.powerautomate.com → Conexões → Nova). Depois disso os flows podem ser
+criados e ligados.
 
 ---
 
