@@ -5,7 +5,7 @@
 > yourself in a terminal (they can't be run from an automated session).
 
 App is a **Power Apps Code App** — see `power.config.json`:
-- App: **Demand Hub** (`785908fe-958b-43fa-87fc-0ba475bdba81`)
+- App: **Intake Forms** (`785908fe-958b-43fa-87fc-0ba475bdba81`)
 - Environment: `aa9aa103-53ae-e549-8f11-8e79e2d2bfec` (region: prod)
 - Dataverse table: `ardx_demanda` (`ardx_demandas`)
 
@@ -35,8 +35,8 @@ npm run build         # tsc -b && vite build  ->  ./dist  (uses @microsoft/power
 ```powershell
 pac code push
 ```
-This uploads `./dist` to the Demand Hub Code App in the configured environment.
-Open it from **make.powerapps.com → Apps → Demand Hub**, or `pac code run` for local test against Dataverse.
+This uploads `./dist` to the Intake Forms Code App in the configured environment.
+Open it from **make.powerapps.com → Apps → Intake Forms**, or `pac code run` for local test against Dataverse.
 
 ## Notes
 - If `pac code push` reports a missing/renamed data source, run `pac code add-data-source` or re-check `databaseReferences` in `power.config.json`.
