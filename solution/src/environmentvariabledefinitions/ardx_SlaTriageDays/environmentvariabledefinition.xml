@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<environmentvariabledefinition schemaname="ardx_SlaTriageDays">
+  <defaultvalue>3</defaultvalue>
+  <description>Meta de dias na triagem. Espelha SLA_DIAS em src/domain/sla.ts e alimenta o flow N5.</description>
+  <displayname>SLA - triage (days)</displayname>
+  <introducedversion>1.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000001</type>
+  <environmentvariablevalues />
+</environmentvariabledefinition>

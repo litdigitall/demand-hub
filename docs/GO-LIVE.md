@@ -64,6 +64,13 @@ pac code add-data-source -a dataverse -t ardx_demanda
 
 ## 3. Publicar o app
 
+> **Entrega como Solution:** o caminho recomendado para o ambiente do cliente é
+> importar a Solution (`docs/ALM-SOLUTION.md`), não dar `pac code push` direto.
+> A Solution leva as variáveis de ambiente — UPN dos decisores, conta remetente,
+> URL do formulário, metas de SLA — preenchidas no import, e abre o caminho
+> DEV → TEST → PROD. Os passos abaixo continuam valendo para publicar o app
+> dentro do ambiente de DEV.
+
 ```powershell
 npm install
 npm run build          # tsc -b && vite build  → ./dist  (build REAL, com Dataverse)
@@ -206,3 +213,5 @@ voltar: `localStorage.removeItem("demand-system.demands.v4"); location.reload();
 - [ ] `VITE_INTAKE_FORM_URL` apontando para o Canvas publicado (§5.2)
 - [ ] Security roles aplicados
 - [ ] `npx tsx scripts/test-workflow.ts` verde (regressão do motor)
+- [ ] Solution empacotada e importada — checklist próprio em `docs/ALM-SOLUTION.md` §6
+- [ ] `SLA_DIAS` (src/domain/sla.ts) igual às variáveis de SLA da Solution

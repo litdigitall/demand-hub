@@ -9,7 +9,9 @@
     "build:demo": "cross-env VITE_DEMO_MODE=true vite build --outDir dist-demo",
     "preview:demo": "vite preview --outDir dist-demo",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "solution:pack": "pac solution pack --zipfile solution/out/IntakeForms.zip --folder solution/src --packagetype Both",
+    "solution:check": "pac solution unpack --zipfile solution/out/IntakeForms.zip --folder solution/out/roundtrip --packagetype Both"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

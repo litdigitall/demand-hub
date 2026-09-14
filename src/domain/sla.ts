@@ -14,8 +14,14 @@ import { StatusDemanda, type Demand } from "../data/types";
 
 const UM_DIA = 86_400_000;
 
-/* Metas de resposta por etapa, em dias corridos. É CONFIGURAÇÃO — o mesmo
-   número que alimenta o flow N5 de SLA no Power Automate (docs/GO-LIVE.md §4).
+/* Metas de resposta por etapa, em dias corridos. É CONFIGURAÇÃO.
+
+   ATENÇÃO — este número tem um gêmeo: as environment variables
+   ardx_SlaTriageDays / ardx_SlaEvaluationDays / ardx_SlaDecisionDays da Solution
+   (solution/src/environmentvariabledefinitions), que é de onde o flow N5 lê.
+   Mudar um sem o outro faz a tela e o e-mail de SLA discordarem.
+   Como unificar a leitura: docs/ALM-SOLUTION.md §5.
+
    Etapa que não está aqui não tem meta: mostramos a idade, sem cobrar. */
 export const SLA_DIAS: Record<number, number> = {
   [StatusDemanda.Nova]: 3, // triagem do PMO

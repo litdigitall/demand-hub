@@ -33,3 +33,6 @@ dataverse/ARDXFinanceiro_src/
 *.njsproj
 *.sln
 *.sw?
+
+# Pacote gerado da Solution (artefato de build, nao versionado)
+solution/out

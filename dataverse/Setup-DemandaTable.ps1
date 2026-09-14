@@ -2,7 +2,10 @@
   Setup-DemandaTable.ps1
   --------------------------------------------------------------------------
   Provisiona a tabela Dataverse "Demanda" (ardx_demanda), suas colunas e
-  choices, dentro da solution "ARDXDemandSystem".
+  choices, dentro da solution "IntakeForms" — a MESMA do projeto em
+  solution/, para a tabela sair no pacote junto com as variaveis de
+  ambiente. Ambiente ja provisionado com o nome antigo: passe
+  -SolutionUniqueName ARDXDemandSystem.
 
   Reutiliza o refresh token salvo em .dvauth.json (mesmo do conciliacao-app).
   Caso expire, regenera via -Stage auth.
@@ -18,7 +21,7 @@ param(
   [string]$ClientId           = '04b07795-8ddb-461a-bbee-02f9e1bf7b46',
   [string]$PublisherPrefix    = 'ardx',
   [int]   $OptionValuePrefix  = 50697,
-  [string]$SolutionUniqueName = 'ARDXDemandSystem',
+  [string]$SolutionUniqueName = 'IntakeForms',
   [string]$AuthFile           = "$PSScriptRoot/.dvauth.json"
 )
 $ErrorActionPreference = 'Stop'
@@ -175,7 +178,7 @@ if ($sol) {
 } else {
   Dv POST "solutions" @{
     uniquename                = $SolutionUniqueName
-    friendlyname              = 'ARDX Demand System'
+    friendlyname              = 'Intake Forms'
     version                   = '1.0.0.0'
     'publisherid@odata.bind'  = "/publishers($pubId)"
   } | Out-Null
