@@ -18,7 +18,7 @@ import {
   CAPACIDADE_PADRAO_HORAS,
   SCORE_LABELS,
   SCORE_WEIGHTS,
-  StatusDemanda,
+  CONSOME_CAPACIDADE,
   weightedScore,
   type Demand,
   type Score,
@@ -35,7 +35,6 @@ const CAPACIDADE_TOTAL = Object.values(CAPACIDADE_PADRAO_HORAS).reduce((a, b) =>
 /* Mesma regra do /capacity: só demanda priorizada ou em execução consome
    capacidade. Somar as concluídas/recusadas empurraria a linha de corte
    para cima com horas que já não existem. */
-const CONSOME_CAPACIDADE: number[] = [StatusDemanda.Priorizada, StatusDemanda.EmExecucao];
 function horasNaFila(d: Demand): number {
   return CONSOME_CAPACIDADE.includes(d.status) ? d.horasEstimadas || 0 : 0;
 }

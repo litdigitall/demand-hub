@@ -10,7 +10,6 @@ import {
   Loader,
   Paper,
   Progress,
-  RingProgress,
   SimpleGrid,
   Stack,
   Table,
@@ -24,12 +23,13 @@ import {
   IconCheck,
   IconClock,
   IconExchange,
+  IconHelpCircle,
   IconUsersGroup,
 } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
 import {
   CAPACIDADE_PADRAO_HORAS,
-  StatusDemanda,
+  CONSOME_CAPACIDADE,
   TIMES_IMPLANTACAO,
   type Demand,
   type TimeImplantacao,
@@ -82,15 +82,18 @@ export function CapacityPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  /* Consome capacidade = Prioritized ou In execution. A regra mora em
+     data/types (CONSOME_CAPACIDADE) e vale igual aqui, na Overview e no
+     ranking — antes esta tela repetia a condição à mão. */
+  const comprometidas = useMemo(
+    () => items.filter((d) => CONSOME_CAPACIDADE.includes(d.status)),
+    [items],
+  );
+
   const stats: TeamStats[] = useMemo(() => {
     return TIMES_IMPLANTACAO.map((time) => {
       const capacidade = CAPACIDADE_PADRAO_HORAS[time];
-      const ativas = items.filter(
-        (d) =>
-          d.time === time &&
-          (d.status === StatusDemanda.EmExecucao ||
-            d.status === StatusDemanda.Priorizada),
-      );
+      const ativas = comprometidas.filter((d) => d.time === time);
       const alocado = ativas.reduce((acc, d) => acc + (d.horasEstimadas ?? 0), 0);
       const utilizacao = capacidade > 0 ? Math.round((alocado / capacidade) * 100) : 0;
       return {
@@ -102,11 +105,23 @@ export function CapacityPage() {
         demandasAtivas: ativas,
       };
     });
-  }, [items]);
+  }, [comprometidas]);
+
+  /* Demanda comprometida SEM time definido. Antes ela simplesmente sumia da
+     conta: a tela dizia 100% de utilização enquanto havia centenas de horas
+     aprovadas sem dono. Um buraco assim é exatamente o que esta tela existe
+     para mostrar. */
+  const semTime = useMemo(
+    () => comprometidas.filter((d) => !d.time),
+    [comprometidas],
+  );
+  const horasSemTime = semTime.reduce((acc, d) => acc + (d.horasEstimadas ?? 0), 0);
 
   const totalCapacidade = stats.reduce((acc, s) => acc + s.capacidade, 0);
   const totalAlocado = stats.reduce((acc, s) => acc + s.alocado, 0);
   const totalUtilizacao = Math.round((totalAlocado / Math.max(totalCapacidade, 1)) * 100);
+  const totalComprometido = totalAlocado + horasSemTime;
+  const saldo = totalCapacidade - totalComprometido;
 
   if (loading) {
     return (
@@ -125,42 +140,72 @@ export function CapacityPage() {
             {t("cap_subtitle")}
           </Text>
         </div>
-        <Card withBorder radius="lg" padding="md">
-          <Group gap="md">
-            <RingProgress
-              size={64}
-              thickness={7}
-              roundCaps
-              sections={[
-                {
-                  value: Math.min(100, totalUtilizacao),
-                  color: totalUtilizacao > 90 ? "red" : totalUtilizacao > 70 ? "orange" : "teal",
-                },
-              ]}
-              label={
-                <Center>
-                  <Text size="xs" fw={800}>
-                    {totalUtilizacao}%
-                  </Text>
-                </Center>
-              }
-            />
-            <div>
-              <Text size="xs" c="dimmed" tt="uppercase" fw={600} lts={1}>
-                {t("cap_total_utilization")}
-              </Text>
-              <Text fw={800} fz="lg">
-                {formatNumber(totalAlocado)} / {formatNumber(totalCapacidade)} h
-              </Text>
-              <Text size="xs" c="dimmed">
-                {formatNumber((totalCapacidade - totalAlocado))} h {t("cap_available").toLowerCase()}
-              </Text>
-            </div>
-          </Group>
-        </Card>
       </Group>
 
-      <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+      {/* Faixa que fecha a conta: comprometido = por time + sem time. Antes a
+          tela só somava o que tinha time, então exibia 100% de utilização com
+          horas aprovadas invisíveis. */}
+      <Card withBorder radius="lg" padding={0}>
+        <Group gap={0} wrap="nowrap">
+          <Box px="md" py={10} style={{ flex: 1 }}>
+            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+              Monthly capacity
+            </Text>
+            <Text fz={24} fw={800} lh={1.15}>
+              {formatNumber(totalCapacidade)} h
+            </Text>
+          </Box>
+          <Box px="md" py={10} style={{ flex: 1 }}>
+            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+              Committed
+            </Text>
+            <Text
+              fz={24}
+              fw={800}
+              lh={1.15}
+              c={totalComprometido > totalCapacidade ? "red.7" : undefined}
+            >
+              {formatNumber(totalComprometido)} h
+            </Text>
+          </Box>
+          <Box px="md" py={10} style={{ flex: 1 }}>
+            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+              Without a team
+            </Text>
+            <Text fz={24} fw={800} lh={1.15} c={horasSemTime > 0 ? "orange.7" : "dimmed"}>
+              {formatNumber(horasSemTime)} h
+            </Text>
+          </Box>
+          <Box px="md" py={10} style={{ flex: 1 }}>
+            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+              {saldo >= 0 ? "Left this month" : "Over capacity"}
+            </Text>
+            <Text fz={24} fw={800} lh={1.15} c={saldo < 0 ? "red.7" : undefined}>
+              {formatNumber(Math.abs(saldo))} h
+            </Text>
+          </Box>
+          <Box px="md" py={10} w={170} style={{ flexShrink: 0 }}>
+            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+              Teams utilisation
+            </Text>
+            <Group gap="xs" align="baseline">
+              <Text
+                fz={24}
+                fw={800}
+                lh={1.15}
+                c={totalUtilizacao > 100 ? "red.7" : totalUtilizacao > 90 ? "orange.7" : undefined}
+              >
+                {totalUtilizacao}%
+              </Text>
+              <Text fz="xs" c="dimmed">
+                {formatNumber(totalAlocado)} h
+              </Text>
+            </Group>
+          </Box>
+        </Group>
+      </Card>
+
+      <SimpleGrid cols={{ base: 1, md: 2, lg: 4 }} spacing="md">
         {stats.map((s) => {
           const Icon = TIME_ICON[s.time];
           const color = TIME_COLOR[s.time];
@@ -267,6 +312,72 @@ export function CapacityPage() {
             </Card>
           );
         })}
+
+        {/* O buraco: aprovado, consome hora, e ninguém definiu o time. */}
+        {semTime.length > 0 && (
+          <Card
+            withBorder
+            radius="lg"
+            padding="lg"
+            style={{ borderColor: "var(--mantine-color-orange-3)" }}
+          >
+            <Group justify="space-between" mb="sm" wrap="nowrap" align="flex-start">
+              <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                <ThemeIcon size={42} radius="md" variant="light" color="orange">
+                  <IconHelpCircle size={22} />
+                </ThemeIcon>
+                <div style={{ minWidth: 0 }}>
+                  <Text fw={700}>Without a team</Text>
+                  <Text size="xs" c="dimmed" lineClamp={2}>
+                    Approved work with no delivery team defined
+                  </Text>
+                </div>
+              </Group>
+              <Badge color="orange" variant="light">
+                {plural(semTime.length, "request")}
+              </Badge>
+            </Group>
+
+            <Box mb="sm">
+              <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
+                Hours at stake
+              </Text>
+              <Text fw={800} fz="lg" c="orange.7">
+                {formatNumber(horasSemTime)} h
+              </Text>
+            </Box>
+
+            <Text size="xs" fw={600} mb={4} tt="uppercase" c="dimmed" lts={1}>
+              {t("cap_demands")}
+            </Text>
+            <Table verticalSpacing={5}>
+              <Table.Tbody>
+                {semTime.slice(0, 8).map((d) => (
+                  <Table.Tr key={d.id}>
+                    <Table.Td>
+                      <Anchor component={Link} to={`/demandas/${d.id}`} size="sm" fw={600}>
+                        {d.titulo}
+                      </Anchor>
+                      <Text size="xs" c="dimmed">
+                        {d.numero}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td ta="right" w={64}>
+                      <Text size="sm" fw={700} style={{ whiteSpace: "nowrap" }}>
+                        {d.horasEstimadas ? `${d.horasEstimadas} h` : "—"}
+                      </Text>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+            {semTime.length > 8 && (
+              <Text size="xs" c="dimmed" mt={6}>
+                +{semTime.length - 8} more
+              </Text>
+            )}
+          </Card>
+        )}
       </SimpleGrid>
 
       <Paper withBorder radius="lg" p="md" bg="gray.0">

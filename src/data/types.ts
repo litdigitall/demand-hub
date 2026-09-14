@@ -353,6 +353,12 @@ export const TIMES_IMPLANTACAO = [
 ] as const;
 export type TimeImplantacao = (typeof TIMES_IMPLANTACAO)[number];
 
+/** Estados que de fato ocupam hora de time (base do cálculo de capacidade). */
+export const CONSOME_CAPACIDADE: number[] = [
+  StatusDemanda.Priorizada,
+  StatusDemanda.EmExecucao,
+];
+
 /** Monthly default capacity per team (hours) — used in /capacity. */
 export const CAPACIDADE_PADRAO_HORAS: Record<TimeImplantacao, number> = {
   "Internal Delivery": 640, // 4 people x 160h
