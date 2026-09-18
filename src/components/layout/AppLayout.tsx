@@ -7,24 +7,19 @@ import {
   Badge,
   Burger,
   Group,
-  Indicator,
   Stack,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  IconBell,
   IconChartBar,
-  IconChecks,
   IconClockHour4,
+  IconExternalLink,
   IconInbox,
-  IconLayoutDashboard,
-  IconLayoutKanban,
   IconListDetails,
   IconLogout,
-  IconPlugConnected,
   IconPlus,
-  IconPresentation,
   IconRoute,
   IconSettings,
   type Icon,
@@ -35,7 +30,7 @@ import { initialsFromName } from "../../lib/format";
 import { useT, type Lang, type TKey } from "../../i18n";
 import { demandService } from "../../data/demandService";
 import { precisaDeMim } from "../../domain/workflow";
-import { Role, ROLE_LABEL, ROLE_COLOR } from "../../domain/roles";
+import { Role, ROLE_LABEL, ROLE_COLOR, papelPrincipal } from "../../domain/roles";
 import { ErrorBoundary } from "../ErrorBoundary";
 import abbottLogo from "../../assets/abbott-logo.png";
 import classes from "./AppLayout.module.css";
@@ -49,18 +44,19 @@ interface NavItem {
   roles?: Role[];
 }
 
+/* Onde o solicitante abre uma demanda. Quando o Canvas "IT Request Form"
+   estiver publicado, basta setar VITE_INTAKE_FORM_URL no build: o CTA passa a
+   apontar para ele. Sem a variável, usa o formulário interno — nunca fica sem
+   porta de entrada. */
+const INTAKE_URL = import.meta.env.VITE_INTAKE_FORM_URL as string | undefined;
+
 function pageTitle(path: string): string {
-  if (path === "/") return "Home";
-  if (path.startsWith("/demandas/nova")) return "New request";
+  if (path === "/") return "Inbox";
+  if (path.startsWith("/demandas/")) return "Request";
   if (path.startsWith("/demandas")) return "Requests";
-  if (path.startsWith("/kanban")) return "Board";
-  if (path.startsWith("/scoreboard")) return "Score Board";
-  if (path.startsWith("/aprovacoes")) return "My inbox";
-  if (path.startsWith("/approvers")) return "Approvers Status";
+  if (path.startsWith("/overview")) return "Overview";
   if (path.startsWith("/capacity")) return "Capacity";
-  if (path.startsWith("/relatorio")) return "Monthly report";
-  if (path.startsWith("/integraciones")) return "ServiceNow";
-  if (path.startsWith("/admin")) return "Administration";
+  if (path.startsWith("/admin")) return "Settings";
   return "Intake Forms";
 }
 
@@ -85,38 +81,23 @@ export function AppLayout() {
         .catch(() => {});
     }
     refresh();
-    const id = window.setInterval(refresh, 15_000);
+    const id = window.setInterval(refresh, 30_000);
     return () => {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [roles, loc.pathname]);
+  }, [roles, user.decisorDe, loc.pathname]);
 
-  const isAdmin = roles.includes(Role.Admin);
-  const canCreate = roles.includes(Role.Solicitante) || isAdmin;
-  const gate = [Role.PMO, Role.Decisor, Role.Admin];
-
-  /* Menú agrupado (análise UX): Demands / Tracking / Administration */
-  const NAV_HOME: NavItem[] = [{ to: "/", label: "Home", icon: IconLayoutDashboard, end: true }];
-  const NAV_DEMANDS: NavItem[] = [
-    { to: "/aprovacoes", label: "My inbox", icon: IconInbox, badge: pendentes },
-    { to: "/demandas", label: "All requests", icon: IconListDetails },
-    { to: "/kanban", label: "Board", icon: IconLayoutKanban },
-  ];
-  const NAV_TRACKING: NavItem[] = [
-    { to: "/approvers", label: "Approvers Status", icon: IconChecks, roles: gate },
-    { to: "/scoreboard", label: "Score Board", icon: IconChartBar, roles: gate },
+  /* Menu plano: 5 destinos. Cada um é um lugar diferente de verdade —
+     as antigas Board/Score Board/Approvers Status viraram visões de Requests. */
+  const NAV: NavItem[] = [
+    { to: "/", label: "Inbox", icon: IconInbox, end: true, badge: pendentes },
+    { to: "/demandas", label: "Requests", icon: IconListDetails },
+    { to: "/overview", label: "Overview", icon: IconChartBar, roles: [Role.PMO, Role.Decisor, Role.Admin] },
     { to: "/capacity", label: "Capacity", icon: IconClockHour4, roles: [Role.TechLead, Role.PMO, Role.Admin] },
+    { to: "/admin", label: "Settings", icon: IconSettings, roles: [Role.Admin] },
   ];
-  const byRole = (items: NavItem[]) => items.filter((n) => !n.roles || n.roles.some((r) => roles.includes(r)));
-  const navDemands = byRole(NAV_DEMANDS);
-  const navTracking = byRole(NAV_TRACKING);
-
-  const NAV_ADMIN: NavItem[] = [
-    { to: "/relatorio", label: "Monthly report", icon: IconPresentation },
-    { to: "/integraciones", label: "ServiceNow", icon: IconPlugConnected },
-    { to: "/admin", label: "Administration", icon: IconSettings },
-  ];
+  const nav = NAV.filter((n) => !n.roles || n.roles.some((r) => roles.includes(r)));
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? `${classes.navItem} ${classes.navItemActive}` : classes.navItem;
@@ -124,21 +105,36 @@ export function AppLayout() {
   return (
     <AppShell
       header={{ height: 62 }}
-      navbar={{ width: 264, breakpoint: "sm", collapsed: { mobile: !opened } }}
+      navbar={{ width: 248, breakpoint: "sm", collapsed: { mobile: !opened } }}
       padding="lg"
     >
-      <AppShell.Header className="glass" withBorder={false} style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}>
+      <AppShell.Header
+        withBorder={false}
+        style={{
+          background: "var(--mantine-color-body)",
+          borderBottom: "1px solid var(--mantine-color-gray-2)",
+        }}
+      >
         <Group h="100%" px="lg" gap="sm" wrap="nowrap" justify="space-between">
           <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Text fw={800} size="lg" truncate>{pageTitle(loc.pathname)}</Text>
           </Group>
           <Group gap="xs" wrap="nowrap">
-            <Indicator disabled={pendentes === 0} label={pendentes} size={16} color="grape" offset={4}>
-              <ActionIcon variant="default" size="lg" component="a" href="#/aprovacoes" aria-label="Inbox">
-                <IconBell size={18} />
+            {/* Fluxograma do processo: consulta ocasional, não item de menu. */}
+            <Tooltip label="Process flow" withArrow>
+              <ActionIcon
+                variant="default"
+                size="lg"
+                component="a"
+                href="flow/index.html"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Process flow"
+              >
+                <IconRoute size={18} />
               </ActionIcon>
-            </Indicator>
+            </Tooltip>
             <Group gap={8} wrap="nowrap" visibleFrom="sm">
               <Avatar radius="xl" size={34} variant="gradient" gradient={{ from: "abbott.6", to: "grape.6", deg: 60 }}>
                 {initialsFromName(user.name)}
@@ -168,22 +164,21 @@ export function AppLayout() {
             <div className={classes.brandSub}>by LIT Digitall</div>
           </div>
 
-          {canCreate && (
-            <RouterNavLink to="/demandas/nova" className={classes.cta} onClick={close}>
+          {/* Abrir demanda: o formulário mora fora do app de gestão. */}
+          {INTAKE_URL ? (
+            <a href={INTAKE_URL} target="_blank" rel="noreferrer" className={classes.cta}>
+              <IconPlus size={17} stroke={2.5} />
+              <span>New request</span>
+              <IconExternalLink size={14} style={{ opacity: 0.7 }} />
+            </a>
+          ) : (
+            <RouterNavLink to="/solicitar" className={classes.cta} onClick={close}>
               <IconPlus size={17} stroke={2.5} />
               <span>New request</span>
             </RouterNavLink>
           )}
 
-          {NAV_HOME.map((n) => (
-            <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
-              <n.icon size={19} stroke={1.7} />
-              <span>{n.label}</span>
-            </RouterNavLink>
-          ))}
-
-          <div className={classes.navSection}>Demands</div>
-          {navDemands.map((n) => (
+          {nav.map((n) => (
             <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
               <n.icon size={19} stroke={1.7} />
               <span>{n.label}</span>
@@ -193,45 +188,15 @@ export function AppLayout() {
             </RouterNavLink>
           ))}
 
-          {navTracking.length > 0 && <div className={classes.navSection}>Tracking</div>}
-          {navTracking.map((n) => (
-            <RouterNavLink key={n.to} to={n.to} end={n.end} onClick={close} className={navClass}>
-              <n.icon size={19} stroke={1.7} />
-              <span>{n.label}</span>
-            </RouterNavLink>
-          ))}
-
-          <div className={classes.navSection}>Process</div>
-          {/* Fluxograma completo (página estática dedicada — abre em nova aba) */}
-          <a href="flow/index.html" target="_blank" rel="noreferrer" className={classes.navItem}>
-            <IconRoute size={19} stroke={1.7} />
-            <span>Process flow</span>
-          </a>
-
-          {isAdmin && (
-            <>
-              <div className={classes.navSection}>Administration</div>
-              {NAV_ADMIN.map((n) => (
-                <RouterNavLink key={n.to} to={n.to} onClick={close} className={navClass}>
-                  <n.icon size={19} stroke={1.7} />
-                  <span>{n.label}</span>
-                </RouterNavLink>
-              ))}
-            </>
-          )}
-
           <div className={classes.userCard}>
             <Avatar radius="xl" size={40} variant="gradient" gradient={{ from: "abbott.4", to: "grape.5", deg: 60 }}>
               {initialsFromName(user.name)}
             </Avatar>
             <div style={{ minWidth: 0, flex: 1 }}>
               <Text className={classes.userName} truncate>{user.name}</Text>
-              <Group gap={3} wrap="nowrap">
-                {roles.slice(0, 2).map((r) => (
-                  <Badge key={r} size="xs" variant="light" color={ROLE_COLOR[r]}>{ROLE_LABEL[r]}</Badge>
-                ))}
-                {roles.length > 2 && <Badge size="xs" variant="light" color="gray">+{roles.length - 2}</Badge>}
-              </Group>
+              <Badge size="xs" variant="light" color={ROLE_COLOR[papelPrincipal(roles)]}>
+                {ROLE_LABEL[papelPrincipal(roles)]}
+              </Badge>
             </div>
             <ActionIcon
               variant="subtle"

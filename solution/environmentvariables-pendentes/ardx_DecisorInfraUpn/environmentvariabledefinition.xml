@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<environmentvariabledefinition schemaname="ardx_DecisorInfraUpn">
+  <defaultvalue></defaultvalue>
+  <description>UPN de quem decide a frente Infrastructure. Usado pelo flow N3 para enderecar a decisao.</description>
+  <displayname>Area decisor - Infrastructure</displayname>
+  <introducedversion>1.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+  <environmentvariablevalues />
+</environmentvariabledefinition>

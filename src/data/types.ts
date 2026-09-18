@@ -18,12 +18,12 @@ export const TipoDemanda = {
 
 export const tipoLabel: Record<number, string> = {
   [TipoDemanda.ProjetoNovo]: "New project",
-  [TipoDemanda.MelhoriaSistema]: "System improvement",
+  [TipoDemanda.MelhoriaSistema]: "Improvement",
   [TipoDemanda.CorrecaoBug]: "Bug fix",
-  [TipoDemanda.Compliance]: "Compliance / Regulatory",
+  [TipoDemanda.Compliance]: "Compliance",
   [TipoDemanda.Infraestrutura]: "Infrastructure",
-  [TipoDemanda.Seguranca]: "Information Security",
-  [TipoDemanda.Automacao]: "Automation / Digitalization",
+  [TipoDemanda.Seguranca]: "Security",
+  [TipoDemanda.Automacao]: "Automation",
 };
 
 export const Impacto = {
@@ -91,11 +91,11 @@ export const StatusDemanda = {
 } as const;
 export const statusLabel: Record<number, string> = {
   [StatusDemanda.Rascunho]: "Draft",
-  [StatusDemanda.Nova]: "In triage",
-  [StatusDemanda.EmAnalise]: "In evaluation",
-  [StatusDemanda.EmAprovacao]: "In approval",
+  [StatusDemanda.Nova]: "Triage",
+  [StatusDemanda.EmAnalise]: "Evaluation",
+  [StatusDemanda.EmAprovacao]: "Approval",
   [StatusDemanda.Priorizada]: "Prioritized",
-  [StatusDemanda.EmExecucao]: "In execution",
+  [StatusDemanda.EmExecucao]: "Execution",
   [StatusDemanda.Concluida]: "Completed",
   [StatusDemanda.Devolvida]: "Returned",
   [StatusDemanda.Recusada]: "Rejected",
@@ -161,7 +161,7 @@ export const CATEGORIA_TIPO: Record<number, Categoria> = {
 };
 export const CATEGORIA_VIEW_LABEL: Record<Categoria, string> = {
   infra: "Infrastructure",
-  ia: "Artificial Intelligence",
+  ia: "AI",
   app: "Applications",
   otro: "Other",
 };
@@ -353,6 +353,12 @@ export const TIMES_IMPLANTACAO = [
 ] as const;
 export type TimeImplantacao = (typeof TIMES_IMPLANTACAO)[number];
 
+/** Estados que de fato ocupam hora de time (base do cálculo de capacidade). */
+export const CONSOME_CAPACIDADE: number[] = [
+  StatusDemanda.Priorizada,
+  StatusDemanda.EmExecucao,
+];
+
 /** Monthly default capacity per team (hours) — used in /capacity. */
 export const CAPACIDADE_PADRAO_HORAS: Record<TimeImplantacao, number> = {
   "Internal Delivery": 640, // 4 people x 160h
@@ -494,10 +500,7 @@ export function fluxoEstagios(d: {
 export function aprovacoesPadrao(d: { clasificacion?: string; tipo: number }): AprovacaoStep[] {
   const cat = clasificacionEfetiva(d);
   const nome = CATEGORIA_RESPONSAVEL[cat];
-  const responsavel =
-    cat === "otro" || nome === "—"
-      ? "DMC Committee"
-      : `${nome} · ${CATEGORIA_VIEW_LABEL[cat]}`;
+  const responsavel = cat === "otro" || nome === "—" ? "DMC Committee" : nome;
   return [
     {
       nivel: "decisor",
@@ -507,6 +510,41 @@ export function aprovacoesPadrao(d: { clasificacion?: string; tipo: number }): A
       comentario: "",
     },
   ];
+}
+
+/** Regra ÚNICA de criação de demanda — usada pelo mockDemandService e pelo
+    dataverseDemandService. Antes cada um tinha a sua e divergiam: o mock derivava
+    o score do intake e o Dataverse gravava emptyScore(), então o recurso central
+    ("as notas saem do formulário") funcionava na demo e não no cliente. */
+export function novaDemandaBase(
+  input: { impactoAbrangencia?: number; urgencia: number; valorEstimado: number | null },
+  agoraIso: string,
+): Partial<Demand> {
+  const score = scoreAutomatico(input);
+  return {
+    dataSolicitacao: agoraIso,
+    status: StatusDemanda.Nova,
+    statusDesde: agoraIso,
+    score,
+    avaliacoes: (Object.keys(score) as (keyof Score)[]).map((criterio) => ({
+      criterio,
+      validadoPor: AUTO_AVALIADOR,
+      validadoEm: agoraIso,
+      comentario: "Calculated automatically from the intake answers.",
+    })),
+    projectStage: "Discovery",
+    finalPriority: null,
+    comentarios: [],
+    anexos: [],
+    /* O gate NÃO nasce com a demanda: ele é criado ao entrar em aprovação
+       (enviarParaAprovacao), já roteado pela classificação vigente. */
+    aprovacoes: [],
+    dmcAprovado: null,
+    dmcData: "",
+    dmcComentario: "",
+    idServiceNow: "",
+    idProjeto: "",
+  };
 }
 
 export function emptyScore(): Score {
@@ -640,6 +678,12 @@ export interface Demand {
   dmcComentario: string;
   idServiceNow: string;
   idProjeto: string;
+  /** Momento da ÚLTIMA mudança de status — base de SLA/aging.
+      (modifiedon do Dataverse não serve: qualquer edição o reseta.) */
+  statusDesde?: string;
+  /** UPNs resolvidos na transição, para os flows endereçarem direto do gatilho. */
+  requerenteUpn?: string;
+  decisorUpn?: string;
   /** RCE — nº do projeto aprovado pela Gestão (obrigatório no aceite). */
   rce?: string;
   /** APP ID — código da aplicação (demandas de sistema). */
@@ -666,9 +710,7 @@ export interface Demand {
 export const AREA_STAKEHOLDER: Record<string, string> = {
   Facilities: "Sambini",
   IT: "Sambini",
-  Infraestructura: "Sambini",
   Sales: "Carlos Mendes",
-  Comercial: "Carlos Mendes",
   Marketing: "Carlos Mendes",
   Finance: "Patricia Lima",
   "Human Resources": "Juliana Costa",

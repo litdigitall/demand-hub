@@ -2,7 +2,9 @@
   Setup-DemandaTable.ps1
   --------------------------------------------------------------------------
   Provisiona a tabela Dataverse "Demanda" (ardx_demanda), suas colunas e
-  choices, dentro da solution "ARDXDemandSystem".
+  choices, dentro da solution "ARDXDemandSystem" — a MESMA que ja existe
+  no ambiente e a mesma do projeto em solution/. O nome interno ficou
+  como nasceu; o nome de exibicao e "Intake Forms".
 
   Reutiliza o refresh token salvo em .dvauth.json (mesmo do conciliacao-app).
   Caso expire, regenera via -Stage auth.
@@ -12,7 +14,7 @@
   --------------------------------------------------------------------------
 #>
 param(
-  [ValidateSet('auth','deploy')] [string]$Stage = 'deploy',
+  [ValidateSet('auth','deploy','all')] [string]$Stage = 'deploy',
   [string]$OrgUrl             = 'https://org2713c0e4.crm2.dynamics.com',
   [string]$TenantId           = '3926f3db-74b5-47bb-809a-a87b1dca77e1',
   [string]$ClientId           = '04b07795-8ddb-461a-bbee-02f9e1bf7b46',
@@ -25,7 +27,9 @@ $ErrorActionPreference = 'Stop'
 $OrgUrl = $OrgUrl.TrimEnd('/')
 
 # ===================== STAGE: auth =====================
-if ($Stage -eq 'auth') {
+# 'all' faz auth e deploy no mesmo comando: o device code expira em 15 min, e
+# separar em dois passos criava uma corrida contra o relogio.
+if ($Stage -eq 'auth' -or $Stage -eq 'all') {
   $resp = Invoke-RestMethod -Method Post `
     -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/devicecode" `
     -Body @{ client_id = $ClientId; scope = "$OrgUrl/.default offline_access" }
@@ -37,9 +41,14 @@ if ($Stage -eq 'auth') {
     client_id   = $ClientId
     org_url     = $OrgUrl
   } | ConvertTo-Json | Set-Content -Path $AuthFile -Encoding utf8
-  Write-Host "  Abra: $($resp.verification_uri)"
-  Write-Host "  Codigo: $($resp.user_code)"
-  return
+  Write-Host ""
+  Write-Host "  =============================================="
+  Write-Host "   Abra   : $($resp.verification_uri)"
+  Write-Host "   Codigo : $($resp.user_code)"
+  Write-Host "  =============================================="
+  Write-Host ""
+  if ($Stage -eq 'auth') { return }
+  Write-Host "Entre no navegador. Este script espera e continua sozinho." -ForegroundColor Cyan
 }
 
 # ===================== STAGE: deploy =====================
@@ -175,7 +184,7 @@ if ($sol) {
 } else {
   Dv POST "solutions" @{
     uniquename                = $SolutionUniqueName
-    friendlyname              = 'ARDX Demand System'
+    friendlyname              = 'Intake Forms'
     version                   = '1.0.0.0'
     'publisherid@odata.bind'  = "/publishers($pubId)"
   } | Out-Null
@@ -363,8 +372,30 @@ Add-Attr (PicklistAttr "${PublisherPrefix}_Status" 'Status' @(
   (Opt 'Priorizada' ($b+2)),
   (Opt 'Em execucao' ($b+3)),
   (Opt 'Concluida' ($b+4)),
-  (Opt 'Recusada' ($b+5))
+  (Opt 'Recusada' ($b+5)),
+  (Opt 'Em aprovacao' ($b+7)),
+  (Opt 'Devolvida' ($b+8))
 ))
+
+# --- Campos exigidos pelo motor de ciclo de vida (roteamento, score e SLA) ---
+# Sem estes o app publica mas grava errado: o gate vai para o decisor errado e o
+# score nasce 1.00. Ver src/data/dataverseDemandService.ts (fromDv/toDv).
+Add-Attr (IntNum "${PublisherPrefix}_ImpactoAbrangencia" 'Impacto - Abrangencia' 1 4)
+Add-Attr (PicklistAttr "${PublisherPrefix}_Clasificacion" 'Classificacao do portfolio' @(
+  (Opt 'Infraestrutura' ($b+0)),
+  (Opt 'Inteligencia Artificial' ($b+1)),
+  (Opt 'Aplicacoes' ($b+2)),
+  (Opt 'Outro' ($b+3))
+))
+Add-Attr (Str "${PublisherPrefix}_Rce" 'RCE' 100)
+Add-Attr (Str "${PublisherPrefix}_AppId" 'APP ID' 50)
+# Marca de tempo da ULTIMA MUDANCA DE STATUS (modifiedon nao serve: qualquer
+# edicao o reseta e zera o relogio de SLA de uma aprovacao parada).
+Add-Attr (DateOnly "${PublisherPrefix}_StatusDesde" 'Status desde')
+# UPNs resolvidos na transicao — permitem que os flows enderecem a pessoa
+# direto do gatilho, sem join com tabela de roteamento.
+Add-Attr (Str "${PublisherPrefix}_RequerenteUpn" 'Requerente (UPN)' 200)
+Add-Attr (Str "${PublisherPrefix}_DecisorUpn" 'Decisor (UPN)' 200)
 Add-Attr (Str "${PublisherPrefix}_ProjectStage" 'Project Stage' 60)
 Add-Attr (IntNum "${PublisherPrefix}_FinalPriority" 'Final Priority' 0 9999)
 Add-Attr (IntNum "${PublisherPrefix}_ScoreBusinessImpact" 'Score Business Impact' 1 5)
@@ -396,15 +427,83 @@ Add-Attr (Memo "${PublisherPrefix}_DmcComentario" 'Comentario do DMC' 4000)
 Add-Attr (Str  "${PublisherPrefix}_IdServiceNow" 'ID ServiceNow' 100)
 Add-Attr (Str  "${PublisherPrefix}_IdProjeto" 'ID Projeto' 100)
 
+
+# ==================================================================
+#  TABELA DE PERFIS  (ardx_perfil)
+#
+#  Quem e PMO, quem e do time tecnico, quem decide qual frente.
+#  Antes isso morava em src/auth/papeis.ts: cadastrar um decisor novo
+#  exigia editar TypeScript e republicar o app. No Power Apps a
+#  identidade vem do host (M365), mas o PAPEL de cada pessoa e dado
+#  de negocio e tem que ser cadastravel pelo administrador na tela.
+# ==================================================================
+$perfilLogical = "${PublisherPrefix}_perfil"
+$perfilExists  = $true
+try { Dv GET "EntityDefinitions(LogicalName='$perfilLogical')?`$select=LogicalName" | Out-Null }
+catch { $perfilExists = $false }
+
+if (-not $perfilExists) {
+  $perfilEntity = @{
+    '@odata.type'         = 'Microsoft.Dynamics.CRM.EntityMetadata'
+    SchemaName            = "${PublisherPrefix}_Perfil"
+    DisplayName           = (L 'Perfil de acesso')
+    DisplayCollectionName = (L 'Perfis de acesso')
+    Description           = (L 'Papeis do Intake Forms por pessoa (UPN). Cadastrado no modulo administrativo do app.')
+    OwnershipType         = 'UserOwned'
+    IsActivity            = $false
+    HasActivities         = $false
+    HasNotes              = $false
+    IsAuditEnabled        = @{ Value = $true }
+    Attributes            = @(
+      @{
+        '@odata.type'     = 'Microsoft.Dynamics.CRM.StringAttributeMetadata'
+        SchemaName        = "${PublisherPrefix}_Upn"
+        AttributeType     = 'String'
+        AttributeTypeName = @{ Value = 'StringType' }
+        MaxLength         = 200
+        IsPrimaryName     = $true
+        DisplayName       = (L 'UPN')
+        RequiredLevel     = @{ Value = 'ApplicationRequired' }
+      }
+    )
+  }
+  Dv POST "EntityDefinitions" $perfilEntity $solHeader | Out-Null
+  Write-Host "Tabela criada: $perfilLogical"
+} else {
+  Write-Host "Tabela ja existe: $perfilLogical"
+}
+
+$perfilExisting = @((Dv GET "EntityDefinitions(LogicalName='$perfilLogical')/Attributes?`$select=SchemaName").value.SchemaName)
+function Add-PerfilAttr($def) {
+  if ($perfilExisting -contains $def.SchemaName) { Write-Host "  = $($def.SchemaName)"; return }
+  Dv POST "EntityDefinitions(LogicalName='$perfilLogical')/Attributes" $def $solHeader | Out-Null
+  Write-Host "  + $($def.SchemaName)"
+}
+
+Add-PerfilAttr (Str "${PublisherPrefix}_Nome" 'Nome' 200)
+# JSON, seguindo a convencao que a tabela de demanda ja usa para listas
+# (AprovacoesJson, AvaliacoesJson): array de papeis e array de frentes.
+Add-PerfilAttr (Str "${PublisherPrefix}_PapeisJson" 'Papeis (JSON)' 400)
+Add-PerfilAttr (Str "${PublisherPrefix}_FrentesJson" 'Frentes do decisor (JSON)' 200)
+Add-PerfilAttr (YesNo "${PublisherPrefix}_Ativo" 'Ativo')
+
+
 # --- publicar ---
 Write-Host "Publicando customizacoes..."
 Dv POST "PublishAllXml" @{} | Out-Null
 
 # --- resumo / schema-info ---
 $meta = Dv GET "EntityDefinitions(LogicalName='$entityLogical')?`$select=LogicalName,EntitySetName,PrimaryIdAttribute,PrimaryNameAttribute"
+$perfilMeta = Dv GET "EntityDefinitions(LogicalName='$perfilLogical')?`$select=LogicalName,EntitySetName,PrimaryIdAttribute,PrimaryNameAttribute"
 $schemaInfo = [ordered]@{
   environmentOrgUrl = $OrgUrl
   solution          = $SolutionUniqueName
+  perfilTable       = @{
+    logicalName        = $perfilMeta.LogicalName
+    entitySetName      = $perfilMeta.EntitySetName
+    primaryIdAttribute = $perfilMeta.PrimaryIdAttribute
+    primaryName        = $perfilMeta.PrimaryNameAttribute
+  }
   table             = @{
     logicalName        = $meta.LogicalName
     entitySetName      = $meta.EntitySetName
@@ -419,16 +518,18 @@ $schemaInfo = [ordered]@{
     impactoNivel  = @{ Alto=($b+0); Medio=($b+1); Baixo=($b+2) }
     urgencia      = @{ Critico=($b+0); Alto=($b+1); Medio=($b+2); Baixo=($b+3) }
     esforco       = @{ Pequeno=($b+0); Medio=($b+1); Grande=($b+2) }
-    status        = @{ Nova=($b+0); EmAnalise=($b+1); Priorizada=($b+2); EmExecucao=($b+3); Concluida=($b+4); Recusada=($b+5) }
+    status        = @{ Nova=($b+0); EmAnalise=($b+1); Priorizada=($b+2); EmExecucao=($b+3); Concluida=($b+4); Recusada=($b+5); EmAprovacao=($b+7); Devolvida=($b+8) }
+    clasificacion = @{ infra=($b+0); ia=($b+1); app=($b+2); otro=($b+3) }
   }
 }
 $schemaInfo | ConvertTo-Json -Depth 6 | Set-Content -Path "$PSScriptRoot/schema-info.json" -Encoding utf8
 
 Write-Host ""
 Write-Host "=================================================================="
-Write-Host "  TABELA PRONTA"
+Write-Host "  TABELAS PRONTAS"
 Write-Host "  logicalName   : $($meta.LogicalName)"
 Write-Host "  entitySetName : $($meta.EntitySetName)"
 Write-Host "  solution      : $SolutionUniqueName"
+Write-Host "  perfis        : $($perfilMeta.LogicalName) ($($perfilMeta.EntitySetName))"
 Write-Host "  schema-info   : dataverse/schema-info.json"
 Write-Host "=================================================================="

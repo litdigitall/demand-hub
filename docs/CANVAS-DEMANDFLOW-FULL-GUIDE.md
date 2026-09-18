@@ -1,3 +1,23 @@
+> ## ⚠️ Documento histórico — arquitetura anterior
+>
+> Este guia descreve uma solução que **não é a que está em produção**. Ficou
+> registrado por valor histórico; seguir os passos daqui hoje leva a um produto
+> diferente do que o cliente vai receber.
+>
+> | | Neste documento | Hoje (Intake Forms) |
+> |---|---|---|
+> | Plataforma | Power Apps **Canvas** | **Code App** React publicado com `pac code push` |
+> | Base de dados | Listas **SharePoint** | **Dataverse** (`ardx_demanda`) |
+> | Nome do app | DemandFlow / Demand Hub | **Intake Forms** |
+> | Atores | 6 papéis | **4** — Requester · PMO · Technical Team · Area Decisor |
+> | Aprovação | 3 gates (Sponsor → Tech Lead → Diretor) | **1 gate**, roteado pela frente do portfólio |
+> | Score | 7 critérios com pesos | **3 critérios**, calculados a partir do formulário |
+> | Telas | 12 | **5** |
+>
+> **Documentos válidos:** [`GO-LIVE.md`](GO-LIVE.md) (publicação e automações) e
+> [`CANVAS-INTAKE-FORM-PROMPT.md`](CANVAS-INTAKE-FORM-PROMPT.md) (o formulário de
+> entrada externo, esse sim ainda em Canvas).
+
 # Guia Completo de Implementação — Abbott DemandFlow em Power Apps Canvas
 ### O app inteiro (intake → triagem → avaliação → aprovação DMC → priorização → execução) · Canvas + SharePoint + Power Automate
 

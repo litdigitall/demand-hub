@@ -6,6 +6,8 @@
 // Models
 export * as Ardx_demandasModel from './models/Ardx_demandasModel';
 export * as CommonModels from './models/CommonModels';
+export * as Intake_perfilsModel from './models/Intake_perfilsModel';
 
 // Services
 export * from './services/Ardx_demandasService';
+export * from './services/Intake_perfilsService';

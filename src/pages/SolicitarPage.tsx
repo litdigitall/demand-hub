@@ -14,8 +14,7 @@ import {
   Center,
   Divider,
   Group,
-  MultiSelect,
-  NumberInput,
+  Paper,
   Select,
   Stack,
   Text,
@@ -28,25 +27,53 @@ import { DateInput } from "@mantine/dates";
 import { IconChecks, IconSend } from "@tabler/icons-react";
 import { adminLookupService, demandService } from "../data/demandService";
 import {
-  ABRANGENCIA_SCORE,
   Impacto,
   ImpactoAbrangencia,
   TipoDemanda,
   Urgencia,
   abrangenciaOptions,
-  categoryOptions,
-  clasificacionOptions,
-  impactoOptions,
+  categoriaDe,
+  scoreAutomatico,
   stakeholderDaArea,
-  tipoImpactoOptions,
   tipoOptions,
   urgenciaOptions,
+  weightedScore,
   type AdminLookup,
   type DemandInput,
 } from "../data/types";
 import abbottLogo from "../assets/abbott-logo.png";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/* Faixas de valor: o solicitante escolhe uma faixa; o sistema guarda o ponto
+   medio dela, que e o que alimenta a nota de retorno. */
+const FAIXAS_VALOR: { label: string; valor: number | null }[] = [
+  { label: "I can't estimate", valor: null },
+  { label: "Up to US$ 50k", valor: 25_000 },
+  { label: "US$ 50k - 200k", valor: 125_000 },
+  { label: "US$ 200k - 500k", valor: 350_000 },
+  { label: "Above US$ 500k", valor: 750_000 },
+];
+const valorDaFaixa = (i: number) => FAIXAS_VALOR[i]?.valor ?? null;
+
+/* O "nivel de impacto" (Alto/Medio/Baixo) sai do alcance informado: perguntar
+   os dois seria pedir a mesma coisa duas vezes. */
+function nivelPorAbrangencia(abrangencia: number): number {
+  if (abrangencia === ImpactoAbrangencia.Infraestrutura) return Impacto.Alto;
+  if (abrangencia === ImpactoAbrangencia.Departamento) return Impacto.Alto;
+  if (abrangencia === ImpactoAbrangencia.Processo) return Impacto.Medio;
+  return Impacto.Baixo;
+}
+
+/* Consequencia: lista fechada. Texto livre aqui nao e comparavel entre demandas. */
+const CONSEQUENCIAS = [
+  "Increased costs",
+  "Regulatory risk",
+  "Operational risk",
+  "Customer impact",
+  "Reputational impact",
+  "Security exposure",
+];
 
 export function SolicitarPage() {
   const [areas, setAreas] = useState<AdminLookup[]>([]);
@@ -61,27 +88,32 @@ export function SolicitarPage() {
     areaSolicitante: "",
     titulo: "",
     descricao: "",
-    category: "strategic",
-    clasificacion: "app",
-    clasificacionOtro: "",
     tipo: TipoDemanda.ProjetoNovo as number,
     problemaResolve: "",
     objetivoPrincipal: "",
     consequenciaNaoExecucao: "",
     impactoAbrangencia: ImpactoAbrangencia.Processo as number,
-    impactoNivel: Impacto.Medio as number,
-    tiposImpacto: [] as number[],
-    valorEstimado: "" as number | "",
-    roiEstimado: "" as number | "",
+    /* Faixa de valor: caixa numérica livre gera chute. O índice aponta para
+       FAIXAS_RETORNO, e a nota de retorno sai daí. */
+    faixaValor: 0,
     urgencia: Urgencia.Medio as number,
     deadline: "",
-    appId: "",
   });
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((s) => ({ ...s, [k]: v }));
 
   useEffect(() => {
     adminLookupService.listAreas().then(setAreas);
   }, []);
+
+  /* Mesma funcao de score usada pelo motor: o numero que o solicitante ve aqui
+     e exatamente o que a demanda leva para a triagem. */
+  const prioridadeEstimada = weightedScore(
+    scoreAutomatico({
+      impactoAbrangencia: f.impactoAbrangencia,
+      urgencia: f.urgencia,
+      valorEstimado: valorDaFaixa(f.faixaValor),
+    }),
+  );
 
   function validate(): boolean {
     const e: Record<string, string> = {};
@@ -111,21 +143,23 @@ export function SolicitarPage() {
         processosImpactados: "",
         consequenciaNaoExecucao: f.consequenciaNaoExecucao,
         tipo: f.tipo,
-        category: f.category,
-        clasificacion: f.clasificacion,
-        clasificacionOtro: f.clasificacion === "otro" ? f.clasificacionOtro : "",
-        impactoNivel: f.impactoNivel,
+        /* Derivados do que foi respondido — o solicitante não precisa saber
+           classificar portfólio nem calibrar "nível de impacto". */
+        category: "strategic",
+        clasificacion: categoriaDe(f.tipo),
+        clasificacionOtro: "",
+        impactoNivel: nivelPorAbrangencia(f.impactoAbrangencia),
         impactoAbrangencia: f.impactoAbrangencia,
-        tiposImpacto: f.tiposImpacto,
-        valorEstimado: typeof f.valorEstimado === "number" ? f.valorEstimado : null,
-        roiEstimado: typeof f.roiEstimado === "number" ? f.roiEstimado : null,
+        tiposImpacto: [],
+        valorEstimado: valorDaFaixa(f.faixaValor),
+        roiEstimado: null,
         urgencia: f.urgencia,
         deadline: f.deadline,
         sistemasEnvolvidos: "",
         integracoesNecessarias: "",
         requisitosPrincipais: "",
         solucaoProposta: "",
-        appId: f.appId,
+        appId: "",
         sponsor: stakeholderDaArea(f.areaSolicitante),
         donoProcesso: "",
         areasEnvolvidas: "",
@@ -153,7 +187,7 @@ export function SolicitarPage() {
               <img src={abbottLogo} alt="Abbott" style={{ maxWidth: 96, display: "block" }} />
             </Box>
             <div>
-              <Title order={3}>Demand Request — IT</Title>
+              <Title order={3}>IT request</Title>
               <Text size="sm" c="dimmed">
                 Any employee can open a demand. Fill in the form; the team will evaluate it.
               </Text>
@@ -211,57 +245,80 @@ export function SolicitarPage() {
             <FormCard title="2. About the demand">
               <TextInput label="Title" withAsterisk value={f.titulo} error={errors.titulo} onChange={(e) => set("titulo", e.currentTarget.value)} />
               <Textarea label="Description" withAsterisk autosize minRows={3} mt="sm" value={f.descricao} error={errors.descricao} onChange={(e) => set("descricao", e.currentTarget.value)} />
-              <Group grow mt="sm">
-                <Select label="Category" data={categoryOptions} allowDeselect={false} value={f.category} onChange={(v) => v && set("category", v)} />
-                <Select label="Demand type" data={tipoOptions.map((o) => ({ value: String(o.value), label: o.label }))} allowDeselect={false} value={String(f.tipo)} onChange={(v) => v && set("tipo", Number(v))} />
-              </Group>
-              <Group grow mt="sm">
-                <Select
-                  label="Project classification"
-                  data={clasificacionOptions}
-                  allowDeselect={false}
-                  value={f.clasificacion}
-                  onChange={(v) => v && set("clasificacion", v)}
-                />
-                {f.clasificacion === "otro" && (
-                  <TextInput label="Specify" value={f.clasificacionOtro} onChange={(e) => set("clasificacionOtro", e.currentTarget.value)} />
-                )}
-              </Group>
+              <Select
+                label="Demand type"
+                mt="sm"
+                data={tipoOptions.map((o) => ({ value: String(o.value), label: o.label }))}
+                allowDeselect={false}
+                value={String(f.tipo)}
+                onChange={(v) => v && set("tipo", Number(v))}
+              />
             </FormCard>
 
             <FormCard title="3. Objective">
               <Textarea label="What problem or opportunity does it solve?" autosize minRows={2} value={f.problemaResolve} onChange={(e) => set("problemaResolve", e.currentTarget.value)} />
               <Textarea label="Main objective" withAsterisk autosize minRows={2} mt="sm" value={f.objetivoPrincipal} error={errors.objetivoPrincipal} onChange={(e) => set("objetivoPrincipal", e.currentTarget.value)} />
-              <Textarea label="Consequence of not executing" autosize minRows={2} mt="sm" value={f.consequenciaNaoExecucao} onChange={(e) => set("consequenciaNaoExecucao", e.currentTarget.value)} />
+              <Select
+                label="What happens if we don't do it?"
+                mt="sm"
+                data={CONSEQUENCIAS}
+                clearable
+                value={f.consequenciaNaoExecucao || null}
+                onChange={(v) => set("consequenciaNaoExecucao", v ?? "")}
+              />
             </FormCard>
 
             <FormCard title="4. Impact and urgency">
               <Select
                 label="How far does it reach?"
-                description={`Business Impact (automatic): ${ABRANGENCIA_SCORE[f.impactoAbrangencia]}/5`}
                 data={abrangenciaOptions.map((o) => ({ value: String(o.value), label: o.label }))}
                 allowDeselect={false}
                 value={String(f.impactoAbrangencia)}
                 onChange={(v) => v && set("impactoAbrangencia", Number(v))}
               />
               <Group grow mt="sm">
-                <Select label="Impact level" data={impactoOptions.map((o) => ({ value: String(o.value), label: o.label }))} allowDeselect={false} value={String(f.impactoNivel)} onChange={(v) => v && set("impactoNivel", Number(v))} />
-                <Select label="Urgency" data={urgenciaOptions.map((o) => ({ value: String(o.value), label: o.label }))} allowDeselect={false} value={String(f.urgencia)} onChange={(v) => v && set("urgencia", Number(v))} />
+                <Select
+                  label="Urgency"
+                  data={urgenciaOptions.map((o) => ({ value: String(o.value), label: o.label }))}
+                  allowDeselect={false}
+                  value={String(f.urgencia)}
+                  onChange={(v) => v && set("urgencia", Number(v))}
+                />
+                <DateInput
+                  label="Deadline"
+                  description="Audit, contract or legal date, if any"
+                  valueFormat="DD MMM YYYY"
+                  clearable
+                  value={f.deadline || null}
+                  onChange={(v) => set("deadline", v ?? "")}
+                />
               </Group>
-              <MultiSelect
-                label="Impact type"
+              <Select
+                label="Estimated value for the business"
                 mt="sm"
-                data={tipoImpactoOptions.map((o) => ({ value: String(o.value), label: o.label }))}
-                value={f.tiposImpacto.map(String)}
-                error={errors.tiposImpacto}
-                onChange={(v) => set("tiposImpacto", v.map(Number))}
+                data={FAIXAS_VALOR.map((x, i) => ({ value: String(i), label: x.label }))}
+                allowDeselect={false}
+                value={String(f.faixaValor)}
+                onChange={(v) => v && set("faixaValor", Number(v))}
               />
-              <Group grow mt="sm">
-                <NumberInput label="Estimated value (USD)" min={0} value={f.valorEstimado} onChange={(v) => set("valorEstimado", typeof v === "number" ? v : "")} />
-                <NumberInput label="Estimated ROI (%)" min={0} suffix="%" value={f.roiEstimado} onChange={(v) => set("roiEstimado", typeof v === "number" ? v : "")} />
-                <DateInput label="Deadline" valueFormat="DD/MM/YYYY" clearable value={f.deadline || null} onChange={(v) => set("deadline", v ?? "")} />
-              </Group>
-              <TextInput label="APP ID (optional)" mt="sm" placeholder="e.g.: APP-0456" value={f.appId} onChange={(e) => set("appId", e.currentTarget.value)} />
+
+              {/* O solicitante ve a nota que as proprias respostas geraram. */}
+              <Paper withBorder radius="md" p="sm" mt="md" bg="abbott.0">
+                <Group justify="space-between">
+                  <Text size="sm" fw={600}>
+                    Estimated priority
+                  </Text>
+                  <Text fw={800} fz="lg">
+                    {prioridadeEstimada.toFixed(2)}{" "}
+                    <Text component="span" size="sm" c="dimmed">
+                      / 5.00
+                    </Text>
+                  </Text>
+                </Group>
+                <Text size="xs" c="dimmed" mt={2}>
+                  Calculated from reach, urgency and estimated value. The PMO reviews it during triage.
+                </Text>
+              </Paper>
             </FormCard>
 
             <Alert color="gray" variant="light">
@@ -280,7 +337,7 @@ export function SolicitarPage() {
             </Group>
             <Divider my="xs" />
             <Text ta="center" size="xs" c="dimmed">
-              Intake Forms · LIT Digitall — Free entry point (demo)
+              Intake Forms · LIT Digitall
             </Text>
           </Stack>
         )}

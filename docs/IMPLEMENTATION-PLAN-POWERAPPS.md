@@ -1,4 +1,4 @@
-# Demand Hub — Plan de Implementación
+# Intake Forms — Plan de Implementación
 ### Power Apps Premium · High-code (Code Apps) · Dataverse · Power Automate
 
 **Cliente:** Abbott — IT Hub (DMC) · **Proveedor:** LIT Digitall
@@ -8,7 +8,7 @@
 
 ## 1. Resumen ejecutivo
 
-El prototipo de **Demand Hub** (intake, scoring automático, aprobación DMC y priorización capacity vs. score) está validado por el negocio. Este documento define **cómo llevarlo a producción** sobre la plataforma Power Apps en su modalidad **high-code (Code Apps)**: la misma aplicación React ya construida se publica dentro de Power Apps con `pac code push`, conectada a **Dataverse** como base de datos, **Power Automate** para las automatizaciones, **Microsoft Entra ID / M365** para identidad y **ServiceNow** vía API para capacity y publicación de proyectos.
+El prototipo de **Intake Forms** (intake, scoring automático, aprobación DMC y priorización capacity vs. score) está validado por el negocio. Este documento define **cómo llevarlo a producción** sobre la plataforma Power Apps en su modalidad **high-code (Code Apps)**: la misma aplicación React ya construida se publica dentro de Power Apps con `pac code push`, conectada a **Dataverse** como base de datos, **Power Automate** para las automatizaciones, **Microsoft Entra ID / M365** para identidad y **ServiceNow** vía API para capacity y publicación de proyectos.
 
 | Dimensión | Decisión |
 |---|---|
@@ -30,7 +30,7 @@ El prototipo de **Demand Hub** (intake, scoring automático, aprobación DMC y p
 flowchart LR
   subgraph Entrada
     MF[Microsoft Forms<br/>solicitud free]
-    APP[Demand Hub<br/>Code App React]
+    APP[Intake Forms<br/>Code App React]
   end
   subgraph PowerPlatform[Power Platform]
     PA[Power Automate<br/>F1–F7]
@@ -53,7 +53,7 @@ flowchart LR
 ```
 
 **Entorno actual (ya aprovisionado):**
-- App: **Demand Hub** — appId `785908fe-958b-43fa-87fc-0ba475bdba81`
+- App: **Intake Forms** — appId `785908fe-958b-43fa-87fc-0ba475bdba81`
 - Environment: `aa9aa103-53ae-e549-8f11-8e79e2d2bfec` (region: prod) — se recomienda crear **DEV** y **TEST** equivalentes
 - Tabla: `ardx_demanda` (entity set `ardx_demandas`)
 - Deploy: `pac auth create` → `npm run build` → `pac code push` (ver `POWERAPPS-DEPLOY.md`)
@@ -128,7 +128,7 @@ El prototipo agregó campos que deben existir como columnas antes del go-live:
 
 **Mapeo de campos** (ya visible en el panel *ServiceNow Integration* del app):
 
-| Demand Hub | Dir. | ServiceNow |
+| Intake Forms | Dir. | ServiceNow |
 |---|---|---|
 | capacity (horas/FTE) | IN | `resource_allocation.hours` |
 | RCE | OUT | `pm_project.u_rce` |

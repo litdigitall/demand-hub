@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<environmentvariabledefinition schemaname="ardx_SlaReturnedDays">
+  <defaultvalue>5</defaultvalue>
+  <description>Meta de dias com a demanda devolvida ao solicitante. Espelha SLA_DIAS e alimenta o flow N5.</description>
+  <displayname>SLA - returned to requester (days)</displayname>
+  <introducedversion>1.0</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000001</type>
+  <environmentvariablevalues />
+</environmentvariabledefinition>

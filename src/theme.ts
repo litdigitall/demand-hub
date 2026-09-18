@@ -43,6 +43,9 @@ const grape: MantineColorsTuple = [
 ];
 
 export const theme = createTheme({
+  /* xxl: monitor de 1700px+. O app é de uso desktop, e entre 1408 e 1920 há
+     espaço para mais duas colunas sem espremer o título. */
+  breakpoints: { xs: "36em", sm: "48em", md: "62em", lg: "75em", xl: "88em", xxl: "106.25em" },
   primaryColor: "abbott",
   primaryShade: 6,
   colors: { abbott, grape },
@@ -73,7 +76,15 @@ export const theme = createTheme({
     Paper: { defaultProps: { radius: "lg" } },
     Button: { defaultProps: { radius: "md" } },
     Modal: { defaultProps: { radius: "lg", centered: true, overlayProps: { blur: 3, backgroundOpacity: 0.5 } } },
-    Badge: { defaultProps: { radius: "sm" } },
+    /* Sentence case: CAIXA ALTA + letter-spacing engordava a badge e truncava
+       ("SYSTEM ENHANCEME…"). Sem isso o rótulo cabe e continua legível. */
+    Badge: {
+      defaultProps: { radius: "sm", tt: "none", fw: 600 },
+      /* A badge do Mantine tem max-width:100% do pai, então dentro de um flex
+         apertado ela cortava o próprio rótulo ("24…", "O."). Rótulo de badge é
+         curto por definição: nunca deve encolher. */
+      styles: { root: { maxWidth: "none", flexShrink: 0 } },
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Select: { defaultProps: { filter: safeOptionsFilter as any } },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

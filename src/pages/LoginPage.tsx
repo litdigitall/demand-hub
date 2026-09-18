@@ -23,9 +23,9 @@ import abbottLogo from "../assets/abbott-logo.png";
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, user, personas } = useAuth();
+  const { signIn, user, personas, modoDemo } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -122,37 +122,48 @@ export function LoginPage() {
           </Stack>
         </form>
 
+        {/* Contas demo: SÓ no build de demonstração. Em produção a
+            identidade vem do host do Power Apps (src/auth/identity.ts). */}
+        {modoDemo && (
+          <>
         {/* Contas demo (um clique = login por papel) */}
-        <Text size="xs" c="dimmed" mt="xl" mb="xs" tt="uppercase" fw={700} lts={1}>
-          Demo accounts (one click)
-        </Text>
-        <Stack gap={6}>
-          {personas.map((p) => (
-            <UnstyledButton
-              key={p.id}
-              onClick={() => { setEmail(p.email); setPassword(DEMO_PASSWORD); signIn(p.email, DEMO_PASSWORD) && navigate("/", { replace: true }); }}
-              className="hover-lift"
-              style={{ border: "1px solid var(--mantine-color-gray-2)", borderRadius: 12, padding: "8px 12px" }}
-            >
-              <Group gap="sm" wrap="nowrap">
-                <Avatar radius="xl" size={34} variant="gradient" gradient={{ from: "abbott.6", to: "grape.6", deg: 60 }}>
-                  {initialsFromName(p.nome)}
-                </Avatar>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <Text size="sm" fw={600} truncate>{p.nome}</Text>
-                  <Text size="xs" c="dimmed" truncate>{p.email}</Text>
-                </div>
-                <Group gap={4}>
-                  {p.roles.slice(0, 1).map((r) => (
-                    <Badge key={r} size="xs" variant="light" color={ROLE_COLOR[r]}>{ROLE_LABEL[r]}</Badge>
-                  ))}
-                  {p.roles.length > 1 && <Badge size="xs" variant="light" color="gray">+{p.roles.length - 1}</Badge>}
+          <Text size="xs" c="dimmed" mt="xl" mb="xs" tt="uppercase" fw={700} lts={1}>
+            Demo accounts (one click)
+          </Text>
+          <Stack gap={6}>
+            {personas.map((p) => (
+              <UnstyledButton
+                key={p.id}
+                onClick={() => {
+                  setEmail(p.email);
+                  setPassword(DEMO_PASSWORD);
+                  if (signIn(p.email, DEMO_PASSWORD)) navigate("/", { replace: true });
+                }}
+                className="hover-lift"
+                style={{ border: "1px solid var(--mantine-color-gray-2)", borderRadius: 12, padding: "8px 12px" }}
+              >
+                <Group gap="sm" wrap="nowrap">
+                  <Avatar radius="xl" size={34} variant="gradient" gradient={{ from: "abbott.6", to: "grape.6", deg: 60 }}>
+                    {initialsFromName(p.nome)}
+                  </Avatar>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Text size="sm" fw={600} truncate>{p.nome}</Text>
+                    <Text size="xs" c="dimmed" truncate>{p.email}</Text>
+                  </div>
+                  <Group gap={4}>
+                    {p.roles.slice(0, 1).map((r) => (
+                      <Badge key={r} size="xs" variant="light" color={ROLE_COLOR[r]}>{ROLE_LABEL[r]}</Badge>
+                    ))}
+                    {p.roles.length > 1 && <Badge size="xs" variant="light" color="gray">+{p.roles.length - 1}</Badge>}
+                  </Group>
+                  <IconArrowRight size={15} color="var(--mantine-color-gray-5)" />
                 </Group>
-                <IconArrowRight size={15} color="var(--mantine-color-gray-5)" />
-              </Group>
-            </UnstyledButton>
-          ))}
-        </Stack>
+              </UnstyledButton>
+            ))}
+          </Stack>
+  
+    </>
+        )}
 
         <Center mt="lg">
           <Text size="sm">

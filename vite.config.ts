@@ -8,12 +8,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const isDemo = process.env.VITE_DEMO_MODE === "true";
 
-// Plugin que substitui src/data/demandService.ts por demandService.demo.ts
+// Plugin que substitui os serviços de dados pelos pares .demo.ts
 // no modo demo. Independente de qual import path foi usado, garante que o
 // módulo resolvido é o demo (sem dependência do SDK Power Apps / generated).
 function demoSwapPlugin(): Plugin {
-  const target = path.resolve(__dirname, "src/data/demandService.ts");
-  const replacement = path.resolve(__dirname, "src/data/demandService.demo.ts");
+  /* Cada serviço que fala com o Dataverse tem um par .demo.ts sem o SDK. */
+  const trocas = new Map(
+    ["demandService", "perfilService"].map((nome) => [
+      path.normalize(path.resolve(__dirname, `src/data/${nome}.ts`)),
+      path.resolve(__dirname, `src/data/${nome}.demo.ts`),
+    ]),
+  );
   return {
     name: "demand-system:demo-swap",
     enforce: "pre",
@@ -22,11 +27,8 @@ function demoSwapPlugin(): Plugin {
       if (!importer) return null;
       const resolved = await this.resolve(source, importer, { skipSelf: true });
       if (!resolved) return null;
-      const id = resolved.id.split("?")[0];
-      if (path.normalize(id) === path.normalize(target)) {
-        return replacement;
-      }
-      return null;
+      const id = path.normalize(resolved.id.split("?")[0]);
+      return trocas.get(id) ?? null;
     },
   };
 }

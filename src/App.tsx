@@ -1,51 +1,32 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { Center, Loader } from "@mantine/core";
+import { Button, Center, Group, Loader, Stack, Text, Title } from "@mantine/core";
 import { AppLayout } from "./components/layout/AppLayout";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
+import { RequireRole } from "./components/RequireRole";
+import { Role } from "./domain/roles";
 import { LoginPage } from "./pages/LoginPage";
+import { MODO_DEMO } from "./auth/identity";
 import { SolicitarPage } from "./pages/SolicitarPage";
 
-/* Cada rota carrega o próprio chunk sob demanda. Reduz drasticamente o
-   tempo do primeiro paint. */
-const DashboardPage = lazy(() =>
-  import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+/* Cada rota carrega o próprio chunk sob demanda. */
+const InboxPage = lazy(() =>
+  import("./pages/InboxPage").then((m) => ({ default: m.InboxPage })),
 );
-const DemandasPage = lazy(() =>
-  import("./pages/DemandasPage").then((m) => ({ default: m.DemandasPage })),
-);
-const NovaDemandaPage = lazy(() =>
-  import("./pages/NovaDemandaPage").then((m) => ({ default: m.NovaDemandaPage })),
+const RequestsPage = lazy(() =>
+  import("./pages/requests/RequestsPage").then((m) => ({ default: m.RequestsPage })),
 );
 const DemandaDetailPage = lazy(() =>
   import("./pages/DemandaDetailPage").then((m) => ({ default: m.DemandaDetailPage })),
 );
-const ScoreBoardPage = lazy(() =>
-  import("./pages/ScoreBoardPage").then((m) => ({ default: m.ScoreBoardPage })),
-);
-const KanbanPage = lazy(() =>
-  import("./pages/KanbanPage").then((m) => ({ default: m.KanbanPage })),
-);
-const SponsorsPage = lazy(() =>
-  import("./pages/SponsorsPage").then((m) => ({ default: m.SponsorsPage })),
-);
-const AprovacoesPage = lazy(() =>
-  import("./pages/AprovacoesPage").then((m) => ({ default: m.AprovacoesPage })),
+const OverviewPage = lazy(() =>
+  import("./pages/OverviewPage").then((m) => ({ default: m.OverviewPage })),
 );
 const CapacityPage = lazy(() =>
   import("./pages/CapacityPage").then((m) => ({ default: m.CapacityPage })),
 );
-const AdminPage = lazy(() =>
-  import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })),
-);
-const ReportPage = lazy(() =>
-  import("./pages/ReportPage").then((m) => ({ default: m.ReportPage })),
-);
-const IntegrationsPage = lazy(() =>
-  import("./pages/IntegrationsPage").then((m) => ({ default: m.IntegrationsPage })),
-);
-const ApproversStatusPage = lazy(() =>
-  import("./pages/ApproversStatusPage").then((m) => ({ default: m.ApproversStatusPage })),
+const SettingsPage = lazy(() =>
+  import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })),
 );
 
 function PageLoader() {
@@ -57,12 +38,43 @@ function PageLoader() {
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, resolvendo } = useAuth();
   const loc = useLocation();
+  /* Em produção a identidade vem do host do Power Apps: enquanto ela não
+     chega não dá para decidir o que mostrar. */
+  if (resolvendo) return <PageLoader />;
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: loc.pathname }} />;
+    /* Dentro do Power Apps NÃO existe tela de login: se o host não devolveu
+       identidade, é falha de contexto, não falta de credencial. Mandar para
+       um formulário de login aqui seria pedir uma senha que o app não tem
+       como validar. */
+    return MODO_DEMO ? (
+      <Navigate to="/login" replace state={{ from: loc.pathname }} />
+    ) : (
+      <SemIdentidade />
+    );
   }
   return <>{children}</>;
+}
+
+/** Produção sem identidade do host: diz o que houve, sem inventar login. */
+function SemIdentidade() {
+  return (
+    <Center h="100vh" px="md">
+      <Stack gap="xs" maw={460} ta="center">
+        <Title order={3}>We could not identify you</Title>
+        <Text c="dimmed" size="sm">
+          Intake Forms uses your Microsoft 365 sign-in — there is no separate
+          password. Open the app from Power Apps, or reload this page.
+        </Text>
+        <Group justify="center" mt="sm">
+          <Button variant="light" onClick={() => window.location.reload()}>
+            Reload
+          </Button>
+        </Group>
+      </Stack>
+    </Center>
+  );
 }
 
 function L({ children }: { children: ReactNode }) {
@@ -74,7 +86,11 @@ export default function App() {
     <AuthProvider>
       <HashRouter>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          {/* Login só existe fora do Power Apps (dev e build de demonstração):
+              no app publicado quem autentica é o host. */}
+          {MODO_DEMO && <Route path="/login" element={<LoginPage />} />}
+          {/* Porta de entrada pública (usada enquanto o Canvas externo não
+              estiver publicado — ver VITE_INTAKE_FORM_URL em AppLayout). */}
           <Route path="/solicitar" element={<SolicitarPage />} />
           <Route
             element={
@@ -83,19 +99,48 @@ export default function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<L><DashboardPage /></L>} />
-            <Route path="demandas" element={<L><DemandasPage /></L>} />
-            <Route path="demandas/nova" element={<L><NovaDemandaPage /></L>} />
+            {/* Inbox é a casa: "o que precisa de mim agora" */}
+            <Route index element={<L><InboxPage /></L>} />
+
+            {/* Uma coleção, três visões (?view=table|board|priority) */}
+            <Route path="demandas" element={<L><RequestsPage /></L>} />
             <Route path="demandas/:id" element={<L><DemandaDetailPage /></L>} />
-            <Route path="kanban" element={<L><KanbanPage /></L>} />
-            <Route path="scoreboard" element={<L><ScoreBoardPage /></L>} />
-            <Route path="sponsors" element={<L><SponsorsPage /></L>} />
-            <Route path="aprovacoes" element={<L><AprovacoesPage /></L>} />
-            <Route path="approvers" element={<L><ApproversStatusPage /></L>} />
-            <Route path="capacity" element={<L><CapacityPage /></L>} />
-            <Route path="relatorio" element={<L><ReportPage /></L>} />
-            <Route path="integraciones" element={<L><IntegrationsPage /></L>} />
-            <Route path="admin" element={<L><AdminPage /></L>} />
+
+            <Route
+              path="overview"
+              element={
+                <RequireRole roles={[Role.PMO, Role.Decisor]}>
+                  <L><OverviewPage /></L>
+                </RequireRole>
+              }
+            />
+            <Route
+              path="capacity"
+              element={
+                <RequireRole roles={[Role.PMO, Role.TechLead]}>
+                  <L><CapacityPage /></L>
+                </RequireRole>
+              }
+            />
+            <Route
+              path="admin"
+              element={
+                <RequireRole roles={[Role.Admin]}>
+                  <L><SettingsPage /></L>
+                </RequireRole>
+              }
+            />
+
+            {/* Compatibilidade: links salvos das telas que viraram visões.
+                Sem isto cairiam no catch-all e o usuário acharia que sumiu. */}
+            <Route path="kanban" element={<Navigate to="/demandas?view=board" replace />} />
+            <Route path="scoreboard" element={<Navigate to="/demandas?view=priority" replace />} />
+            <Route path="approvers" element={<Navigate to="/demandas?status=aprovacao" replace />} />
+            <Route path="aprovacoes" element={<Navigate to="/" replace />} />
+            <Route path="relatorio" element={<Navigate to="/overview" replace />} />
+            <Route path="sponsors" element={<Navigate to="/demandas" replace />} />
+            <Route path="integraciones" element={<Navigate to="/admin" replace />} />
+            <Route path="demandas/nova" element={<Navigate to="/solicitar" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

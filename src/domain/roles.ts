@@ -37,6 +37,15 @@ export const ROLE_LABEL: Record<Role, string> = {
   admin: "Administrator",
 };
 
+/** Forma curta, para colunas e chips onde o nome completo trunca. */
+export const ROLE_LABEL_CURTO: Record<Role, string> = {
+  solicitante: "Requester",
+  techlead: "Tech team",
+  pmo: "PMO",
+  decisor: "Decisor",
+  admin: "Admin",
+};
+
 export const ROLE_LABEL_EN: Record<Role, string> = {
   solicitante: "Requester",
   techlead: "Technical Team",
@@ -151,4 +160,18 @@ export function hasRole(roles: Role[] | undefined, role: Role): boolean {
 
 export function hasAnyRole(roles: Role[] | undefined, wanted: Role[]): boolean {
   return !!roles && roles.some((r) => wanted.includes(r));
+}
+
+/* Um usuário pode acumular papéis (Admin costuma ter todos). Onde só cabe um
+   rótulo, mostramos o de maior alcance em vez de encurtar vários e não ler
+   nenhum. */
+const ORDEM_PAPEL: Role[] = [
+  Role.Admin,
+  Role.PMO,
+  Role.Decisor,
+  Role.TechLead,
+  Role.Solicitante,
+];
+export function papelPrincipal(roles: Role[]): Role {
+  return ORDEM_PAPEL.find((r) => roles.includes(r)) ?? Role.Solicitante;
 }

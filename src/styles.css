@@ -28,13 +28,6 @@ body {
   }
 }
 
-/* Utilitário: cartão "glass" */
-.glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: saturate(180%) blur(12px);
-  -webkit-backdrop-filter: saturate(180%) blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
 
 /* Realce de foco mais suave */
 *:focus-visible {
@@ -49,4 +42,26 @@ body {
 .hover-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 40px rgba(16, 24, 40, 0.12);
+}
+
+/* Coluna de status da fila do Inbox: largura fixa no desktop para os scores
+   ficarem alinhados; no celular a badge usa o tamanho natural. */
+.inbox-status {
+  flex-shrink: 0;
+}
+@media (min-width: 48em) {
+  .inbox-status {
+    width: 116px;
+  }
+}
+
+/* Ações da linha: largura fixa no desktop. Sem isso o rótulo do botão (que muda
+   por demanda) empurrava score e status para posições diferentes em cada linha. */
+.inbox-actions {
+  flex-shrink: 0;
+}
+@media (min-width: 48em) {
+  .inbox-actions {
+    width: 240px;
+  }
 }
