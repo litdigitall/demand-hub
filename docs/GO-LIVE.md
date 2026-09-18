@@ -122,26 +122,30 @@ demanda correta.
 Não há tela de administração para nada disso: é configuração de deploy, revisada em
 code review, e não algo que alguém muda por engano numa tarde.
 
-### 5.1 Quem é quem — `src/auth/papeis.ts` **[CLIENTE fornece os e-mails]**
+### 5.1 Quem é quem — Settings → People
 
-Mapa explícito de e-mail → papéis. Quem não estiver na lista entra como **Requester**
-e enxerga apenas as próprias demandas.
+No Power Apps a identidade vem do host (M365): **não há tela de login**. O que
+se cadastra é o **papel** de cada pessoa, na tela **Settings → People**,
+gravado na tabela `intake_perfil`:
 
-```ts
-export const PAPEIS_POR_EMAIL: Record<string, Role[]> = {
-  "pmo.ti@abbott.com": [Role.PMO],
-  "sambini@abbott.com": [Role.Decisor],   // + DECISOR_POR_EMAIL abaixo
-  ...
-};
-export const DECISOR_POR_EMAIL: Record<string, Categoria[]> = {
-  "sambini@abbott.com": ["infra"],
-  "gabriela@abbott.com": ["app"],
-  "ai.decisor@abbott.com": ["ia"],
-};
-```
+- UPN (o e-mail com que a pessoa entra no M365)
+- papéis: PMO, Technical Team, Area Decisor, Admin
+- frentes que decide (só para decisor): Infrastructure, AI, Applications
+- ativo / inativo — desativar tira o acesso sem apagar o registro
 
-**Conferir:** entrar com um usuário comum e checar que ele vê só as demandas dele, sem
-os menus Overview / Capacity / Settings.
+Quem não está cadastrado, ou está inativo, entra como **Requester** e vê só as
+próprias demandas. Falha de leitura do cadastro também resulta em Requester:
+nunca em mais acesso.
+
+**Admin de partida [CLIENTE fornece o UPN].** O módulo de perfis exige Admin
+para abrir, e o Admin vem do próprio cadastro — na primeira instalação, com o
+cadastro vazio, ninguém entraria. Os UPNs em `ADMINS_DE_PARTIDA`
+(`src/auth/papeis.ts`) são Admin sempre, para destrancar o módulo. Ao subir num
+ambiente novo, troque pelo responsável daquele ambiente e cadastre o resto das
+pessoas pela tela.
+
+**Conferir:** entrar com um usuário comum e checar que ele vê só as demandas
+dele, sem os menus Overview / Capacity / Settings.
 
 ### 5.2 Link do formulário — `VITE_INTAKE_FORM_URL`
 
@@ -209,7 +213,7 @@ voltar: `localStorage.removeItem("demand-system.demands.v4"); location.reload();
 - [ ] Uma demanda de ponta a ponta: intake → triagem → avaliação → decisão →
       priorização → execução → conclusão, com e-mail em cada passo
 - [ ] Decisores confirmados por frente (Infra / AI / Apps) com UPN correto
-- [ ] `src/auth/papeis.ts` preenchido com os e-mails reais (§5.1)
+- [ ] `ADMINS_DE_PARTIDA` com o responsável do ambiente e pessoas cadastradas em Settings → People (§5.1)
 - [ ] `VITE_INTAKE_FORM_URL` apontando para o Canvas publicado (§5.2)
 - [ ] Security roles aplicados
 - [ ] `npx tsx scripts/test-workflow.ts` verde (regressão do motor)

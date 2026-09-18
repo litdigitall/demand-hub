@@ -24,6 +24,18 @@ export interface PapeisResolvidos {
   decisorDe: Categoria[];
 }
 
+/* Administrador de partida.
+
+   O módulo de perfis exige Admin para abrir, e o Admin vem do próprio
+   cadastro. Sem alguém de partida, a primeira instalação fica trancada: o
+   cadastro está vazio, ninguém é Admin, ninguém abre Settings para cadastrar.
+
+   Estes UPNs são Admin SEMPRE, independente do cadastro — é a chave para
+   destrancar o módulo, não a forma de dar acesso no dia a dia. O resto das
+   pessoas se cadastra na tela. Ao subir em outro ambiente (ex.: Abbott),
+   troque pelo responsável daquele ambiente — docs/GO-LIVE.md §5.1. */
+export const ADMINS_DE_PARTIDA: readonly string[] = ["leonardo@litdigitall.com.br"];
+
 export const APENAS_REQUERENTE: PapeisResolvidos = {
   papeis: [Role.Solicitante],
   decisorDe: [],
@@ -42,14 +54,22 @@ function mesmo(a: string, b: string): boolean {
 export function resolverPapeis(email: string, perfis: Perfil[]): PapeisResolvidos {
   if (!email.trim()) return APENAS_REQUERENTE;
 
+  const dePartida = ADMINS_DE_PARTIDA.some((u) => mesmo(u, email));
   const meu = perfis.find((p) => p.ativo && mesmo(p.upn, email));
-  if (!meu || meu.papeis.length === 0) return APENAS_REQUERENTE;
+
+  if (!meu || meu.papeis.length === 0) {
+    return dePartida
+      ? { papeis: [Role.Admin, Role.Solicitante], decisorDe: [] }
+      : APENAS_REQUERENTE;
+  }
 
   /* Todo mundo continua podendo abrir demanda: os papéis do fluxo se somam
-     ao de solicitante, nunca o substituem. */
-  const papeis = meu.papeis.includes(Role.Solicitante)
-    ? meu.papeis
-    : [...meu.papeis, Role.Solicitante];
+     ao de solicitante, nunca o substituem. O admin de partida não perde o
+     Admin por ter um cadastro que não o inclui. */
+  const base = dePartida && !meu.papeis.includes(Role.Admin)
+    ? [...meu.papeis, Role.Admin]
+    : meu.papeis;
+  const papeis = base.includes(Role.Solicitante) ? base : [...base, Role.Solicitante];
 
   return {
     papeis,

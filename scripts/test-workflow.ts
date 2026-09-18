@@ -16,6 +16,7 @@ import {
   decisorDaDemanda,
   PIPELINE,
 } from "../src/domain/workflow";
+import { ADMINS_DE_PARTIDA, resolverPapeis } from "../src/auth/papeis";
 import {
   StatusDemanda,
   TipoDemanda,
@@ -242,6 +243,51 @@ for (const etapa of PIPELINE) {
 const emTriagem = demanda({});
 check(proximasAcoes(emTriagem, [Role.Solicitante]).length === 0, "16 solicitante não faz triagem");
 check(proximasAcoes(emTriagem, [Role.Decisor], ["app"]).length === 0, "16b decisor não faz triagem");
+
+
+/* ---------- 8. Papéis vêm do cadastro (Settings → People) ---------- */
+/* É a lógica que decide quem vira Admin: tem que falhar FECHADA. */
+const perfil = (upn: string, papeis: Role[], frentes: Categoria[] = [], ativo = true) => ({
+  id: upn,
+  upn,
+  nome: upn,
+  papeis,
+  frentes,
+  ativo,
+});
+const cadastro = [
+  perfil("pmo@abbott.com", [Role.PMO]),
+  perfil("sambini@abbott.com", [Role.Decisor], ["infra"]),
+  perfil("tech@abbott.com", [Role.TechLead], ["app"]),
+  perfil("saiu@abbott.com", [Role.PMO], [], false),
+];
+
+const estranho = resolverPapeis("alguem@abbott.com", cadastro);
+check(
+  estranho.papeis.length === 1 && estranho.papeis[0] === Role.Solicitante,
+  "17 quem não está cadastrado é só Requester",
+);
+check(resolverPapeis("", cadastro).papeis[0] === Role.Solicitante, "17b e-mail vazio é só Requester");
+check(!resolverPapeis("saiu@abbott.com", cadastro).papeis.includes(Role.PMO), "17c perfil inativo perde o acesso");
+
+const pmo = resolverPapeis("PMO@Abbott.com", cadastro);
+check(pmo.papeis.includes(Role.PMO), "18 UPN casa sem diferenciar maiúsculas");
+check(pmo.papeis.includes(Role.Solicitante), "18b papel do fluxo SOMA ao de solicitante");
+
+const decisor = resolverPapeis("sambini@abbott.com", cadastro);
+check(decisor.decisorDe.length === 1 && decisor.decisorDe[0] === "infra", "19 decisor recebe as frentes dele");
+check(resolverPapeis("tech@abbott.com", cadastro).decisorDe.length === 0, "19b frente só vale para decisor");
+
+const partida = ADMINS_DE_PARTIDA[0];
+check(resolverPapeis(partida, []).papeis.includes(Role.Admin), "20 admin de partida entra com cadastro vazio");
+check(
+  resolverPapeis(partida, [perfil(partida, [Role.PMO])]).papeis.includes(Role.Admin),
+  "20b admin de partida não perde o Admin por ter outro papel cadastrado",
+);
+check(
+  !resolverPapeis("alguem@abbott.com", []).papeis.includes(Role.Admin),
+  "20c cadastro vazio NÃO dá Admin a mais ninguém",
+);
 
 console.log(falhas === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${falhas} FALHAS`);
 process.exit(falhas === 0 ? 0 : 1);

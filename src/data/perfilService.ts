@@ -8,9 +8,9 @@
 
    Antes isso morava em src/auth/papeis.ts. Cadastrar um decisor novo
    exigia editar TypeScript, buildar e republicar o app. Agora mora na
-   tabela ardx_perfil e se cadastra no módulo administrativo.
+   tabela intake_perfil e se cadastra no módulo administrativo.
 
-   - Produção: tabela ardx_perfil no Dataverse.
+   - Produção: tabela intake_perfil no Dataverse.
    - Dev/demo: lista em memória com as personas, para a tela funcionar
      sem ambiente. Nada é gravado em localStorage — cadastro de acesso
      que só vale no navegador de quem clicou seria pior que nenhum.
@@ -18,6 +18,12 @@
 import { Role } from "../domain/roles";
 import type { Categoria } from "./types";
 import { MODO_DEMO } from "../auth/identity";
+import { Intake_perfilsService } from "../generated/services/Intake_perfilsService";
+import type {
+  Intake_perfils,
+  Intake_perfilsBase,
+} from "../generated/models/Intake_perfilsModel";
+import type { IOperationResult } from "@microsoft/power-apps/data";
 
 export interface Perfil {
   id: string;
@@ -122,58 +128,40 @@ const demoPerfilService: PerfilService = {
 
 /* ---------------- produção: Dataverse ----------------------- */
 
-/* A tabela é criada por dataverse/Setup-DemandaTable.ps1. Enquanto ela não
-   existir no ambiente, `listar()` devolve vazio em vez de derrubar a tela:
-   todo mundo entra como Requester e o módulo administrativo diz o que fazer. */
-interface LinhaPerfil {
-  ardx_perfilid?: string;
-  ardx_upn?: string;
-  ardx_nome?: string;
-  ardx_papeisjson?: string;
-  ardx_frentesjson?: string;
-  ardx_ativo?: boolean;
-}
-
-/* O acesso tipado é gerado por `pac code add-data-source -a dataverse
-   -t ardx_perfil`, que cria Ardx_perfilsService e registra a tabela em
-   .power/schemas. Enquanto isso não roda, o import falha e caímos no
-   catch — sem perfis, todo mundo é Requester e a tela de People diz isso. */
-const MODULO_PERFIL = "../generated/services/Ardx_perfilsService";
-
-async function servico() {
-  const mod = (await import(/* @vite-ignore */ MODULO_PERFIL)) as {
-    Ardx_perfilsService: PerfilRepo;
-  };
-  return mod.Ardx_perfilsService;
-}
-
-/** Forma do serviço gerado que este módulo usa. */
-interface PerfilRepo {
-  getAll(options?: unknown): Promise<{ data?: LinhaPerfil[] }>;
-  create(record: LinhaPerfil): Promise<{ data?: LinhaPerfil }>;
-  update(id: string, changed: Partial<LinhaPerfil>): Promise<unknown>;
-  delete(id: string): Promise<unknown>;
-}
+/* Tabela intake_perfil. O serviço tipado foi gerado com
+   `pac code add-data-source -a dataverse -t intake_perfil`. */
+type LinhaPerfil = Intake_perfils;
+/* Os campos que o Dataverse preenche sozinho (dono, estado) aparecem como
+   obrigatórios no tipo gerado; o serviço de demandas usa o mesmo corte. */
+type RegistroPerfil = Omit<Intake_perfilsBase, "intake_perfilid">;
 
 function daLinha(r: LinhaPerfil): Perfil {
   return {
-    id: r.ardx_perfilid ?? "",
-    upn: (r.ardx_upn ?? "").trim(),
-    nome: (r.ardx_nome ?? "").trim(),
-    papeis: papeisDe(r.ardx_papeisjson),
-    frentes: frentesDe(r.ardx_frentesjson),
-    ativo: r.ardx_ativo !== false,
+    id: r.intake_perfilid ?? "",
+    upn: (r.intake_upn ?? "").trim(),
+    nome: (r.intake_nome ?? "").trim(),
+    papeis: papeisDe(r.intake_papeisjson),
+    frentes: frentesDe(r.intake_frentesjson),
+    ativo: r.intake_ativo !== false,
   };
 }
 
-function paraLinha(p: Omit<Perfil, "id">): LinhaPerfil {
+function paraLinha(p: Omit<Perfil, "id">): Partial<RegistroPerfil> {
   return {
-    ardx_upn: p.upn.trim().toLowerCase(),
-    ardx_nome: p.nome.trim(),
-    ardx_papeisjson: JSON.stringify(p.papeis),
-    ardx_frentesjson: JSON.stringify(p.frentes),
-    ardx_ativo: p.ativo,
+    intake_upn: p.upn.trim().toLowerCase(),
+    intake_nome: p.nome.trim(),
+    intake_papeisjson: JSON.stringify(p.papeis),
+    intake_frentesjson: JSON.stringify(p.frentes),
+    intake_ativo: p.ativo,
   };
+}
+
+/** Mensagem do Dataverse, quando vier, para a tela não dizer só "falhou". */
+function motivo(res: IOperationResult<unknown>): string {
+  const e = res.error as unknown;
+  if (!e) return "";
+  if (e instanceof Error) return ` ${e.message}`;
+  return typeof e === "string" ? ` ${e}` : "";
 }
 
 const dataversePerfilService: PerfilService = {
@@ -181,29 +169,42 @@ const dataversePerfilService: PerfilService = {
 
   async listar() {
     try {
-      const repo = await servico();
-      const res = await repo.getAll();
+      const res = await Intake_perfilsService.getAll({
+        select: [
+          "intake_perfilid",
+          "intake_upn",
+          "intake_nome",
+          "intake_papeisjson",
+          "intake_frentesjson",
+          "intake_ativo",
+        ],
+        top: 500,
+      });
+      if (!res.success) return [];
       return (res.data ?? []).map(daLinha).filter((p) => p.upn);
     } catch {
-      /* Tabela ausente ou sem permissão: sem perfis, todo mundo é Requester. */
+      /* Sem permissão ou tabela fora do ar: falha FECHADA — sem perfis, todo
+         mundo é Requester. Nunca o contrário. */
       return [];
     }
   },
 
   async salvar(p) {
-    const repo = await servico();
     const linha = paraLinha(p);
     if (p.id) {
-      await repo.update(p.id, linha);
+      const res = await Intake_perfilsService.update(p.id, linha);
+      if (!res.success) throw new Error(`Could not update the profile.${motivo(res)}`);
       return { ...p, id: p.id } as Perfil;
     }
-    const criado = await repo.create(linha);
-    return { ...p, id: criado.data?.ardx_perfilid ?? "" } as Perfil;
+    const res = await Intake_perfilsService.create(linha as RegistroPerfil);
+    if (!res.success || !res.data) {
+      throw new Error(`Could not create the profile.${motivo(res)}`);
+    }
+    return daLinha(res.data);
   },
 
   async remover(id) {
-    const repo = await servico();
-    await repo.delete(id);
+    await Intake_perfilsService.delete(id);
   },
 };
 

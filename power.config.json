@@ -16,6 +16,10 @@
         "demandas": {
           "entitySetName": "ardx_demandas",
           "logicalName": "ardx_demanda"
+        },
+        "perfisdeacesso": {
+          "entitySetName": "intake_perfils",
+          "logicalName": "intake_perfil"
         }
       },
       "environmentVariableName": ""
