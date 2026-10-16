@@ -18,80 +18,80 @@ import {
   type DemandService,
   type ScoreFlag,
 } from "./types";
-import { Ardx_demandasService } from "../generated/services/Ardx_demandasService";
+import { Intake_demandasService } from "../generated/services/Intake_demandasService";
 import type {
-  Ardx_demandas,
-  Ardx_demandasBase,
-} from "../generated/models/Ardx_demandasModel";
+  Intake_demandas,
+  Intake_demandasBase,
+} from "../generated/models/Intake_demandasModel";
 import type { IOperationResult } from "@microsoft/power-apps/data";
 
 const SELECT_FIELDS = [
-  "ardx_demandaid",
-  "ardx_titulo",
-  "ardx_numero",
-  "ardx_descricao",
-  "ardx_areasolicitante",
-  "ardx_solicitante",
-  "ardx_email",
-  "ardx_telefone",
-  "ardx_datasolicitacao",
-  "ardx_problemaresolve",
-  "ardx_objetivoprincipal",
-  "ardx_processosimpactados",
-  "ardx_consequencianaoexecucao",
-  "ardx_tipo",
-  "ardx_impactonivel",
-  "ardx_tiposimpacto",
-  "ardx_valorestimado",
-  "ardx_urgencia",
-  "ardx_deadline",
-  "ardx_sistemasenvolvidos",
-  "ardx_integracoesnecessarias",
-  "ardx_requisitosprincipais",
-  "ardx_solucaoproposta",
-  "ardx_sponsor",
-  "ardx_donoprocesso",
-  "ardx_areasenvolvidas",
-  "ardx_dadossensiveis",
-  "ardx_impactaseguranca",
-  "ardx_requerauditoria",
-  "ardx_esforcoestimado",
-  "ardx_status",
-  "ardx_projectstage",
-  "ardx_finalpriority",
-  "ardx_scorebusinessimpact",
-  "ardx_scorerisk",
-  "ardx_scoretechnical",
-  "ardx_scorerevenue",
-  "ardx_scorestrategic",
-  "ardx_scorestakeholder",
-  "ardx_scoreurgency",
-  "ardx_impactoabrangencia",
-  "ardx_clasificacion",
-  "ardx_rce",
-  "ardx_appid",
-  "ardx_statusdesde",
-  "ardx_requerenteupn",
-  "ardx_decisorupn",
-  "ardx_comentariosjson",
-  "ardx_anexosjson",
-  "ardx_avaliacoesjson",
-  "ardx_stackvalidadapor",
-  "ardx_stackvalidadaem",
-  "ardx_aprovacoesjson",
-  "ardx_time",
-  "ardx_horasestimadas",
-  "ardx_respostabusiness",
-  "ardx_dmcaprovado",
-  "ardx_dmcdata",
-  "ardx_dmccomentario",
-  "ardx_idservicenow",
-  "ardx_idprojeto",
+  "intake_demandaid",
+  "intake_titulo",
+  "intake_numero",
+  "intake_descricao",
+  "intake_areasolicitante",
+  "intake_solicitante",
+  "intake_email",
+  "intake_telefone",
+  "intake_datasolicitacao",
+  "intake_problemaresolve",
+  "intake_objetivoprincipal",
+  "intake_processosimpactados",
+  "intake_consequencianaoexecucao",
+  "intake_tipo",
+  "intake_impactonivel",
+  "intake_tiposimpacto",
+  "intake_valorestimado",
+  "intake_urgencia",
+  "intake_deadline",
+  "intake_sistemasenvolvidos",
+  "intake_integracoesnecessarias",
+  "intake_requisitosprincipais",
+  "intake_solucaoproposta",
+  "intake_sponsor",
+  "intake_donoprocesso",
+  "intake_areasenvolvidas",
+  "intake_dadossensiveis",
+  "intake_impactaseguranca",
+  "intake_requerauditoria",
+  "intake_esforcoestimado",
+  "intake_status",
+  "intake_projectstage",
+  "intake_finalpriority",
+  "intake_scorebusinessimpact",
+  "intake_scorerisk",
+  "intake_scoretechnical",
+  "intake_scorerevenue",
+  "intake_scorestrategic",
+  "intake_scorestakeholder",
+  "intake_scoreurgency",
+  "intake_impactoabrangencia",
+  "intake_clasificacion",
+  "intake_rce",
+  "intake_appid",
+  "intake_statusdesde",
+  "intake_requerenteupn",
+  "intake_decisorupn",
+  "intake_comentariosjson",
+  "intake_anexosjson",
+  "intake_avaliacoesjson",
+  "intake_stackvalidadapor",
+  "intake_stackvalidadaem",
+  "intake_aprovacoesjson",
+  "intake_time",
+  "intake_horasestimadas",
+  "intake_respostabusiness",
+  "intake_dmcaprovado",
+  "intake_dmcdata",
+  "intake_dmccomentario",
+  "intake_idservicenow",
+  "intake_idprojeto",
   "createdon",
   "modifiedon",
 ];
 
-type DvRecord = Omit<Ardx_demandasBase, "ardx_demandaid">;
+type DvRecord = Omit<Intake_demandasBase, "intake_demandaid">;
 
 function parseJsonArray<T>(s: string | null | undefined): T[] {
   if (!s) return [];
@@ -119,7 +119,7 @@ function csvToFlagArr(s: string | null | undefined): ScoreFlag[] {
     .filter(Boolean) as ScoreFlag[];
 }
 
-/* Picklist ardx_clasificacion: 506970000..3 <-> infra/ia/app/otro */
+/* Picklist intake_clasificacion: 506970000..3 <-> infra/ia/app/otro */
 const CLASSIFICACAO_BASE = 506970000;
 const CLASSIFICACAO_ORDEM = ["infra", "ia", "app", "otro"] as const;
 
@@ -134,7 +134,7 @@ function classificacaoParaDv(v: string | undefined): number | null {
 }
 
 /** Dataverse -> modelo de domínio. */
-function fromDv(r: Ardx_demandas): Demand {
+function fromDv(r: Intake_demandas): Demand {
   const score = emptyScore();
   /* Modelo de 3 critérios sobre as colunas existentes do Dataverse:
      impacto → scorebusinessimpact · urgência → scoreurgency ·
@@ -142,43 +142,43 @@ function fromDv(r: Ardx_demandas): Demand {
      strategic/stakeholder) continuam na tabela, mas não são mais usadas. */
   const baseScore = {
     businessImpact:
-      (r.ardx_scorebusinessimpact as number | undefined) ?? score.businessImpact,
-    urgency: (r.ardx_scoreurgency as number | undefined) ?? score.urgency,
-    returnValue: (r.ardx_scorerevenue as number | undefined) ?? score.returnValue,
+      (r.intake_scorebusinessimpact as number | undefined) ?? score.businessImpact,
+    urgency: (r.intake_scoreurgency as number | undefined) ?? score.urgency,
+    returnValue: (r.intake_scorerevenue as number | undefined) ?? score.returnValue,
   };
 
   return {
-    id: r.ardx_demandaid,
-    numero: r.ardx_numero ?? "",
-    titulo: r.ardx_titulo ?? "",
-    descricao: r.ardx_descricao ?? "",
-    areaSolicitante: r.ardx_areasolicitante ?? "",
-    solicitante: r.ardx_solicitante ?? "",
-    email: r.ardx_email ?? "",
-    telefone: r.ardx_telefone ?? "",
-    dataSolicitacao: r.ardx_datasolicitacao ?? "",
-    problemaResolve: r.ardx_problemaresolve ?? "",
-    objetivoPrincipal: r.ardx_objetivoprincipal ?? "",
-    processosImpactados: r.ardx_processosimpactados ?? "",
-    consequenciaNaoExecucao: r.ardx_consequencianaoexecucao ?? "",
-    tipo: (r.ardx_tipo as number | undefined) ?? TipoDemanda.ProjetoNovo,
-    impactoNivel: (r.ardx_impactonivel as number | undefined) ?? 0,
-    tiposImpacto: csvToNumberArr(r.ardx_tiposimpacto),
+    id: r.intake_demandaid,
+    numero: r.intake_numero ?? "",
+    titulo: r.intake_titulo ?? "",
+    descricao: r.intake_descricao ?? "",
+    areaSolicitante: r.intake_areasolicitante ?? "",
+    solicitante: r.intake_solicitante ?? "",
+    email: r.intake_email ?? "",
+    telefone: r.intake_telefone ?? "",
+    dataSolicitacao: r.intake_datasolicitacao ?? "",
+    problemaResolve: r.intake_problemaresolve ?? "",
+    objetivoPrincipal: r.intake_objetivoprincipal ?? "",
+    processosImpactados: r.intake_processosimpactados ?? "",
+    consequenciaNaoExecucao: r.intake_consequencianaoexecucao ?? "",
+    tipo: (r.intake_tipo as number | undefined) ?? TipoDemanda.ProjetoNovo,
+    impactoNivel: (r.intake_impactonivel as number | undefined) ?? 0,
+    tiposImpacto: csvToNumberArr(r.intake_tiposimpacto),
     valorEstimado:
-      r.ardx_valorestimado != null ? Number(r.ardx_valorestimado) : null,
-    urgencia: (r.ardx_urgencia as number | undefined) ?? Urgencia.Medio,
-    deadline: r.ardx_deadline ?? "",
-    sistemasEnvolvidos: r.ardx_sistemasenvolvidos ?? "",
-    integracoesNecessarias: r.ardx_integracoesnecessarias ?? "",
-    requisitosPrincipais: r.ardx_requisitosprincipais ?? "",
-    solucaoProposta: r.ardx_solucaoproposta ?? "",
-    sponsor: r.ardx_sponsor ?? "",
-    donoProcesso: r.ardx_donoprocesso ?? "",
-    areasEnvolvidas: r.ardx_areasenvolvidas ?? "",
-    dadosSensiveis: !!r.ardx_dadossensiveis,
-    impactaSeguranca: !!r.ardx_impactaseguranca,
-    requerAuditoria: !!r.ardx_requerauditoria,
-    esforcoEstimado: (r.ardx_esforcoestimado as number | undefined) ?? null,
+      r.intake_valorestimado != null ? Number(r.intake_valorestimado) : null,
+    urgencia: (r.intake_urgencia as number | undefined) ?? Urgencia.Medio,
+    deadline: r.intake_deadline ?? "",
+    sistemasEnvolvidos: r.intake_sistemasenvolvidos ?? "",
+    integracoesNecessarias: r.intake_integracoesnecessarias ?? "",
+    requisitosPrincipais: r.intake_requisitosprincipais ?? "",
+    solucaoProposta: r.intake_solucaoproposta ?? "",
+    sponsor: r.intake_sponsor ?? "",
+    donoProcesso: r.intake_donoprocesso ?? "",
+    areasEnvolvidas: r.intake_areasenvolvidas ?? "",
+    dadosSensiveis: !!r.intake_dadossensiveis,
+    impactaSeguranca: !!r.intake_impactaseguranca,
+    requerAuditoria: !!r.intake_requerauditoria,
+    esforcoEstimado: (r.intake_esforcoestimado as number | undefined) ?? null,
     /* Campos que faltavam no mapeamento — sem eles o gate era roteado pelo
        fallback do tipo e o score nascia no piso.
        O acesso é via `novo` (Record) porque o modelo tipado em src/generated é
@@ -187,35 +187,35 @@ function fromDv(r: Ardx_demandas): Demand {
     /* Colunas tipadas desde que a tabela foi atualizada e o modelo regerado
        (pac code add-data-source). Antes viviam atrás de um cast porque não
        existiam no ambiente. */
-    impactoAbrangencia: r.ardx_impactoabrangencia ?? undefined,
-    clasificacion: dvParaClassificacao(r.ardx_clasificacion),
-    rce: r.ardx_rce ?? "",
-    appId: r.ardx_appid ?? "",
-    statusDesde: r.ardx_statusdesde ?? "",
-    requerenteUpn: r.ardx_requerenteupn ?? "",
-    decisorUpn: r.ardx_decisorupn ?? "",
-    anexos: parseJsonArray<Anexo>(r.ardx_anexosjson),
-    status: (r.ardx_status as number | undefined) ?? StatusDemanda.Nova,
+    impactoAbrangencia: r.intake_impactoabrangencia ?? undefined,
+    clasificacion: dvParaClassificacao(r.intake_clasificacion),
+    rce: r.intake_rce ?? "",
+    appId: r.intake_appid ?? "",
+    statusDesde: r.intake_statusdesde ?? "",
+    requerenteUpn: r.intake_requerenteupn ?? "",
+    decisorUpn: r.intake_decisorupn ?? "",
+    anexos: parseJsonArray<Anexo>(r.intake_anexosjson),
+    status: (r.intake_status as number | undefined) ?? StatusDemanda.Nova,
     score: baseScore,
-    scoreFlags: csvToFlagArr(r.ardx_scoreflags),
-    projectStage: r.ardx_projectstage ?? "Discovery",
+    scoreFlags: csvToFlagArr(r.intake_scoreflags),
+    projectStage: r.intake_projectstage ?? "Discovery",
     finalPriority:
-      r.ardx_finalpriority != null ? Number(r.ardx_finalpriority) : null,
-    comentarios: parseJsonArray<Comentario>(r.ardx_comentariosjson),
-    avaliacoes: parseJsonArray<AvaliacaoCriterio>(r.ardx_avaliacoesjson),
-    stackValidadaPor: r.ardx_stackvalidadapor ?? "",
-    stackValidadaEm: r.ardx_stackvalidadaem ?? "",
-    aprovacoes: parseJsonArray<AprovacaoStep>(r.ardx_aprovacoesjson),
-    time: r.ardx_time ?? "",
+      r.intake_finalpriority != null ? Number(r.intake_finalpriority) : null,
+    comentarios: parseJsonArray<Comentario>(r.intake_comentariosjson),
+    avaliacoes: parseJsonArray<AvaliacaoCriterio>(r.intake_avaliacoesjson),
+    stackValidadaPor: r.intake_stackvalidadapor ?? "",
+    stackValidadaEm: r.intake_stackvalidadaem ?? "",
+    aprovacoes: parseJsonArray<AprovacaoStep>(r.intake_aprovacoesjson),
+    time: r.intake_time ?? "",
     horasEstimadas:
-      r.ardx_horasestimadas != null ? Number(r.ardx_horasestimadas) : 0,
-    respostaBusiness: r.ardx_respostabusiness ?? "",
+      r.intake_horasestimadas != null ? Number(r.intake_horasestimadas) : 0,
+    respostaBusiness: r.intake_respostabusiness ?? "",
     dmcAprovado:
-      r.ardx_dmcaprovado == null ? null : !!r.ardx_dmcaprovado,
-    dmcData: r.ardx_dmcdata ?? "",
-    dmcComentario: r.ardx_dmccomentario ?? "",
-    idServiceNow: r.ardx_idservicenow ?? "",
-    idProjeto: r.ardx_idprojeto ?? "",
+      r.intake_dmcaprovado == null ? null : !!r.intake_dmcaprovado,
+    dmcData: r.intake_dmcdata ?? "",
+    dmcComentario: r.intake_dmccomentario ?? "",
+    idServiceNow: r.intake_idservicenow ?? "",
+    idProjeto: r.intake_idprojeto ?? "",
     criadoEm: r.createdon ?? "",
     modificadoEm: r.modifiedon ?? "",
   };
@@ -224,101 +224,101 @@ function fromDv(r: Ardx_demandas): Demand {
 /** Modelo de domínio -> Dataverse (parcial). */
 function toDv(input: Partial<Demand>): Record<string, unknown> {
   const r: Record<string, unknown> = {};
-  if (input.titulo !== undefined) r.ardx_titulo = input.titulo;
-  if (input.numero !== undefined) r.ardx_numero = input.numero;
-  if (input.descricao !== undefined) r.ardx_descricao = input.descricao;
+  if (input.titulo !== undefined) r.intake_titulo = input.titulo;
+  if (input.numero !== undefined) r.intake_numero = input.numero;
+  if (input.descricao !== undefined) r.intake_descricao = input.descricao;
   if (input.areaSolicitante !== undefined)
-    r.ardx_areasolicitante = input.areaSolicitante;
-  if (input.solicitante !== undefined) r.ardx_solicitante = input.solicitante;
-  if (input.email !== undefined) r.ardx_email = input.email;
-  if (input.telefone !== undefined) r.ardx_telefone = input.telefone;
+    r.intake_areasolicitante = input.areaSolicitante;
+  if (input.solicitante !== undefined) r.intake_solicitante = input.solicitante;
+  if (input.email !== undefined) r.intake_email = input.email;
+  if (input.telefone !== undefined) r.intake_telefone = input.telefone;
   if (input.dataSolicitacao !== undefined)
-    r.ardx_datasolicitacao = input.dataSolicitacao
+    r.intake_datasolicitacao = input.dataSolicitacao
       ? input.dataSolicitacao.slice(0, 10)
       : null;
   if (input.problemaResolve !== undefined)
-    r.ardx_problemaresolve = input.problemaResolve;
+    r.intake_problemaresolve = input.problemaResolve;
   if (input.objetivoPrincipal !== undefined)
-    r.ardx_objetivoprincipal = input.objetivoPrincipal;
+    r.intake_objetivoprincipal = input.objetivoPrincipal;
   if (input.processosImpactados !== undefined)
-    r.ardx_processosimpactados = input.processosImpactados;
+    r.intake_processosimpactados = input.processosImpactados;
   if (input.consequenciaNaoExecucao !== undefined)
-    r.ardx_consequencianaoexecucao = input.consequenciaNaoExecucao;
-  if (input.tipo !== undefined) r.ardx_tipo = input.tipo;
-  if (input.impactoNivel !== undefined) r.ardx_impactonivel = input.impactoNivel;
+    r.intake_consequencianaoexecucao = input.consequenciaNaoExecucao;
+  if (input.tipo !== undefined) r.intake_tipo = input.tipo;
+  if (input.impactoNivel !== undefined) r.intake_impactonivel = input.impactoNivel;
   if (input.tiposImpacto !== undefined)
-    r.ardx_tiposimpacto = input.tiposImpacto.join(",");
-  if (input.valorEstimado !== undefined) r.ardx_valorestimado = input.valorEstimado;
-  if (input.urgencia !== undefined) r.ardx_urgencia = input.urgencia;
+    r.intake_tiposimpacto = input.tiposImpacto.join(",");
+  if (input.valorEstimado !== undefined) r.intake_valorestimado = input.valorEstimado;
+  if (input.urgencia !== undefined) r.intake_urgencia = input.urgencia;
   if (input.deadline !== undefined)
-    r.ardx_deadline = input.deadline ? input.deadline.slice(0, 10) : null;
+    r.intake_deadline = input.deadline ? input.deadline.slice(0, 10) : null;
   if (input.sistemasEnvolvidos !== undefined)
-    r.ardx_sistemasenvolvidos = input.sistemasEnvolvidos;
+    r.intake_sistemasenvolvidos = input.sistemasEnvolvidos;
   if (input.integracoesNecessarias !== undefined)
-    r.ardx_integracoesnecessarias = input.integracoesNecessarias;
+    r.intake_integracoesnecessarias = input.integracoesNecessarias;
   if (input.requisitosPrincipais !== undefined)
-    r.ardx_requisitosprincipais = input.requisitosPrincipais;
+    r.intake_requisitosprincipais = input.requisitosPrincipais;
   if (input.solucaoProposta !== undefined)
-    r.ardx_solucaoproposta = input.solucaoProposta;
-  if (input.sponsor !== undefined) r.ardx_sponsor = input.sponsor;
-  if (input.donoProcesso !== undefined) r.ardx_donoprocesso = input.donoProcesso;
+    r.intake_solucaoproposta = input.solucaoProposta;
+  if (input.sponsor !== undefined) r.intake_sponsor = input.sponsor;
+  if (input.donoProcesso !== undefined) r.intake_donoprocesso = input.donoProcesso;
   if (input.areasEnvolvidas !== undefined)
-    r.ardx_areasenvolvidas = input.areasEnvolvidas;
+    r.intake_areasenvolvidas = input.areasEnvolvidas;
   if (input.dadosSensiveis !== undefined)
-    r.ardx_dadossensiveis = input.dadosSensiveis;
+    r.intake_dadossensiveis = input.dadosSensiveis;
   if (input.impactaSeguranca !== undefined)
-    r.ardx_impactaseguranca = input.impactaSeguranca;
+    r.intake_impactaseguranca = input.impactaSeguranca;
   if (input.requerAuditoria !== undefined)
-    r.ardx_requerauditoria = input.requerAuditoria;
+    r.intake_requerauditoria = input.requerAuditoria;
   if (input.esforcoEstimado !== undefined)
-    r.ardx_esforcoestimado = input.esforcoEstimado;
-  if (input.status !== undefined) r.ardx_status = input.status;
-  if (input.projectStage !== undefined) r.ardx_projectstage = input.projectStage;
+    r.intake_esforcoestimado = input.esforcoEstimado;
+  if (input.status !== undefined) r.intake_status = input.status;
+  if (input.projectStage !== undefined) r.intake_projectstage = input.projectStage;
   if (input.finalPriority !== undefined)
-    r.ardx_finalpriority = input.finalPriority;
+    r.intake_finalpriority = input.finalPriority;
   if (input.score) {
-    r.ardx_scorebusinessimpact = input.score.businessImpact;
-    r.ardx_scoreurgency = input.score.urgency;
-    r.ardx_scorerevenue = input.score.returnValue;
+    r.intake_scorebusinessimpact = input.score.businessImpact;
+    r.intake_scoreurgency = input.score.urgency;
+    r.intake_scorerevenue = input.score.returnValue;
   }
   if (input.scoreFlags !== undefined)
-    r.ardx_scoreflags = input.scoreFlags.join(",");
+    r.intake_scoreflags = input.scoreFlags.join(",");
   if (input.comentarios !== undefined)
-    r.ardx_comentariosjson = JSON.stringify(input.comentarios);
+    r.intake_comentariosjson = JSON.stringify(input.comentarios);
   if (input.anexos !== undefined)
-    r.ardx_anexosjson = JSON.stringify(input.anexos);
+    r.intake_anexosjson = JSON.stringify(input.anexos);
   if (input.avaliacoes !== undefined)
-    r.ardx_avaliacoesjson = JSON.stringify(input.avaliacoes);
+    r.intake_avaliacoesjson = JSON.stringify(input.avaliacoes);
   if (input.stackValidadaPor !== undefined)
-    r.ardx_stackvalidadapor = input.stackValidadaPor;
+    r.intake_stackvalidadapor = input.stackValidadaPor;
   if (input.stackValidadaEm !== undefined)
-    r.ardx_stackvalidadaem = input.stackValidadaEm
+    r.intake_stackvalidadaem = input.stackValidadaEm
       ? input.stackValidadaEm.slice(0, 10)
       : null;
   if (input.aprovacoes !== undefined)
-    r.ardx_aprovacoesjson = JSON.stringify(input.aprovacoes);
-  if (input.time !== undefined) r.ardx_time = input.time;
+    r.intake_aprovacoesjson = JSON.stringify(input.aprovacoes);
+  if (input.time !== undefined) r.intake_time = input.time;
   if (input.horasEstimadas !== undefined)
-    r.ardx_horasestimadas = input.horasEstimadas;
+    r.intake_horasestimadas = input.horasEstimadas;
   if (input.respostaBusiness !== undefined)
-    r.ardx_respostabusiness = input.respostaBusiness;
-  if (input.dmcAprovado !== undefined) r.ardx_dmcaprovado = input.dmcAprovado;
+    r.intake_respostabusiness = input.respostaBusiness;
+  if (input.dmcAprovado !== undefined) r.intake_dmcaprovado = input.dmcAprovado;
   if (input.dmcData !== undefined)
-    r.ardx_dmcdata = input.dmcData ? input.dmcData.slice(0, 10) : null;
+    r.intake_dmcdata = input.dmcData ? input.dmcData.slice(0, 10) : null;
   if (input.dmcComentario !== undefined)
-    r.ardx_dmccomentario = input.dmcComentario;
-  if (input.idServiceNow !== undefined) r.ardx_idservicenow = input.idServiceNow;
-  if (input.idProjeto !== undefined) r.ardx_idprojeto = input.idProjeto;
+    r.intake_dmccomentario = input.dmcComentario;
+  if (input.idServiceNow !== undefined) r.intake_idservicenow = input.idServiceNow;
+  if (input.idProjeto !== undefined) r.intake_idprojeto = input.idProjeto;
   if (input.impactoAbrangencia !== undefined)
-    r.ardx_impactoabrangencia = input.impactoAbrangencia;
+    r.intake_impactoabrangencia = input.impactoAbrangencia;
   if (input.clasificacion !== undefined)
-    r.ardx_clasificacion = classificacaoParaDv(input.clasificacion);
-  if (input.rce !== undefined) r.ardx_rce = input.rce;
-  if (input.appId !== undefined) r.ardx_appid = input.appId;
+    r.intake_clasificacion = classificacaoParaDv(input.clasificacion);
+  if (input.rce !== undefined) r.intake_rce = input.rce;
+  if (input.appId !== undefined) r.intake_appid = input.appId;
   if (input.statusDesde !== undefined)
-    r.ardx_statusdesde = input.statusDesde ? input.statusDesde.slice(0, 10) : null;
-  if (input.requerenteUpn !== undefined) r.ardx_requerenteupn = input.requerenteUpn;
-  if (input.decisorUpn !== undefined) r.ardx_decisorupn = input.decisorUpn;
+    r.intake_statusdesde = input.statusDesde ? input.statusDesde.slice(0, 10) : null;
+  if (input.requerenteUpn !== undefined) r.intake_requerenteupn = input.requerenteUpn;
+  if (input.decisorUpn !== undefined) r.intake_decisorupn = input.decisorUpn;
   return r;
 }
 
@@ -339,13 +339,13 @@ function uid(prefix = "id"): string {
 }
 
 async function nextNumero(): Promise<string> {
-  const res = await Ardx_demandasService.getAll({
-    select: ["ardx_numero"],
+  const res = await Intake_demandasService.getAll({
+    select: ["intake_numero"],
     top: 5000,
   });
   if (!res.success) return `DEM-${Date.now().toString().slice(-4)}`;
   const max = (res.data ?? []).reduce((acc, d) => {
-    const n = Number((d.ardx_numero ?? "").replace(/\D/g, ""));
+    const n = Number((d.intake_numero ?? "").replace(/\D/g, ""));
     return Number.isFinite(n) && n > acc ? n : acc;
   }, 0);
   return `DEM-${String(max + 1).padStart(4, "0")}`;
@@ -353,7 +353,7 @@ async function nextNumero(): Promise<string> {
 
 class DataverseDemandService implements DemandService {
   async list(): Promise<Demand[]> {
-    const res = await Ardx_demandasService.getAll({
+    const res = await Intake_demandasService.getAll({
       select: SELECT_FIELDS,
       orderBy: ["createdon desc"],
       top: 5000,
@@ -364,7 +364,7 @@ class DataverseDemandService implements DemandService {
 
   async get(id: string): Promise<Demand | undefined> {
     try {
-      const res = await Ardx_demandasService.get(id, { select: SELECT_FIELDS });
+      const res = await Intake_demandasService.get(id, { select: SELECT_FIELDS });
       return res.success && res.data ? fromDv(res.data) : undefined;
     } catch {
       return undefined;
@@ -372,7 +372,7 @@ class DataverseDemandService implements DemandService {
   }
 
   private async refetch(id: string): Promise<Demand> {
-    const res = await Ardx_demandasService.get(id, { select: SELECT_FIELDS });
+    const res = await Intake_demandasService.get(id, { select: SELECT_FIELDS });
     if (!res.success || !res.data)
       throw new Error(`Demanda não encontrada após gravação.${detail(res)}`);
     return fromDv(res.data);
@@ -388,14 +388,14 @@ class DataverseDemandService implements DemandService {
       ...novaDemandaBase(input, now),
       numero,
     };
-    const res = await Ardx_demandasService.create(toDv(rec) as DvRecord);
+    const res = await Intake_demandasService.create(toDv(rec) as DvRecord);
     if (!res.success || !res.data)
       throw new Error(`Falha ao criar a demanda.${detail(res)}`);
     return fromDv(res.data);
   }
 
   async update(id: string, changes: Partial<Demand>): Promise<Demand> {
-    const res = await Ardx_demandasService.update(
+    const res = await Intake_demandasService.update(
       id,
       toDv(changes) as Partial<DvRecord>,
     );
@@ -404,7 +404,7 @@ class DataverseDemandService implements DemandService {
   }
 
   async remove(id: string): Promise<void> {
-    await Ardx_demandasService.delete(id);
+    await Intake_demandasService.delete(id);
   }
 
   async addComment(id: string, autor: string, texto: string): Promise<Demand> {

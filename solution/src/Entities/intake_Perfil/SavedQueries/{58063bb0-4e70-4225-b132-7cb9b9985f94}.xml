@@ -6,22 +6,23 @@
     <isquickfindquery>0</isquickfindquery>
     <isprivate>0</isprivate>
     <isdefault>1</isdefault>
-    <savedqueryid>{317befcd-bade-4513-862e-bc76e37bb0d7}</savedqueryid>
+    <savedqueryid>{58063bb0-4e70-4225-b132-7cb9b9985f94}</savedqueryid>
     <layoutxml>
-      <grid name="ardx_demandas" jump="ardx_titulo" select="1" icon="1" preview="0">
-        <row name="ardx_demanda" id="ardx_demandaid">
-          <cell name="ardx_titulo" width="300" />
+      <grid name="resultset" jump="intake_upn" select="1" icon="1" preview="1">
+        <row name="result" id="intake_perfilid">
+          <cell name="intake_upn" width="300" />
           <cell name="createdon" width="125" />
         </row>
       </grid>
     </layoutxml>
-    <querytype>64</querytype>
+    <querytype>0</querytype>
     <fetchxml>
       <fetch version="1.0" mapping="logical">
-        <entity name="ardx_demanda">
-          <attribute name="ardx_demandaid" />
-          <attribute name="ardx_titulo" />
+        <entity name="intake_perfil">
+          <attribute name="intake_perfilid" />
+          <attribute name="intake_upn" />
           <attribute name="createdon" />
+          <order attribute="intake_upn" descending="false" />
           <filter type="and">
             <condition attribute="statecode" operator="eq" value="0" />
           </filter>
@@ -30,7 +31,7 @@
     </fetchxml>
     <IntroducedVersion>1.0.0.0</IntroducedVersion>
     <LocalizedNames>
-      <LocalizedName description="Exibição de Consulta de Demanda" languagecode="1046" />
+      <LocalizedName description="Perfis de acesso Ativos(as)" languagecode="1046" />
     </LocalizedNames>
   </savedquery>
 </savedqueries>

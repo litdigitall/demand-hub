@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ImportExportXml version="9.2.26085.142" SolutionPackageVersion="9.2" languagecode="1046" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26085.142" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26085.00142">
+<ImportExportXml version="9.2.26101.152" SolutionPackageVersion="9.2" languagecode="1046" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26101.152" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26101.00152">
   <SolutionManifest>
-    <UniqueName>ARDXDemandSystem</UniqueName>
+    <UniqueName>IntakeForms</UniqueName>
     <LocalizedNames>
       <LocalizedName description="Intake Forms" languagecode="1046" />
     </LocalizedNames>
     <Descriptions />
-    <Version>1.2.0.0</Version>
+    <Version>1.0.0.0</Version>
     <Managed>0</Managed>
     <Publisher>
-      <UniqueName>ardxpublisher</UniqueName>
+      <UniqueName>intakepublisher</UniqueName>
       <LocalizedNames>
         <LocalizedName description="ARDX" languagecode="1046" />
       </LocalizedNames>
       <Descriptions />
       <EMailAddress xsi:nil="true"></EMailAddress>
       <SupportingWebsiteUrl xsi:nil="true"></SupportingWebsiteUrl>
-      <CustomizationPrefix>ardx</CustomizationPrefix>
+      <CustomizationPrefix>intake</CustomizationPrefix>
       <CustomizationOptionValuePrefix>50697</CustomizationOptionValuePrefix>
       <Addresses>
         <Address>
@@ -78,8 +78,8 @@
       </Addresses>
     </Publisher>
     <RootComponents>
-      <RootComponent type="1" schemaName="ardx_demanda" behavior="0" />
-      <RootComponent type="1" schemaName="ardx_perfil" behavior="0" />
+      <RootComponent type="1" schemaName="intake_demanda" behavior="0" />
+      <RootComponent type="1" schemaName="intake_perfil" behavior="0" />
     </RootComponents>
     <MissingDependencies />
   </SolutionManifest>
