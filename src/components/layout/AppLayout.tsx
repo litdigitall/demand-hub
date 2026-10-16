@@ -136,7 +136,7 @@ export function AppLayout() {
               </ActionIcon>
             </Tooltip>
             <Group gap={8} wrap="nowrap" visibleFrom="sm">
-              <Avatar radius="xl" size={34} variant="gradient" gradient={{ from: "abbott.6", to: "grape.6", deg: 60 }}>
+              <Avatar radius="xl" size={34} color="abbott.6">
                 {initialsFromName(user.name)}
               </Avatar>
               <div style={{ minWidth: 0 }}>
@@ -150,10 +150,10 @@ export function AppLayout() {
 
       <AppShell.Navbar
         withBorder={false}
-        style={{
-          background:
-            "linear-gradient(180deg, var(--mantine-color-abbott-9) 0%, var(--mantine-color-abbott-8) 55%, #3a1d6e 130%)",
-        }}
+        /* Azul sólido da marca. O gradiente para o roxo punha duas cores de
+           marca disputando atenção com o conteúdo, que é onde o olho precisa
+           estar. */
+        style={{ background: "var(--mantine-color-abbott-9)" }}
       >
         <Stack gap={3} p="md" h="100%">
           <div className={classes.brand}>
@@ -189,7 +189,7 @@ export function AppLayout() {
           ))}
 
           <div className={classes.userCard}>
-            <Avatar radius="xl" size={40} variant="gradient" gradient={{ from: "abbott.4", to: "grape.5", deg: 60 }}>
+            <Avatar radius="xl" size={40} color="abbott.5">
               {initialsFromName(user.name)}
             </Avatar>
             <div style={{ minWidth: 0, flex: 1 }}>

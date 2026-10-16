@@ -41,10 +41,21 @@ const URGENCIA_COLOR: Record<number, string> = {
   [Urgencia.Medio]: "yellow",
   [Urgencia.Baixo]: "gray",
 };
+/* Numa lista densa, colorir as quatro urgências transforma a coluna numa
+   parede de cor e nada mais salta. Só Critical e High levam cor — que é
+   justamente o que faz alguém mudar de plano. */
+const URGENCIA_DESTACA = new Set<number>([Urgencia.Critico, Urgencia.Alto]);
+
 export function UrgenciaBadge({ value }: { value: number }) {
   const L = useLabels();
+  const destaca = URGENCIA_DESTACA.has(value);
   return (
-    <Badge variant="light" color={URGENCIA_COLOR[value] ?? "gray"} radius="sm">
+    <Badge
+      variant={destaca ? "light" : "default"}
+      color={destaca ? (URGENCIA_COLOR[value] ?? "gray") : undefined}
+      radius="sm"
+      fw={destaca ? 700 : 500}
+    >
       {L.urgencia[value] ?? "—"}
     </Badge>
   );

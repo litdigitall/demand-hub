@@ -25,7 +25,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconArrowRight, IconPlus } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
 import {
   CATEGORIA_COR_VIEW,
@@ -282,10 +282,13 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
           o botão leva ao detalhe em vez de fingir que resolve com um clique. */}
       <Box w={COL.acao} visibleFrom="sm" style={{ flexShrink: 0 }}>
         {acao ? (
+          /* Botão neutro com o rótulo no tom da ação: a coluna inteira de
+             pílulas coloridas competia com urgência e status, e nada
+             sobressaía. A cor fica no texto, o peso visual some. */
           <Button
             size="compact-xs"
-            variant="light"
-            color={acao.cor}
+            variant="default"
+            c={`${acao.cor}.7`}
             loading={busy}
             fullWidth
             onClick={() => onRun(d, acao)}
@@ -580,7 +583,6 @@ export function InboxPage() {
     );
   }
 
-  const podeCriar = roles.includes(Role.Solicitante) || roles.includes(Role.Admin);
   const primeiroNome = user.name.split(" ")[0];
   const escondidas = secoes.waiting.length - WAITING_PREVIEW;
   const waitingVisivel =
@@ -601,11 +603,7 @@ export function InboxPage() {
                 } you`}
           </Text>
         </Box>
-        {podeCriar ? (
-          <Button component={Link} to="/demandas/nova" leftSection={<IconPlus size={16} />}>
-            New request
-          </Button>
-        ) : null}
+
       </Group>
 
       <Section
