@@ -1,0 +1,188 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      },
+      "shared_office365": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Todo_dia_de_manha": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "schedule": {
+              "hours": [
+                "8"
+              ]
+            },
+            "timeZone": "E. South America Standard Time"
+          }
+        }
+      },
+      "actions": {
+        "Link_do_app": {
+          "type": "Compose",
+          "inputs": "https://make.powerapps.com",
+          "runAfter": {}
+        },
+        "Limite_triagem": {
+          "type": "Compose",
+          "inputs": "@addDays(utcNow(),-3)",
+          "runAfter": {
+            "Link_do_app": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Limite_avaliacao": {
+          "type": "Compose",
+          "inputs": "@addDays(utcNow(),-5)",
+          "runAfter": {
+            "Limite_triagem": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Limite_decisao": {
+          "type": "Compose",
+          "inputs": "@addDays(utcNow(),-3)",
+          "runAfter": {
+            "Limite_avaliacao": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Listar_atrasadas": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "intake_demandas",
+              "$select": "intake_numero,intake_titulo,intake_status,intake_statusdesde,intake_areasolicitante",
+              "$filter": "(intake_status eq 506970000 and intake_statusdesde lt @{outputs('Limite_triagem')}) or (intake_status eq 506970001 and intake_statusdesde lt @{outputs('Limite_avaliacao')}) or (intake_status eq 506970007 and intake_statusdesde lt @{outputs('Limite_decisao')})",
+              "$orderby": "intake_statusdesde asc"
+            }
+          },
+          "runAfter": {
+            "Limite_decisao": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Listar_PMO": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "intake_perfils",
+              "$select": "intake_upn,intake_papeisjson,intake_frentesjson",
+              "$filter": "intake_ativo eq true and contains(intake_papeisjson,'pmo')"
+            }
+          },
+          "runAfter": {
+            "Listar_atrasadas": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Enderecos_PMO": {
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Listar_PMO')?['body/value']",
+            "select": "@item()?['intake_upn']"
+          },
+          "runAfter": {
+            "Listar_PMO": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Linhas_do_resumo": {
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Listar_atrasadas')?['body/value']",
+            "select": "@concat('<li>', item()?['intake_numero'], ' — ', item()?['intake_titulo'], ' (', item()?['intake_areasolicitante'], ')</li>')"
+          },
+          "runAfter": {
+            "Enderecos_PMO": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Tem_alguma_atrasada": {
+          "type": "If",
+          "expression": {
+            "greater": [
+              "@length(outputs('Listar_atrasadas')?['body/value'])",
+              0
+            ]
+          },
+          "actions": {
+            "Resumo_de_SLA": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+                },
+                "parameters": {
+                  "emailMessage/To": "@join(body('Enderecos_PMO'), ';')",
+                  "emailMessage/Subject": "[Intake Forms] Requests past their stage target",
+                  "emailMessage/Body": "<p><b>These requests are past the target for their stage.</b></p><ul>@{join(body('Linhas_do_resumo'),'')}</ul><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+                }
+              },
+              "runAfter": {}
+            }
+          },
+          "else": {
+            "actions": {
+              "Nada_a_fazer": {
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Succeeded"
+                },
+                "runAfter": {}
+              }
+            }
+          },
+          "runAfter": {
+            "Linhas_do_resumo": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}

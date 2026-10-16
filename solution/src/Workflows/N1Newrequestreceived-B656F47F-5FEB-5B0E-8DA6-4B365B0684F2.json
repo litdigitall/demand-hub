@@ -1,0 +1,127 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      },
+      "shared_office365": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Quando_uma_demanda_for_criada": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 1,
+              "subscriptionRequest/entityname": "intake_demandas",
+              "subscriptionRequest/scope": 4
+            }
+          }
+        }
+      },
+      "actions": {
+        "Link_do_app": {
+          "type": "Compose",
+          "inputs": "https://make.powerapps.com",
+          "runAfter": {}
+        },
+        "Listar_PMO": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "intake_perfils",
+              "$select": "intake_upn,intake_papeisjson,intake_frentesjson",
+              "$filter": "intake_ativo eq true and contains(intake_papeisjson,'pmo')"
+            }
+          },
+          "runAfter": {
+            "Link_do_app": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Enderecos_PMO": {
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Listar_PMO')?['body/value']",
+            "select": "@item()?['intake_upn']"
+          },
+          "runAfter": {
+            "Listar_PMO": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Avisar_PMO": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+            },
+            "parameters": {
+              "emailMessage/To": "@join(body('Enderecos_PMO'), ';')",
+              "emailMessage/Subject": "[Intake Forms] New request @triggerOutputs()?['body/intake_numero']",
+              "emailMessage/Body": "<p><b>A new request is waiting for triage.</b></p><p>@triggerOutputs()?['body/intake_numero'] — @triggerOutputs()?['body/intake_titulo']</p><p>Area: @triggerOutputs()?['body/intake_areasolicitante']<br>Requester: @triggerOutputs()?['body/intake_solicitante']</p><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+            }
+          },
+          "runAfter": {
+            "Enderecos_PMO": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Confirmar_ao_solicitante": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_office365",
+              "operationId": "SendEmailV2",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+            },
+            "parameters": {
+              "emailMessage/To": "@triggerOutputs()?['body/intake_email']",
+              "emailMessage/Subject": "[Intake Forms] We received your request @triggerOutputs()?['body/intake_numero']",
+              "emailMessage/Body": "<p>Your request <b>@triggerOutputs()?['body/intake_titulo']</b> was received (@triggerOutputs()?['body/intake_numero']).</p><p>It is now with the PMO for triage. You will get an e-mail at every status change.</p><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+            }
+          },
+          "runAfter": {
+            "Avisar_PMO": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}
