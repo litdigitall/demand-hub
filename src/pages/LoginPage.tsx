@@ -83,7 +83,7 @@ export function LoginPage() {
           </Text>
         </Box>
         <Text size="sm" style={{ position: "relative", zIndex: 1, opacity: 0.8 }}>
-          LIT Digitall · Confidential
+          Confidential
         </Text>
       </Box>
 

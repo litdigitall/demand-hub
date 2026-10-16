@@ -337,7 +337,7 @@ export function SolicitarPage() {
             </Group>
             <Divider my="xs" />
             <Text ta="center" size="xs" c="dimmed">
-              Intake Forms · LIT Digitall
+              Intake Forms
             </Text>
           </Stack>
         )}

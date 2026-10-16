@@ -161,7 +161,7 @@ export function AppLayout() {
               <img src={abbottLogo} alt="Abbott" className={classes.logoImg} />
             </div>
             <div className={classes.brand1}>Intake Forms</div>
-            <div className={classes.brandSub}>by LIT Digitall</div>
+            <div className={classes.brandSub}>IT Demand Management</div>
           </div>
 
           {/* Abrir demanda: o formulário mora fora do app de gestão. */}

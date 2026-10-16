@@ -69,7 +69,7 @@ export function frentesDe(bruto: unknown): Categoria[] {
 const DEMO: Perfil[] = [
   {
     id: "demo-1",
-    upn: "pmo@litdigitall.com.br",
+    upn: "pmo@abbott.com",
     nome: "IT PMO",
     papeis: [Role.PMO],
     frentes: [],
@@ -77,7 +77,7 @@ const DEMO: Perfil[] = [
   },
   {
     id: "demo-2",
-    upn: "tech@litdigitall.com.br",
+    upn: "tech@abbott.com",
     nome: "Technical Team",
     papeis: [Role.TechLead],
     frentes: [],
@@ -85,7 +85,7 @@ const DEMO: Perfil[] = [
   },
   {
     id: "demo-3",
-    upn: "sambini@litdigitall.com.br",
+    upn: "sambini@abbott.com",
     nome: "Sambini",
     papeis: [Role.Decisor],
     frentes: ["infra"],
@@ -93,7 +93,7 @@ const DEMO: Perfil[] = [
   },
   {
     id: "demo-4",
-    upn: "gabriela@litdigitall.com.br",
+    upn: "gabriela@abbott.com",
     nome: "Gabriela",
     papeis: [Role.Decisor],
     frentes: ["app"],
@@ -101,7 +101,7 @@ const DEMO: Perfil[] = [
   },
   {
     id: "demo-5",
-    upn: "ai.decisor@litdigitall.com.br",
+    upn: "ai.decisor@abbott.com",
     nome: "AI Decisor",
     papeis: [Role.Decisor],
     frentes: ["ia"],

@@ -90,7 +90,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "ana",
     nome: "Ana Ribeiro",
-    email: "ana.ribeiro@litdigitall.com.br",
+    email: "ana.ribeiro@abbott.com",
     area: "Commercial",
     cargo: "Business Analyst (Requester)",
     roles: [Role.Solicitante],
@@ -98,7 +98,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "paula",
     nome: "Paula Nakamura",
-    email: "paula.nakamura@litdigitall.com.br",
+    email: "paula.nakamura@abbott.com",
     area: "PMO",
     cargo: "PMO Manager",
     roles: [Role.PMO],
@@ -106,7 +106,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "daniela",
     nome: "Daniela Bastos",
-    email: "daniela.bastos@litdigitall.com.br",
+    email: "daniela.bastos@abbott.com",
     area: "Technology",
     cargo: "Technical Team / Solutions Architect",
     roles: [Role.TechLead],
@@ -114,7 +114,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "sambini",
     nome: "Sambini",
-    email: "sambini@litdigitall.com.br",
+    email: "sambini@abbott.com",
     area: "Infrastructure",
     cargo: "Area Decisor — Infrastructure",
     roles: [Role.Decisor],
@@ -123,7 +123,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "gabriela",
     nome: "Gabriela",
-    email: "gabriela@litdigitall.com.br",
+    email: "gabriela@abbott.com",
     area: "Applications",
     cargo: "Area Decisor — Applications",
     roles: [Role.Decisor],
@@ -132,7 +132,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "aidecisor",
     nome: "AI Decisor",
-    email: "ai.decisor@litdigitall.com.br",
+    email: "ai.decisor@abbott.com",
     area: "Artificial Intelligence",
     cargo: "Area Decisor — AI",
     roles: [Role.Decisor],
@@ -141,7 +141,7 @@ export const PERSONAS: Persona[] = [
   {
     id: "admin",
     nome: "IT Admin",
-    email: "admin@litdigitall.com.br",
+    email: "admin@abbott.com",
     area: "Technology",
     cargo: "System Administrator",
     /* Admin enxerga e opera tudo — útil para configurar e demonstrar. */
