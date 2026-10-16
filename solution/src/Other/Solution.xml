@@ -80,6 +80,7 @@
     <RootComponents>
       <RootComponent type="1" schemaName="intake_demanda" behavior="0" />
       <RootComponent type="1" schemaName="intake_perfil" behavior="0" />
+      <RootComponent type="29" id="{a9f372bc-2034-5245-bacc-a0914ce57352}" behavior="0" />
       <RootComponent type="29" id="{b656f47f-5feb-5b0e-8da6-4b365b0684f2}" behavior="0" />
       <RootComponent type="29" id="{4a78704d-43ef-5214-8d3b-87f1f2727b16}" behavior="0" />
       <RootComponent type="29" id="{7d84e545-6b35-5d81-b2ef-c7b9060d7150}" behavior="0" />

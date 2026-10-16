@@ -5,18 +5,72 @@ Tudo que exige login interativo está marcado **[VOCÊ]**.
 
 ---
 
+## A arquitetura, em uma frase
+
+**Canvas "IT Request Form" → lista SharePoint → fluxo F1 (conta de serviço) →
+Dataverse `intake_demanda` → app premium (Intake Forms).**
+
+Quem abre demanda usa o Canvas, que fala só com o SharePoint — **conector
+padrão, sem licença premium para o solicitante**. A licença premium fica só com
+quem opera o funil, dentro do app.
+
 ## O que vai no pacote
 
 | Componente | Vai na Solution? |
 |---|---|
 | Tabela `intake_demanda` — 78 colunas, 9 estados | sim |
 | Tabela `intake_perfil` — cadastro de acesso | sim |
-| Fluxos N1–N5 (Power Automate) | sim |
+| Fluxo **F1** — lista SharePoint → Dataverse | sim |
+| Fluxos **N1–N5** — notificações | sim |
 | Publisher `intakepublisher` (prefixo `intake`) | sim |
+| Lista SharePoint `ITRequests` | **não** — criar à mão, ver §1.1 |
+| Canvas "IT Request Form" | **não** — exportar/importar à parte |
 | O app (Power Apps Code App) | **não** — vai por `pac code push`, ver §3 |
 
 Code App ainda não é exportável como componente de solution. O `--solutionName`
 associa o app à solution no ambiente, mas o export não o carrega.
+
+---
+
+## 1.1 A lista SharePoint `ITRequests` **[VOCÊ]**
+
+O Canvas grava aqui. As colunas abaixo saíram do próprio app (li os
+`DataField` do formulário), não de suposição — **o nome tem que bater exatamente**,
+senão o Canvas não liga.
+
+Crie uma lista chamada `ITRequests` e adicione:
+
+| Coluna | Tipo |
+|---|---|
+| `Titulo` · `Descricao` · `ProblemaResolve` · `ObjetivoPrincipal` | Texto (as duas últimas, multilinha) |
+| `AreaSolicitante` · `Solicitante` · `Email` · `Sponsor` | Texto |
+| `ConsequenciaNaoExecucao` · `RCE` · `Origem` · `Numero` | Texto |
+| `SistemasEnvolvidos` · `AreasEnvolvidas` · `DonoProcesso` · `DonoProcessoEmail` | Texto |
+| `ImpactoAbrangencia` · `Urgencia` · `Tipo` · `Status` | Número |
+| `ValorEstimado` · `PrioridadeEstimada` | Número |
+| `ScoreBusinessImpact` · `ScoreUrgency` · `ScoreRevenue` | Número |
+| `ImpactoAbrangenciaNome` · `UrgenciaNome` · `TipoNome` · `StatusNome` · `ValorEstimadoNome` | Texto |
+| `DataSolicitacao` | Data e hora |
+| `PrazoDesejado` | Data |
+| `DadosSensiveis` · `ImpactaSeguranca` · `RequerAuditoria` | Sim/Não |
+| `Sincronizado` | Sim/Não |
+| Anexos | habilitar anexos na lista |
+
+> As colunas terminadas em `Nome` guardam o rótulo legível ao lado do código
+> numérico. É o que deixa a lista legível para quem abre o SharePoint direto,
+> sem precisar decorar que 506970000 é "Crítico".
+
+**`Sincronizado` é o que impede duplicata:** o F1 só processa item com esse
+campo vazio e o marca ao terminar. Sem essa coluna, cada rodada do gatilho
+recria a demanda.
+
+**O número vem do SharePoint.** O Canvas grava `Numero` como
+`"DEM-" & Text(ID,"0000")`, derivado do ID do item, e o F1 só copia.
+
+> Atenção a uma colisão possível: o formulário interno do app (`/solicitar`,
+> que é só reserva) numera por "maior existente + 1". Se os dois pontos de
+> entrada forem usados em paralelo, dois registros podem receber o mesmo
+> número. Com o Canvas como porta única, não acontece.
 
 ---
 
@@ -57,8 +111,9 @@ Os cinco fluxos chegam **desligados** e sem conexão. Cada um usa duas:
 
 | Conector | Para quê |
 |---|---|
-| **Microsoft Dataverse** | gatilho nas demandas e leitura da tabela de perfis |
-| **Office 365 Outlook** | enviar os e-mails |
+| **Microsoft Dataverse** | gatilho nas demandas, leitura de perfis, gravação do F1 |
+| **Office 365 Outlook** | enviar os e-mails (N1–N5) |
+| **SharePoint** | ler a lista do Canvas (só o F1) |
 
 No portal: *Soluções* → Intake Forms → cada fluxo → **Editar** → escolher a
 conexão em cada ação → **Salvar** → **Ativar**.
@@ -76,6 +131,12 @@ conexão em cada ação → **Salvar** → **Ativar**.
 | **N3** | status → *Em aprovação* | o decisor da frente da demanda |
 | **N4** | status → *Priorizada* ou *Recusada* | solicitante + PMO |
 | **N5** | todo dia às 8h | PMO, com o que passou da meta da etapa |
+
+E o **F1**, que não é notificação: a cada 3 minutos lê a lista SharePoint,
+cria a demanda no Dataverse e marca `Sincronizado`. Ele usa **SharePoint +
+Dataverse** (não usa Outlook). No F1, ajuste no gatilho e na última ação o
+endereço do site e o nome da lista — hoje estão com um valor de exemplo
+(`https://SEUTENANT.sharepoint.com/sites/IntakeForms`).
 
 **Os destinatários não são e-mails fixos.** Cada fluxo consulta a tabela
 `intake_perfil` — a mesma que o administrador mantém em **Settings → People**.
@@ -144,6 +205,10 @@ próprias demandas, e mais nada.
 - [ ] Metas do N5 iguais a `SLA_DIAS`
 - [ ] App publicado com `pac code push --solutionName IntakeForms`
 - [ ] Primeiro acesso feito e PMO, time técnico e os 3 decisores cadastrados
+- [ ] Lista `ITRequests` criada com os nomes de coluna exatos (§1.1)
+- [ ] Canvas "IT Request Form" importado e ligado à lista
+- [ ] F1 com site e lista corretos, e **ativado**
+- [ ] Uma demanda **pelo Canvas**, conferindo que ela aparece no app em até 3 min
 - [ ] Uma demanda de ponta a ponta, conferindo o e-mail de cada etapa
 
 ---

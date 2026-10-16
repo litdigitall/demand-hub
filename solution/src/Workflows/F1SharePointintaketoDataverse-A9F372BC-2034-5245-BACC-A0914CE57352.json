@@ -1,0 +1,142 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+        "tier": "NotSpecified"
+      },
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Quando_um_item_for_criado_na_lista": {
+          "type": "OpenApiConnection",
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 3
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_sharepointonline",
+              "operationId": "GetOnNewItems",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+            },
+            "parameters": {
+              "dataset": "https://SEUTENANT.sharepoint.com/sites/IntakeForms",
+              "table": "ITRequests"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Ja_foi_sincronizado": {
+          "type": "If",
+          "expression": {
+            "equals": [
+              "@triggerOutputs()?['body/Sincronizado']",
+              true
+            ]
+          },
+          "actions": {
+            "Nada_a_fazer": {
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "runAfter": {}
+            }
+          },
+          "else": {
+            "actions": {
+              "Criar_demanda_no_Dataverse": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "host": {
+                    "connectionName": "shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                  },
+                  "parameters": {
+                    "entityName": "intake_demandas",
+                    "item/intake_numero": "@triggerOutputs()?['body/Numero']",
+                    "item/intake_titulo": "@triggerOutputs()?['body/Titulo']",
+                    "item/intake_descricao": "@triggerOutputs()?['body/Descricao']",
+                    "item/intake_areasolicitante": "@triggerOutputs()?['body/AreaSolicitante']",
+                    "item/intake_solicitante": "@triggerOutputs()?['body/Solicitante']",
+                    "item/intake_email": "@triggerOutputs()?['body/Email']",
+                    "item/intake_requerenteupn": "@triggerOutputs()?['body/Email']",
+                    "item/intake_sponsor": "@triggerOutputs()?['body/Sponsor']",
+                    "item/intake_datasolicitacao": "@triggerOutputs()?['body/DataSolicitacao']",
+                    "item/intake_problemaresolve": "@triggerOutputs()?['body/ProblemaResolve']",
+                    "item/intake_objetivoprincipal": "@triggerOutputs()?['body/ObjetivoPrincipal']",
+                    "item/intake_consequencianaoexecucao": "@triggerOutputs()?['body/ConsequenciaNaoExecucao']",
+                    "item/intake_impactoabrangencia": "@triggerOutputs()?['body/ImpactoAbrangencia']",
+                    "item/intake_urgencia": "@triggerOutputs()?['body/Urgencia']",
+                    "item/intake_valorestimado": "@triggerOutputs()?['body/ValorEstimado']",
+                    "item/intake_deadline": "@triggerOutputs()?['body/PrazoDesejado']",
+                    "item/intake_tipo": "@triggerOutputs()?['body/Tipo']",
+                    "item/intake_scorebusinessimpact": "@triggerOutputs()?['body/ScoreBusinessImpact']",
+                    "item/intake_scoreurgency": "@triggerOutputs()?['body/ScoreUrgency']",
+                    "item/intake_scorerevenue": "@triggerOutputs()?['body/ScoreRevenue']",
+                    "item/intake_sistemasenvolvidos": "@triggerOutputs()?['body/SistemasEnvolvidos']",
+                    "item/intake_areasenvolvidas": "@triggerOutputs()?['body/AreasEnvolvidas']",
+                    "item/intake_donoprocesso": "@triggerOutputs()?['body/DonoProcesso']",
+                    "item/intake_rce": "@triggerOutputs()?['body/RCE']",
+                    "item/intake_dadossensiveis": "@triggerOutputs()?['body/DadosSensiveis']",
+                    "item/intake_impactaseguranca": "@triggerOutputs()?['body/ImpactaSeguranca']",
+                    "item/intake_requerauditoria": "@triggerOutputs()?['body/RequerAuditoria']",
+                    "item/intake_status": 506970000,
+                    "item/intake_statusdesde": "@utcNow()",
+                    "item/intake_projectstage": "Discovery"
+                  }
+                },
+                "runAfter": {}
+              },
+              "Marcar_como_sincronizado": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "host": {
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "PatchItem",
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                  },
+                  "parameters": {
+                    "dataset": "https://SEUTENANT.sharepoint.com/sites/IntakeForms",
+                    "table": "ITRequests",
+                    "id": "@triggerOutputs()?['body/ID']",
+                    "item/Sincronizado": true
+                  }
+                },
+                "runAfter": {
+                  "Criar_demanda_no_Dataverse": [
+                    "Succeeded"
+                  ]
+                }
+              }
+            }
+          },
+          "runAfter": {}
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}

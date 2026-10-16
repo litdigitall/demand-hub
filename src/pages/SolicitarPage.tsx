@@ -11,6 +11,7 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   Center,
   Divider,
   Group,
@@ -98,6 +99,15 @@ export function SolicitarPage() {
     faixaValor: 0,
     urgencia: Urgencia.Medio as number,
     deadline: "",
+    /* Contexto (opcional) — espelha a etapa 4 do Canvas "IT Request Form".
+       Ninguém é obrigado a saber, mas quem sabe adianta a avaliação. */
+    sistemasEnvolvidos: "",
+    areasEnvolvidas: "",
+    donoProcesso: "",
+    rce: "",
+    dadosSensiveis: false,
+    impactaSeguranca: false,
+    requerAuditoria: false,
   });
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((s) => ({ ...s, [k]: v }));
 
@@ -155,17 +165,18 @@ export function SolicitarPage() {
         roiEstimado: null,
         urgencia: f.urgencia,
         deadline: f.deadline,
-        sistemasEnvolvidos: "",
+        sistemasEnvolvidos: f.sistemasEnvolvidos,
         integracoesNecessarias: "",
         requisitosPrincipais: "",
         solucaoProposta: "",
         appId: "",
+        rce: f.rce.trim(),
         sponsor: stakeholderDaArea(f.areaSolicitante),
-        donoProcesso: "",
-        areasEnvolvidas: "",
-        dadosSensiveis: false,
-        impactaSeguranca: false,
-        requerAuditoria: false,
+        donoProcesso: f.donoProcesso,
+        areasEnvolvidas: f.areasEnvolvidas,
+        dadosSensiveis: f.dadosSensiveis,
+        impactaSeguranca: f.impactaSeguranca,
+        requerAuditoria: f.requerAuditoria,
         esforcoEstimado: null,
         time: "",
         horasEstimadas: 0,
@@ -319,6 +330,60 @@ export function SolicitarPage() {
                   Calculated from reach, urgency and estimated value. The PMO reviews it during triage.
                 </Text>
               </Paper>
+            </FormCard>
+
+            <FormCard title="5. Context (optional)">
+              <Text size="sm" c="dimmed" mb="sm">
+                Nothing here is required. It just saves the technical team a
+                round of questions later.
+              </Text>
+              <Group grow>
+                <TextInput
+                  label="Systems involved"
+                  placeholder="e.g.: SAP, Salesforce"
+                  value={f.sistemasEnvolvidos}
+                  onChange={(e) => set("sistemasEnvolvidos", e.currentTarget.value)}
+                />
+                <TextInput
+                  label="Other areas involved"
+                  placeholder="e.g.: Finance, Supply Chain"
+                  value={f.areasEnvolvidas}
+                  onChange={(e) => set("areasEnvolvidas", e.currentTarget.value)}
+                />
+              </Group>
+              <Group grow mt="sm">
+                <TextInput
+                  label="Process owner"
+                  value={f.donoProcesso}
+                  onChange={(e) => set("donoProcesso", e.currentTarget.value)}
+                />
+                <TextInput
+                  label="RCE"
+                  description="Project number already approved by Management, if any"
+                  value={f.rce}
+                  onChange={(e) => set("rce", e.currentTarget.value)}
+                />
+              </Group>
+              <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} mt="md" mb={6}>
+                Compliance
+              </Text>
+              <Stack gap={6}>
+                <Checkbox
+                  label="Involves personal or sensitive data (LGPD)"
+                  checked={f.dadosSensiveis}
+                  onChange={(e) => set("dadosSensiveis", e.currentTarget.checked)}
+                />
+                <Checkbox
+                  label="Has an information security impact"
+                  checked={f.impactaSeguranca}
+                  onChange={(e) => set("impactaSeguranca", e.currentTarget.checked)}
+                />
+                <Checkbox
+                  label="There is an audit or regulatory requirement"
+                  checked={f.requerAuditoria}
+                  onChange={(e) => set("requerAuditoria", e.currentTarget.checked)}
+                />
+              </Stack>
             </FormCard>
 
             <Alert color="gray" variant="light">
