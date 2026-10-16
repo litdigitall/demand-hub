@@ -1,3 +1,30 @@
+:root {
+  /* Superfícies neutras. O fundo é quase branco e o cartão é branco puro:
+     a diferença mínima entre os dois é o que dá profundidade, sem sombra. */
+  --app-bg: #f7f8f9;
+  --app-surface: #ffffff;
+  --app-border: #e6e8eb;
+  --app-border-strong: #d7dade;
+}
+
+body {
+  background: var(--app-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Numero em tabela tem que alinhar por coluna: sem isso o "1" ocupa menos
+   que o "8" e a coluna de horas fica serrilhada. */
+table,
+.mantine-Table-root {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Título com tracking negativo: a Inter em 600 fica mais precisa assim. */
+h1, h2, h3, .mantine-Title-root {
+  letter-spacing: -0.018em;
+}
+
 html,
 body,
 #root {
@@ -5,12 +32,9 @@ body,
 }
 
 body {
-  /* Fundo com gradiente sutil (bold & vibrante, sem cansar) */
-  background-color: #f6f7fb;
-  background-image:
-    radial-gradient(1200px 600px at 100% -10%, rgba(124, 53, 255, 0.10), transparent 60%),
-    radial-gradient(1000px 500px at -10% 0%, rgba(0, 122, 204, 0.10), transparent 55%);
-  background-attachment: fixed;
+  /* O gradiente roxo/azul tingia a pagina inteira e brigava com o conteudo.
+     Superficie neutra: a cor fica para o que informa. */
+  background-color: var(--app-bg);
 }
 
 /* Transição de página */

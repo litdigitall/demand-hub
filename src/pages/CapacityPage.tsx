@@ -145,23 +145,23 @@ export function CapacityPage() {
       {/* Faixa que fecha a conta: comprometido = por time + sem time. Antes a
           tela só somava o que tinha time, então exibia 100% de utilização com
           horas aprovadas invisíveis. */}
-      <Card withBorder radius="lg" padding={0}>
+      <Card withBorder padding={0}>
         <Group gap={0} wrap="nowrap">
           <Box px="md" py={10} style={{ flex: 1 }}>
-            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+            <Text fz={10} fw={600} tt="uppercase" lts={0.7} c="dimmed">
               Monthly capacity
             </Text>
-            <Text fz={24} fw={800} lh={1.15}>
+            <Text fz={24} fw={600} lh={1.15}>
               {formatNumber(totalCapacidade)} h
             </Text>
           </Box>
           <Box px="md" py={10} style={{ flex: 1 }}>
-            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+            <Text fz={10} fw={600} tt="uppercase" lts={0.7} c="dimmed">
               Committed
             </Text>
             <Text
               fz={24}
-              fw={800}
+              fw={600}
               lh={1.15}
               c={totalComprometido > totalCapacidade ? "red.7" : undefined}
             >
@@ -169,29 +169,29 @@ export function CapacityPage() {
             </Text>
           </Box>
           <Box px="md" py={10} style={{ flex: 1 }}>
-            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+            <Text fz={10} fw={600} tt="uppercase" lts={0.7} c="dimmed">
               Without a team
             </Text>
-            <Text fz={24} fw={800} lh={1.15} c={horasSemTime > 0 ? "orange.7" : "dimmed"}>
+            <Text fz={24} fw={600} lh={1.15} c={horasSemTime > 0 ? "orange.7" : "dimmed"}>
               {formatNumber(horasSemTime)} h
             </Text>
           </Box>
           <Box px="md" py={10} style={{ flex: 1 }}>
-            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+            <Text fz={10} fw={600} tt="uppercase" lts={0.7} c="dimmed">
               {saldo >= 0 ? "Left this month" : "Over capacity"}
             </Text>
-            <Text fz={24} fw={800} lh={1.15} c={saldo < 0 ? "red.7" : undefined}>
+            <Text fz={24} fw={600} lh={1.15} c={saldo < 0 ? "red.7" : undefined}>
               {formatNumber(Math.abs(saldo))} h
             </Text>
           </Box>
           <Box px="md" py={10} w={170} style={{ flexShrink: 0 }}>
-            <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed">
+            <Text fz={10} fw={600} tt="uppercase" lts={0.7} c="dimmed">
               Teams utilisation
             </Text>
             <Group gap="xs" align="baseline">
               <Text
                 fz={24}
-                fw={800}
+                fw={600}
                 lh={1.15}
                 c={totalUtilizacao > 100 ? "red.7" : totalUtilizacao > 90 ? "orange.7" : undefined}
               >
@@ -212,14 +212,14 @@ export function CapacityPage() {
           const isOver = s.utilizacao > 100;
           const isHot = s.utilizacao > 90;
           return (
-            <Card key={s.time} withBorder radius="lg" padding="lg">
+            <Card key={s.time} withBorder padding="lg">
               <Group justify="space-between" mb="sm" wrap="nowrap" align="flex-start">
                 <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
                   <ThemeIcon size={42} radius="md" variant="light" color={color}>
                     <Icon size={22} />
                   </ThemeIcon>
                   <div style={{ minWidth: 0 }}>
-                    <Text fw={700}>{t(labelKeyFor(s.time))}</Text>
+                    <Text fw={600}>{t(labelKeyFor(s.time))}</Text>
                     <Text size="xs" c="dimmed" lineClamp={2}>
                       {t(helpKeyFor(s.time))}
                     </Text>
@@ -245,7 +245,7 @@ export function CapacityPage() {
                   <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                     {t("cap_capacity")}
                   </Text>
-                  <Text fw={800} fz="lg">
+                  <Text fw={600} fz="lg">
                     {formatNumber(s.capacidade)} h
                   </Text>
                 </Box>
@@ -253,7 +253,7 @@ export function CapacityPage() {
                   <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                     {t("cap_allocated")}
                   </Text>
-                  <Text fw={800} fz="lg" c={isOver ? "red" : isHot ? "orange" : "dark"}>
+                  <Text fw={600} fz="lg" c={isOver ? "red" : isHot ? "orange" : "dark"}>
                     {formatNumber(s.alocado)} h
                   </Text>
                 </Box>
@@ -266,7 +266,7 @@ export function CapacityPage() {
                     {t("cap_utilization")}
                   </Text>
                 </Group>
-                <Text size="xs" fw={700} c={isOver ? "red" : "dark"}>
+                <Text size="xs" fw={600} c={isOver ? "red" : "dark"}>
                   {s.utilizacao}%
                 </Text>
               </Group>
@@ -299,7 +299,7 @@ export function CapacityPage() {
                             </Text>
                           </Table.Td>
                           <Table.Td ta="right" w={64}>
-                            <Text size="sm" fw={700} style={{ whiteSpace: "nowrap" }}>
+                            <Text size="sm" fw={600} style={{ whiteSpace: "nowrap" }}>
                               {d.horasEstimadas} h
                             </Text>
                           </Table.Td>
@@ -317,7 +317,7 @@ export function CapacityPage() {
         {semTime.length > 0 && (
           <Card
             withBorder
-            radius="lg"
+           
             padding="lg"
             style={{ borderColor: "var(--mantine-color-orange-3)" }}
           >
@@ -327,7 +327,7 @@ export function CapacityPage() {
                   <IconHelpCircle size={22} />
                 </ThemeIcon>
                 <div style={{ minWidth: 0 }}>
-                  <Text fw={700}>Without a team</Text>
+                  <Text fw={600}>Without a team</Text>
                   <Text size="xs" c="dimmed" lineClamp={2}>
                     Approved work with no delivery team defined
                   </Text>
@@ -342,7 +342,7 @@ export function CapacityPage() {
               <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                 Hours at stake
               </Text>
-              <Text fw={800} fz="lg" c="orange.7">
+              <Text fw={600} fz="lg" c="orange.7">
                 {formatNumber(horasSemTime)} h
               </Text>
             </Box>
@@ -363,7 +363,7 @@ export function CapacityPage() {
                       </Text>
                     </Table.Td>
                     <Table.Td ta="right" w={64}>
-                      <Text size="sm" fw={700} style={{ whiteSpace: "nowrap" }}>
+                      <Text size="sm" fw={600} style={{ whiteSpace: "nowrap" }}>
                         {d.horasEstimadas ? `${d.horasEstimadas} h` : "—"}
                       </Text>
                     </Table.Td>
@@ -380,7 +380,7 @@ export function CapacityPage() {
         )}
       </SimpleGrid>
 
-      <Paper withBorder radius="lg" p="md" bg="gray.0">
+      <Paper withBorder p="md" bg="gray.0">
         <Text size="sm" c="dimmed">
           {t("cap_help")}
         </Text>

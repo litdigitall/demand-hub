@@ -127,7 +127,7 @@ export function LoginPage() {
         {modoDemo && (
           <>
         {/* Contas demo (um clique = login por papel) */}
-          <Text size="xs" c="dimmed" mt="xl" mb="xs" tt="uppercase" fw={700} lts={1}>
+          <Text size="xs" c="dimmed" mt="xl" mb="xs" tt="uppercase" fw={600} lts={1}>
             Demo accounts (one click)
           </Text>
           <Stack gap={6}>

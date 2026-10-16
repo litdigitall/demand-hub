@@ -98,7 +98,7 @@
     d.modificadoEm = d.statusDesde;
     d.areaSolicitante = AREAS[i % AREAS.length];
     d.solicitante = pessoa;
-    d.email = `${pessoa.toLowerCase().replace(/\s+/g, ".")}@litdigitall.com.br`;
+    d.email = `${pessoa.toLowerCase().replace(/\s+/g, ".")}@abbott.com`;
     d.horasEstimadas = [0, 0, 80, 120, 160, 240, 320, 400, 640][i % 9];
     d.deadline = i % 4 === 0 ? dia(12 - (i % 20)) : "";
     d.urgencia = [506970000, 506970001, 506970002, 506970003][i % 4];

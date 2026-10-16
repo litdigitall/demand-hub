@@ -192,7 +192,7 @@ export function SolicitarPage() {
     <Box style={{ minHeight: "100vh", background: "var(--mantine-color-gray-1)", padding: "2rem 1rem" }}>
       <Box style={{ maxWidth: 720, margin: "0 auto" }}>
         {/* Cabezal estilo Form */}
-        <Card withBorder radius="lg" p="lg" mb="md" style={{ borderTop: "6px solid var(--mantine-color-abbott-6)" }}>
+        <Card withBorder p="lg" mb="md" style={{ borderTop: "6px solid var(--mantine-color-abbott-6)" }}>
           <Group gap="sm">
             <Box style={{ background: "#fff", borderRadius: 8, padding: "6px 10px" }}>
               <img src={abbottLogo} alt="Abbott" style={{ maxWidth: 96, display: "block" }} />
@@ -207,7 +207,7 @@ export function SolicitarPage() {
         </Card>
 
         {enviado ? (
-          <Card withBorder radius="lg" p="xl">
+          <Card withBorder p="xl">
             <Center>
               <Stack align="center" gap="sm">
                 <ThemeIcon size={64} radius="xl" color="teal" variant="light">
@@ -216,7 +216,7 @@ export function SolicitarPage() {
                 <Title order={3}>Request submitted!</Title>
                 <Text ta="center">
                   Your demand was created with number{" "}
-                  <Text component="span" fw={800} c="abbott.7">
+                  <Text component="span" fw={600} c="abbott.7">
                     {enviado.numero}
                   </Text>
                   . The PMO team will triage it and you'll be able to track its status.
@@ -319,7 +319,7 @@ export function SolicitarPage() {
                   <Text size="sm" fw={600}>
                     Estimated priority
                   </Text>
-                  <Text fw={800} fz="lg">
+                  <Text fw={600} fz="lg">
                     {prioridadeEstimada.toFixed(2)}{" "}
                     <Text component="span" size="sm" c="dimmed">
                       / 5.00
@@ -413,8 +413,8 @@ export function SolicitarPage() {
 
 function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card withBorder radius="lg" p="lg">
-      <Text fw={700} mb="sm">
+    <Card withBorder p="lg">
+      <Text fw={600} mb="sm">
         {title}
       </Text>
       {children}

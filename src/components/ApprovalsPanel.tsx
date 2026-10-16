@@ -115,12 +115,12 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
 
   if (demand.aprovacoes.length === 0) {
     return (
-      <Card withBorder radius="lg" padding="lg">
+      <Card withBorder padding="lg">
         <Stack align="center" gap="md" py="md">
           <ThemeIcon size={60} radius="xl" color="abbott" variant="light">
             <IconInfoCircle size={28} />
           </ThemeIcon>
-          <Text fw={700}>Approval workflow not initialized</Text>
+          <Text fw={600}>Approval workflow not initialized</Text>
           <Text size="sm" c="dimmed" ta="center" maw={460}>
             Requests created in the app are routed to the decisor of their portfolio area
             (Infrastructure → Sambini · Applications → Gabriela · AI → AI Decisor). To
@@ -135,13 +135,13 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
   return (
     <Stack gap="lg">
       {/* ----- Cabeçalho com progresso ----- */}
-      <Card withBorder radius="lg" padding="lg" bg="abbott.0">
+      <Card withBorder padding="lg" bg="abbott.0">
         <Group justify="space-between" wrap="wrap" mb="sm">
           <div>
-            <Text size="xs" c="dimmed" tt="uppercase" fw={700} lts={1}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600} lts={1}>
               {t("apr_workflow")}
             </Text>
-            <Text fw={700} fz="xl">
+            <Text fw={600} fz="xl">
               {aprovados}/{steps.length} approved
               {recusados > 0 && ` · ${recusados} rejected`}
             </Text>
@@ -240,7 +240,7 @@ export function ApprovalsPanel({ demand, onSave, interactive = true }: Props) {
                           </Badge>
                         )}
                       </Group>
-                      <Text fw={700} mt={2}>
+                      <Text fw={600} mt={2}>
                         {s.responsavel}
                       </Text>
                       {s.acaoEm && (

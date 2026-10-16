@@ -18,10 +18,10 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
   const idxAtual = recusada || devolvida ? -1 : pipelineIndex(demand.status);
 
   return (
-    <Card withBorder radius="lg" padding="lg">
+    <Card withBorder padding="lg">
       {/* Quem está devendo a próxima ação já aparece no CTA e no card do gate;
           aqui só interessa em que etapa a demanda está. */}
-      <Text fw={700} mb="md">
+      <Text fw={600} mb="md">
         Lifecycle
       </Text>
       {/* (textos abaixo em español) */}
@@ -77,7 +77,7 @@ export function LifecycleTimeline({ demand }: { demand: Demand }) {
               </Stack>
               <div style={{ flex: 1, minWidth: 0, paddingBottom: 6 }}>
                 <Group gap={6}>
-                  <Text fw={atual ? 700 : 500} c={atual ? "abbott.7" : concluida ? "dark" : "dimmed"}>
+                  <Text fw={atual ? 600 : 500} c={atual ? "abbott.7" : concluida ? "dark" : "dimmed"}>
                     {etapa.label}
                   </Text>
                   {atual && (

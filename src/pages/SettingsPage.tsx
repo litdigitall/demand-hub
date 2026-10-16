@@ -89,9 +89,9 @@ function Catalog({
   }
 
   return (
-    <Card withBorder radius="lg" padding="lg">
+    <Card withBorder padding="lg">
       <Group justify="space-between" mb="md">
-        <Text fw={700}>{label}</Text>
+        <Text fw={600}>{label}</Text>
         <Text size="sm" c="dimmed">
           {items.length}
         </Text>
@@ -265,9 +265,9 @@ export function SettingsPage() {
         <Tabs.Panel value="routing">
           {/* alignItems:start — sem isso o card curto estica até a altura do maior. */}
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" style={{ alignItems: "start" }}>
-            <Card withBorder radius="lg" padding="lg">
+            <Card withBorder padding="lg">
               <Group justify="space-between" mb="md">
-                <Text fw={700}>Approval gate</Text>
+                <Text fw={600}>Approval gate</Text>
                 <Badge variant="light" color="gray" radius="sm">
                   Read-only
                 </Badge>
@@ -310,9 +310,9 @@ export function SettingsPage() {
               </Table>
             </Card>
 
-            <Card withBorder radius="lg" padding="lg">
+            <Card withBorder padding="lg">
               <Group justify="space-between" mb="md">
-                <Text fw={700}>Business stakeholder</Text>
+                <Text fw={600}>Business stakeholder</Text>
                 <Badge variant="light" color="gray" radius="sm">
                   Read-only
                 </Badge>
@@ -352,9 +352,9 @@ export function SettingsPage() {
               </Table>
             </Card>
 
-            <Card withBorder radius="lg" padding="lg">
+            <Card withBorder padding="lg">
               <Group justify="space-between" mb="md">
-                <Text fw={700}>Monthly capacity</Text>
+                <Text fw={600}>Monthly capacity</Text>
                 <Badge variant="light" color="gray" radius="sm">
                   Read-only
                 </Badge>
@@ -394,7 +394,7 @@ export function SettingsPage() {
                       </Text>
                     </Table.Td>
                     <Table.Td ta="right">
-                      <Text size="sm" fw={700}>
+                      <Text size="sm" fw={600}>
                         {formatNumber(capacidadeTotal)} h
                       </Text>
                     </Table.Td>

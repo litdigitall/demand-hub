@@ -177,7 +177,7 @@ export function RequestsPriority({
                     <UrgenciaBadge value={d.urgencia} />
                   </Table.Td>
                   <Table.Td ta="center">
-                    <Text size="sm" fw={700} c="abbott.7">
+                    <Text size="sm" fw={600} c="abbott.7">
                       {w.toFixed(2)}
                     </Text>
                   </Table.Td>

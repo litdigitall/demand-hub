@@ -81,7 +81,7 @@ export function RequestsBoard({ items }: { items: Demand[] }) {
           <Paper
             key={col.status}
             withBorder
-            radius="lg"
+           
             p="xs"
             style={{ width: 262, flex: "0 0 262px", background: "var(--mantine-color-gray-0)" }}
           >
@@ -140,7 +140,7 @@ function BoardCard({ d }: { d: Demand }) {
         <Text size="xs" c="dimmed" ff="monospace">
           {d.numero}
         </Text>
-        <Text size="xs" fw={700} c="abbott.7">
+        <Text size="xs" fw={600} c="abbott.7">
           {weightedScore(d.score).toFixed(2)}
         </Text>
       </Group>

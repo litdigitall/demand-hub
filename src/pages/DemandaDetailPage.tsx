@@ -291,7 +291,7 @@ export function DemandaDetailPage() {
         <Tabs.Panel value="overview" pt="lg">
           <Grid>
             <Grid.Col span={{ base: 12, lg: 7 }}>
-              <Card withBorder radius="lg" padding="lg" mb="md">
+              <Card withBorder padding="lg" mb="md">
                 <SectionLabel title={t("detail_section_basic")} />
                 <KV k={t("detail_label_title")} v={demand.titulo} />
                 <KV k={t("detail_label_description")} v={demand.descricao} multiline />
@@ -303,7 +303,7 @@ export function DemandaDetailPage() {
                 </SimpleGrid>
               </Card>
 
-              <Card withBorder radius="lg" padding="lg" mb="md">
+              <Card withBorder padding="lg" mb="md">
                 <SectionLabel title={t("detail_section_objective")} />
                 <KV k={t("detail_label_problem")} v={demand.problemaResolve} multiline />
                 <KV k={t("detail_label_objective")} v={demand.objetivoPrincipal} multiline />
@@ -326,7 +326,7 @@ export function DemandaDetailPage() {
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, lg: 5 }}>
-              <Card withBorder radius="lg" padding="lg" mb="md">
+              <Card withBorder padding="lg" mb="md">
                 <SectionLabel title={t("detail_section_impact")} />
                 {demand.impactoAbrangencia ? (
                   <KV k="Reach (automatic score)" v={abrangenciaLabel[demand.impactoAbrangencia]} />
@@ -352,7 +352,7 @@ export function DemandaDetailPage() {
                 )}
               </Card>
 
-              <Card withBorder radius="lg" padding="lg" mb="md">
+              <Card withBorder padding="lg" mb="md">
                 <SectionLabel title={t("detail_section_urgency")} />
                 <KV k={t("detail_label_urgency")} v={<UrgenciaBadge value={demand.urgencia} />} />
                 <KV k={t("detail_label_deadline")} v={demand.deadline ? formatDate(demand.deadline) : ""} />
@@ -380,7 +380,7 @@ export function DemandaDetailPage() {
 
               {/* Card só aparece se houver alguém para mostrar. */}
               {(demand.sponsor || demand.donoProcesso || demand.areasEnvolvidas) && (
-                <Card withBorder radius="lg" padding="lg" mb="md">
+                <Card withBorder padding="lg" mb="md">
                   <SectionLabel title={t("detail_section_stakeholders")} />
                   <KV k={t("detail_label_sponsor")} v={demand.sponsor} />
                   <KV k={t("detail_label_processOwner")} v={demand.donoProcesso} />
@@ -388,7 +388,7 @@ export function DemandaDetailPage() {
                 </Card>
               )}
 
-              <Card withBorder radius="lg" padding="lg">
+              <Card withBorder padding="lg">
                 <SectionLabel title={t("detail_section_compliance")} />
                 <Stack gap={6}>
                   <ChipRow label={t("detail_label_pii")} on={demand.dadosSensiveis} yes={t("yes")} no={t("no")} />
@@ -421,7 +421,7 @@ export function DemandaDetailPage() {
 
         {/* ---------- Comentários ---------- */}
         <Tabs.Panel value="comments" pt="lg">
-          <Card withBorder radius="lg" padding="lg">
+          <Card withBorder padding="lg">
             <Stack gap="md">
               <Stack gap={4}>
                 <Text fw={600} size="sm">
@@ -498,7 +498,7 @@ export function DemandaDetailPage() {
               const recusado = gate.status === "recusado";
               const cor = aprovado ? "teal" : recusado ? "red" : "abbott";
               return (
-                <Card withBorder radius="lg" padding="md" style={{ borderColor: `var(--mantine-color-${cor}-3)` }}>
+                <Card withBorder padding="md" style={{ borderColor: `var(--mantine-color-${cor}-3)` }}>
                   <Group justify="space-between" wrap="wrap" gap="sm">
                     <Group gap="sm">
                       <ThemeIcon size={32} radius="md" variant="light" color={cor}>
@@ -508,7 +508,7 @@ export function DemandaDetailPage() {
                         <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                           Area decision
                         </Text>
-                        <Text fw={700}>{gate.responsavel}</Text>
+                        <Text fw={600}>{gate.responsavel}</Text>
                       </div>
                     </Group>
                     <Group gap="sm">
@@ -571,7 +571,7 @@ function Fato({
       <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} style={{ whiteSpace: "nowrap" }}>
         {label}
       </Text>
-      <Text fw={700} fz="lg" c={tone} style={{ whiteSpace: "nowrap" }}>
+      <Text fw={600} fz="lg" c={tone} style={{ whiteSpace: "nowrap" }}>
         {children}
       </Text>
     </Box>
@@ -580,7 +580,7 @@ function Fato({
 
 function SectionLabel({ title }: { title: string }) {
   return (
-    <Text fw={700} mb="sm">
+    <Text fw={600} mb="sm">
       {title}
     </Text>
   );
@@ -682,7 +682,7 @@ function ScopeCard({
   }
 
   return (
-    <Card withBorder radius="lg" padding="lg" mb="md">
+    <Card withBorder padding="lg" mb="md">
       <Group justify="space-between" align="center" mb="xs">
         <SectionLabel title="Technical detail" />
         {podeEditar &&
