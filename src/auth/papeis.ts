@@ -24,17 +24,21 @@ export interface PapeisResolvidos {
   decisorDe: Categoria[];
 }
 
-/* Administrador de partida.
+/* Primeira execução.
 
    O módulo de perfis exige Admin para abrir, e o Admin vem do próprio
-   cadastro. Sem alguém de partida, a primeira instalação fica trancada: o
-   cadastro está vazio, ninguém é Admin, ninguém abre Settings para cadastrar.
+   cadastro: recém-instalado, o cadastro está vazio, ninguém é Admin e
+   ninguém conseguiria cadastrar o primeiro.
 
-   Estes UPNs são Admin SEMPRE, independente do cadastro — é a chave para
-   destrancar o módulo, não a forma de dar acesso no dia a dia. O resto das
-   pessoas se cadastra na tela. Ao subir em outro ambiente (ex.: Abbott),
-   troque pelo responsável daquele ambiente — docs/GO-LIVE.md §5.1. */
-export const ADMINS_DE_PARTIDA: readonly string[] = ["leonardo@litdigitall.com.br"];
+   Em vez de um e-mail fixo no código (que vira lixo ao trocar de cliente),
+   a regra é: **cadastro lido com sucesso e vazio** => quem entrou é Admin,
+   para poder cadastrar a equipe. Assim que existir UM perfil ativo, a regra
+   se desliga sozinha.
+
+   A distinção entre "vazio" e "não consegui ler" é o que torna isso seguro:
+   falha de leitura chega aqui como `null` e resulta em Requester. Se fosse
+   lista vazia nos dois casos, uma queda do Dataverse daria Admin a todo
+   mundo. */
 
 export const APENAS_REQUERENTE: PapeisResolvidos = {
   papeis: [Role.Solicitante],
@@ -51,25 +55,31 @@ function mesmo(a: string, b: string): boolean {
  * Perfil inativo é tratado como não cadastrado — é assim que se tira
  * o acesso de alguém sem apagar o histórico de quem era.
  */
-export function resolverPapeis(email: string, perfis: Perfil[]): PapeisResolvidos {
-  if (!email.trim()) return APENAS_REQUERENTE;
+export function resolverPapeis(
+  email: string,
+  /** `null` = não foi possível ler o cadastro. Falha FECHADA: Requester. */
+  perfis: Perfil[] | null,
+): PapeisResolvidos {
+  if (!email.trim() || perfis === null) return APENAS_REQUERENTE;
 
-  const dePartida = ADMINS_DE_PARTIDA.some((u) => mesmo(u, email));
+  /* Primeira execução = cadastro SEM NENHUMA linha. Deliberadamente não vale
+     para "tem linhas, todas inativas": senão desativar todo mundo devolveria
+     Admin a quem entrasse depois — escalada de privilégio por exclusão.
+     Nesse caso a saída é editar a linha direto na tabela pelo maker portal. */
+  const primeiraExecucao = perfis.length === 0;
   const meu = perfis.find((p) => p.ativo && mesmo(p.upn, email));
 
   if (!meu || meu.papeis.length === 0) {
-    return dePartida
+    return primeiraExecucao
       ? { papeis: [Role.Admin, Role.Solicitante], decisorDe: [] }
       : APENAS_REQUERENTE;
   }
 
   /* Todo mundo continua podendo abrir demanda: os papéis do fluxo se somam
-     ao de solicitante, nunca o substituem. O admin de partida não perde o
-     Admin por ter um cadastro que não o inclui. */
-  const base = dePartida && !meu.papeis.includes(Role.Admin)
-    ? [...meu.papeis, Role.Admin]
-    : meu.papeis;
-  const papeis = base.includes(Role.Solicitante) ? base : [...base, Role.Solicitante];
+     ao de solicitante, nunca o substituem. */
+  const papeis = meu.papeis.includes(Role.Solicitante)
+    ? meu.papeis
+    : [...meu.papeis, Role.Solicitante];
 
   return {
     papeis,

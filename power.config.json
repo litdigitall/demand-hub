@@ -14,8 +14,8 @@
     "default.cds": {
       "dataSources": {
         "demandas": {
-          "entitySetName": "ardx_demandas",
-          "logicalName": "ardx_demanda"
+          "entitySetName": "intake_demandas",
+          "logicalName": "intake_demanda"
         },
         "perfisdeacesso": {
           "entitySetName": "intake_perfils",

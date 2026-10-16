@@ -89,7 +89,7 @@ export function NextActionCard({ demand, fatos, roles, ator, onSave }: Props) {
   return (
     <Card
       withBorder
-      radius="lg"
+     
       padding="lg"
       style={{ borderColor: minhas.length ? "var(--mantine-color-abbott-4)" : undefined, borderWidth: minhas.length ? 2 : 1 }}
     >
@@ -109,7 +109,7 @@ export function NextActionCard({ demand, fatos, roles, ator, onSave }: Props) {
                 <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1}>
                   Current stage
                 </Text>
-                <Text fw={700}>{statusLabel[demand.status]}</Text>
+                <Text fw={600}>{statusLabel[demand.status]}</Text>
               </div>
             </Group>
             {/* Sem `fatos` (telas estreitas) o "aguardando" continua aqui. */}
@@ -126,14 +126,19 @@ export function NextActionCard({ demand, fatos, roles, ator, onSave }: Props) {
             As <strong>{rolesAtuantes(minhas)}</strong>, you can:
           </Text>
           <Group gap="sm">
-            {minhas.map((acao) => {
+            {minhas.map((acao, i) => {
               const guarda = acao.guarda(demand);
               const bloqueado = guarda !== true;
+              /* So a primeira acao — a que leva a demanda adiante — vem cheia.
+                 As outras ficam com moldura e a cor no texto: continuam
+                 legiveis por cor, sem disputar o caminho principal. */
+              const principal = i === 0;
               return (
                 <Button
                   key={acao.id}
-                  color={acao.cor}
-                  variant={bloqueado ? "light" : "filled"}
+                  color={principal ? acao.cor : undefined}
+                  c={principal ? undefined : `${acao.cor}.7`}
+                  variant={bloqueado ? "light" : principal ? "filled" : "default"}
                   disabled={bloqueado}
                   onClick={() => iniciar(acao)}
                   title={bloqueado ? (guarda as string) : undefined}

@@ -83,7 +83,7 @@ export function LoginPage() {
           </Text>
         </Box>
         <Text size="sm" style={{ position: "relative", zIndex: 1, opacity: 0.8 }}>
-          LIT Digitall · Confidential
+          Confidential
         </Text>
       </Box>
 
@@ -127,7 +127,7 @@ export function LoginPage() {
         {modoDemo && (
           <>
         {/* Contas demo (um clique = login por papel) */}
-          <Text size="xs" c="dimmed" mt="xl" mb="xs" tt="uppercase" fw={700} lts={1}>
+          <Text size="xs" c="dimmed" mt="xl" mb="xs" tt="uppercase" fw={600} lts={1}>
             Demo accounts (one click)
           </Text>
           <Stack gap={6}>

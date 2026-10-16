@@ -1,4 +1,5 @@
-import { Badge } from "@mantine/core";
+import type { ReactNode } from "react";
+import { Badge, Box, Group, Text } from "@mantine/core";
 import {
   EsforcoEstimado,
   Impacto,
@@ -23,12 +24,27 @@ const STATUS_COLOR: Record<number, string> = {
   [StatusDemanda.Devolvida]: "orange",
   [StatusDemanda.Recusada]: "red",
 };
+/* Ponto colorido + texto neutro, no lugar da pílula. Numa lista com dezenas
+   de linhas a pílula colorida vira ruído; o ponto dá a mesma leitura por cor
+   ocupando um oitavo do peso visual. É a forma que status e trilha
+   compartilham — duas dimensões, uma gramática visual. */
+export function DotLabel({ cor, children }: { cor: string; children: ReactNode }) {
+  return (
+    <Group gap={6} wrap="nowrap" style={{ minWidth: 0 }}>
+      <Box w={6} h={6} bg={`${cor}.6`} style={{ borderRadius: "50%", flexShrink: 0 }} />
+      <Text fz="xs" c="dark.6" truncate>
+        {children}
+      </Text>
+    </Group>
+  );
+}
+
 export function StatusBadge({ value }: { value: number }) {
   const L = useLabels();
   return (
-    <Badge variant="dot" color={STATUS_COLOR[value] ?? "gray"} radius="sm">
+    <DotLabel cor={STATUS_COLOR[value] ?? "gray"}>
       {L.status[value] ?? statusLabel[value] ?? "—"}
-    </Badge>
+    </DotLabel>
   );
 }
 
@@ -41,10 +57,21 @@ const URGENCIA_COLOR: Record<number, string> = {
   [Urgencia.Medio]: "yellow",
   [Urgencia.Baixo]: "gray",
 };
+/* Numa lista densa, colorir as quatro urgências transforma a coluna numa
+   parede de cor e nada mais salta. Só Critical e High levam cor — que é
+   justamente o que faz alguém mudar de plano. */
+const URGENCIA_DESTACA = new Set<number>([Urgencia.Critico, Urgencia.Alto]);
+
 export function UrgenciaBadge({ value }: { value: number }) {
   const L = useLabels();
+  const destaca = URGENCIA_DESTACA.has(value);
   return (
-    <Badge variant="light" color={URGENCIA_COLOR[value] ?? "gray"} radius="sm">
+    <Badge
+      variant={destaca ? "light" : "default"}
+      color={destaca ? (URGENCIA_COLOR[value] ?? "gray") : undefined}
+      radius="sm"
+      fw={destaca ? 600 : 500}
+    >
       {L.urgencia[value] ?? "—"}
     </Badge>
   );

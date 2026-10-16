@@ -50,7 +50,7 @@ export function RequestsCards({ items }: { items: Demand[] }) {
               <Text fw={600} size="sm" style={{ minWidth: 0 }}>
                 {d.titulo}
               </Text>
-              <Text size="sm" fw={700} c="abbott.7" style={{ whiteSpace: "nowrap" }}>
+              <Text size="sm" fw={600} c="abbott.7" style={{ whiteSpace: "nowrap" }}>
                 {weightedScore(d.score).toFixed(2)}
               </Text>
             </Group>
@@ -62,7 +62,7 @@ export function RequestsCards({ items }: { items: Demand[] }) {
             <Group gap="xs" mt="sm" wrap="wrap">
               <StatusBadge value={d.status} />
               {d.deadline && (
-                <Text size="xs" c={late ? "red.7" : "dimmed"} fw={late ? 700 : 400}>
+                <Text size="xs" c={late ? "red.7" : "dimmed"} fw={late ? 600 : 400}>
                   {formatDate(d.deadline)}
                 </Text>
               )}

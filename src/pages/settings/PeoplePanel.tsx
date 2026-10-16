@@ -174,7 +174,7 @@ export function PeoplePanel() {
     <Stack gap="md">
       <Group justify="space-between" align="flex-end">
         <Box>
-          <Text fw={700}>Who is who</Text>
+          <Text fw={600}>Who is who</Text>
           <Text size="sm" c="dimmed">
             Sign-in comes from Microsoft 365 — there is no password here. This is where
             you say what each person can do in the process.
@@ -211,7 +211,7 @@ export function PeoplePanel() {
         </Text>
       )}
 
-      <Card withBorder radius="lg" padding={0} style={{ overflow: "hidden" }}>
+      <Card withBorder padding={0} style={{ overflow: "hidden" }}>
         <Table highlightOnHover verticalSpacing={8} horizontalSpacing="md" layout="fixed">
           <Table.Thead bg="var(--mantine-color-gray-0)">
             <Table.Tr>

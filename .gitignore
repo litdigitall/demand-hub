@@ -36,3 +36,6 @@ dataverse/ARDXFinanceiro_src/
 
 # Pacote gerado da Solution (artefato de build, nao versionado)
 solution/out
+
+# Pacotes gerados da Solution (artefato de entrega, nao versionado)
+entrega/

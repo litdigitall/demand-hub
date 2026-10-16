@@ -80,12 +80,13 @@ const dataversePerfilService: PerfilService = {
         ],
         top: 500,
       });
-      if (!res.success) return [];
+      if (!res.success) throw new Error(`Could not read profiles.${motivo(res)}`);
       return (res.data ?? []).map(daLinha).filter((p) => p.upn);
-    } catch {
-      /* Sem permissão ou tabela fora do ar: falha FECHADA — sem perfis, todo
-         mundo é Requester. Nunca o contrário. */
-      return [];
+    } catch (e) {
+      /* Erro PROPAGA de propósito. Devolver [] aqui faria "não consegui ler"
+         parecer "ninguém cadastrado" — e a regra de primeira execução daria
+         Admin a todo mundo numa queda do Dataverse. */
+      throw e instanceof Error ? e : new Error("Could not read profiles.");
     }
   },
 

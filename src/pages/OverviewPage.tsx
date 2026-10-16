@@ -82,10 +82,10 @@ function Metrica({ label, valor, to, tone }: MetricaProps) {
       style={{ color: "inherit", flex: 1, minWidth: 0 }}
     >
       <Box px="md" py={10}>
-        <Text fz={10} fw={700} tt="uppercase" lts={0.7} c="dimmed" truncate>
+        <Text fz={10} fw={600} tt="uppercase" lts={0.7} c="dimmed" truncate>
           {label}
         </Text>
-        <Text fz={26} fw={800} lh={1.15} c={valor === 0 ? "dimmed" : tone}>
+        <Text fz={26} fw={600} lh={1.15} c={valor === 0 ? "dimmed" : tone}>
           {valor}
         </Text>
       </Box>
@@ -276,7 +276,7 @@ export function OverviewPage() {
       </Group>
 
       {/* Faixa única em vez de seis cartões: o mesmo dado em 1/3 da altura. */}
-      <Card withBorder radius="lg" padding={0}>
+      <Card withBorder padding={0}>
         <Group gap={0} wrap="nowrap" style={{ overflow: "hidden" }}>
           <Metrica label="In triage" valor={m.novas} to="/demandas?status=nova" />
           <Metrica label="In evaluation" valor={m.emAnalise} to="/demandas?status=analise" />
@@ -296,9 +296,9 @@ export function OverviewPage() {
       <Grid align="stretch">
         {/* ---- Onde a fila está travada ---- */}
         <Grid.Col span={{ base: 12, lg: 7 }}>
-          <Card withBorder radius="lg" padding="lg" h="100%">
+          <Card withBorder padding="lg" h="100%">
             <Group justify="space-between" mb="sm">
-              <Text fw={700}>Pipeline</Text>
+              <Text fw={600}>Pipeline</Text>
               <Text fz="xs" c="dimmed">
                 red = past the stage target
               </Text>
@@ -332,7 +332,7 @@ export function OverviewPage() {
                       }}
                     />
                   </Box>
-                  <Text fz="sm" fw={700} w={32} ta="right" style={{ flexShrink: 0 }}>
+                  <Text fz="sm" fw={600} w={32} ta="right" style={{ flexShrink: 0 }}>
                     {f.total}
                   </Text>
                   <Tooltip
@@ -344,7 +344,7 @@ export function OverviewPage() {
                       w={92}
                       ta="right"
                       c={f.estouradas > 0 ? "red.7" : "dimmed"}
-                      fw={f.estouradas > 0 ? 700 : 400}
+                      fw={f.estouradas > 0 ? 600 : 400}
                       style={{ flexShrink: 0 }}
                     >
                       {f.estouradas > 0 ? `${f.estouradas} late` : "on target"}
@@ -359,11 +359,11 @@ export function OverviewPage() {
             <Group gap="xl" mt="lg" pt="md" style={{ borderTop: "1px solid var(--mantine-color-gray-2)" }}>
               {m.foraDoFluxo.map((x) => (
                 <Box key={x.label}>
-                  <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                  <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                     {x.label}
                   </Text>
                   <Group gap={6} align="baseline">
-                    <Text fz="xl" fw={800} c={x.total === 0 ? "dimmed" : x.tone}>
+                    <Text fz="xl" fw={600} c={x.total === 0 ? "dimmed" : x.tone}>
                       {x.total}
                     </Text>
                     {x.nota ? (
@@ -380,25 +380,25 @@ export function OverviewPage() {
 
         {/* ---- Quem está devendo decisão ---- */}
         <Grid.Col span={{ base: 12, lg: 5 }}>
-          <Card withBorder radius="lg" padding="lg" h="100%">
-            <Text fw={700} mb="sm">
+          <Card withBorder padding="lg" h="100%">
+            <Text fw={600} mb="sm">
               Waiting on a decision
             </Text>
             <Table verticalSpacing={7} horizontalSpacing={0}>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>
-                    <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                    <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                       Track · decisor
                     </Text>
                   </Table.Th>
                   <Table.Th w={54} ta="right">
-                    <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                    <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                       Open
                     </Text>
                   </Table.Th>
                   <Table.Th w={72} ta="right">
-                    <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                    <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                       Oldest
                     </Text>
                   </Table.Th>
@@ -425,12 +425,12 @@ export function OverviewPage() {
                       </Group>
                     </Table.Td>
                     <Table.Td ta="right">
-                      <Text fz="sm" fw={700} c={x.total > 0 ? undefined : "dimmed"}>
+                      <Text fz="sm" fw={600} c={x.total > 0 ? undefined : "dimmed"}>
                         {x.total}
                       </Text>
                     </Table.Td>
                     <Table.Td ta="right">
-                      <Text fz="sm" c={x.maisAntiga > 3 ? "red.7" : "dimmed"} fw={x.maisAntiga > 3 ? 700 : 400}>
+                      <Text fz="sm" c={x.maisAntiga > 3 ? "red.7" : "dimmed"} fw={x.maisAntiga > 3 ? 600 : 400}>
                         {x.total > 0 ? `${x.maisAntiga}d` : "—"}
                       </Text>
                     </Table.Td>
@@ -440,14 +440,14 @@ export function OverviewPage() {
             </Table>
 
             {/* Carga contra a capacidade do mês: o outro lado da priorização. */}
-            <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed" mt="lg" mb={6}>
+            <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed" mt="lg" mb={6}>
               Committed hours this month
             </Text>
             <Group justify="space-between" mb={4}>
-              <Text fz="sm" fw={700}>
+              <Text fz="sm" fw={600}>
                 {formatNumber(m.horasComprometidas)} / {formatNumber(m.capacidadeMes)} h
               </Text>
-              <Text fz="sm" fw={700} c={usoCapacidade > 100 ? "red.7" : undefined}>
+              <Text fz="sm" fw={600} c={usoCapacidade > 100 ? "red.7" : undefined}>
                 {usoCapacidade}%
               </Text>
             </Group>
@@ -471,9 +471,9 @@ export function OverviewPage() {
 
         {/* ---- O que deveria sair primeiro ---- */}
         <Grid.Col span={{ base: 12, lg: 7 }}>
-          <Card withBorder radius="lg" padding="lg" h="100%">
+          <Card withBorder padding="lg" h="100%">
             <Group justify="space-between" mb="sm">
-              <Text fw={700}>Top priority</Text>
+              <Text fw={600}>Top priority</Text>
               <Anchor component={Link} to="/demandas?view=priority" fz="xs">
                 Open ranking
               </Anchor>
@@ -487,32 +487,32 @@ export function OverviewPage() {
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th w={82}>
-                      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                         No.
                       </Text>
                     </Table.Th>
                     <Table.Th>
-                      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                         Request
                       </Text>
                     </Table.Th>
                     <Table.Th w={98} visibleFrom="xl">
-                      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                         Urgency
                       </Text>
                     </Table.Th>
                     <Table.Th w={126}>
-                      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                         Status
                       </Text>
                     </Table.Th>
                     <Table.Th w={48} ta="right">
-                      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                         Age
                       </Text>
                     </Table.Th>
                     <Table.Th w={52} ta="right">
-                      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed">
+                      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed">
                         Score
                       </Text>
                     </Table.Th>
@@ -542,14 +542,14 @@ export function OverviewPage() {
                         <Table.Td ta="right">
                           <Text
                             fz="xs"
-                            fw={idade.tom === "ok" ? 400 : 700}
+                            fw={idade.tom === "ok" ? 400 : 600}
                             c={idade.tom === "estourado" ? "red.7" : "dimmed"}
                           >
                             {idade.dias}d
                           </Text>
                         </Table.Td>
                         <Table.Td ta="right">
-                          <Text fz="sm" fw={700} c="abbott.7">
+                          <Text fz="sm" fw={600} c="abbott.7">
                             {weightedScore(d.score).toFixed(2)}
                           </Text>
                         </Table.Td>
@@ -564,9 +564,9 @@ export function OverviewPage() {
 
         {/* ---- O que está apodrecendo ---- */}
         <Grid.Col span={{ base: 12, lg: 5 }}>
-          <Card withBorder radius="lg" padding="lg" h="100%">
+          <Card withBorder padding="lg" h="100%">
             <Group justify="space-between" mb="sm">
-              <Text fw={700}>Sitting the longest</Text>
+              <Text fw={600}>Sitting the longest</Text>
               <Text fz="xs" c="dimmed">
                 days in the current stage
               </Text>
@@ -593,7 +593,7 @@ export function OverviewPage() {
                         <Table.Td w={52} ta="right">
                           <Text
                             fz="sm"
-                            fw={700}
+                            fw={600}
                             c={idade.tom === "estourado" ? "red.7" : idade.tom === "atencao" ? "orange.7" : "dimmed"}
                           >
                             {idade.dias}d

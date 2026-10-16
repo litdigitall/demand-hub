@@ -9,7 +9,7 @@
    ============================================================ */
 import { Fragment, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Box, Group, Table, Text, Tooltip } from "@mantine/core";
+import { Box, Group, Table, Text, Tooltip } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
 import {
   CATEGORIA_COR_VIEW,
@@ -20,7 +20,7 @@ import {
   type Demand,
 } from "../../data/types";
 import { pipelineIndex } from "../../domain/workflow";
-import { StatusBadge, UrgenciaBadge } from "../../components/Badges";
+import { DotLabel, StatusBadge, UrgenciaBadge } from "../../components/Badges";
 import { useLabels } from "../../i18n/useLabels";
 import { formatDate } from "../../lib/format";
 import { sla } from "../../domain/sla";
@@ -142,7 +142,7 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
                 <Table.Tr bg="var(--mantine-color-gray-0)">
                   <Table.Td colSpan={COLS} py={6}>
                     <Group gap={8}>
-                      <Text size="xs" fw={700} tt="uppercase" lts={0.4}>
+                      <Text size="xs" fw={600} tt="uppercase" lts={0.4}>
                         {g.label}
                       </Text>
                       <Text size="xs" c="dimmed">
@@ -181,15 +181,15 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
                       <UrgenciaBadge value={d.urgencia} />
                     </Table.Td>
                     <Table.Td>
-                      <Badge variant="light" radius="sm" color={CATEGORIA_COR_VIEW[cat]}>
+                      <DotLabel cor={CATEGORIA_COR_VIEW[cat]}>
                         {CATEGORIA_VIEW_LABEL[cat]}
-                      </Badge>
+                      </DotLabel>
                     </Table.Td>
                     <Table.Td ta="right">
                       <Tooltip label={tituloIdade(d)} openDelay={300} withArrow>
                         <Text
                           size="xs"
-                          fw={idade.tom === "ok" ? 400 : 700}
+                          fw={idade.tom === "ok" ? 400 : 600}
                           c={
                             idade.tom === "estourado"
                               ? "red.7"
@@ -210,7 +210,7 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
                     <Table.Td visibleFrom="xl">
                       <Text
                         size="xs"
-                        fw={late ? 700 : 400}
+                        fw={late ? 600 : 400}
                         c={late ? "red.7" : "dimmed"}
                         style={{ whiteSpace: "nowrap" }}
                       >
@@ -218,7 +218,7 @@ export function RequestsTable({ items, groupBy }: { items: Demand[]; groupBy: Gr
                       </Text>
                     </Table.Td>
                     <Table.Td ta="right">
-                      <Text size="sm" fw={700} c="abbott.7">
+                      <Text size="sm" fw={600} c="abbott.7">
                         {weightedScore(d.score).toFixed(2)}
                       </Text>
                     </Table.Td>

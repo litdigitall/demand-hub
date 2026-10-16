@@ -249,7 +249,7 @@ export function RequestsPage() {
       ) : (
         /* overflow visible: o Card do Mantine recorta por padrão, e um
            ancestral recortado captura o position:sticky do cabeçalho. */
-        <Card withBorder radius="lg" padding={0} style={{ overflow: "visible" }}>
+        <Card withBorder padding={0} style={{ overflow: "visible" }}>
           {view === "priority" ? (
             <RequestsPriority items={r.items} onChanged={() => void r.refresh()} />
           ) : (

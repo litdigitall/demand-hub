@@ -1,0 +1,135 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      },
+      "shared_office365": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Quando_o_status_mudar": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 3,
+              "subscriptionRequest/entityname": "intake_demandas",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filteringattributes": "intake_status"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Link_do_app": {
+          "type": "Compose",
+          "inputs": "https://make.powerapps.com",
+          "runAfter": {}
+        },
+        "Entrou_em_avaliacao": {
+          "type": "If",
+          "expression": {
+            "equals": [
+              "@triggerOutputs()?['body/intake_status']",
+              506970001
+            ]
+          },
+          "actions": {
+            "Listar_time_tecnico": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "intake_perfils",
+                  "$select": "intake_upn,intake_papeisjson,intake_frentesjson",
+                  "$filter": "intake_ativo eq true and contains(intake_papeisjson,'techlead')"
+                }
+              },
+              "runAfter": {
+                "Link_do_app": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Enderecos_time": {
+              "type": "Select",
+              "inputs": {
+                "from": "@outputs('Listar_time_tecnico')?['body/value']",
+                "select": "@item()?['intake_upn']"
+              },
+              "runAfter": {
+                "Listar_time_tecnico": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Avisar_time_tecnico": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+                },
+                "parameters": {
+                  "emailMessage/To": "@join(body('Enderecos_time'), ';')",
+                  "emailMessage/Subject": "[Intake Forms] To evaluate: @triggerOutputs()?['body/intake_numero']",
+                  "emailMessage/Body": "<p><b>Triage accepted. Technical evaluation is needed: team, hours and scoring.</b></p><p>@triggerOutputs()?['body/intake_numero'] — @triggerOutputs()?['body/intake_titulo']</p><p>Area: @triggerOutputs()?['body/intake_areasolicitante']<br>Requester: @triggerOutputs()?['body/intake_solicitante']</p><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+                }
+              },
+              "runAfter": {
+                "Enderecos_time": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Nada_a_fazer": {
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Succeeded"
+                },
+                "runAfter": {}
+              }
+            }
+          },
+          "runAfter": {
+            "Link_do_app": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}

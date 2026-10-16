@@ -16,7 +16,7 @@ import {
   decisorDaDemanda,
   PIPELINE,
 } from "../src/domain/workflow";
-import { ADMINS_DE_PARTIDA, resolverPapeis } from "../src/auth/papeis";
+import { resolverPapeis } from "../src/auth/papeis";
 import {
   StatusDemanda,
   TipoDemanda,
@@ -278,15 +278,20 @@ const decisor = resolverPapeis("sambini@abbott.com", cadastro);
 check(decisor.decisorDe.length === 1 && decisor.decisorDe[0] === "infra", "19 decisor recebe as frentes dele");
 check(resolverPapeis("tech@abbott.com", cadastro).decisorDe.length === 0, "19b frente só vale para decisor");
 
-const partida = ADMINS_DE_PARTIDA[0];
-check(resolverPapeis(partida, []).papeis.includes(Role.Admin), "20 admin de partida entra com cadastro vazio");
+/* Primeira execução: cadastro LIDO e vazio destrava quem entrar, para montar
+   a equipe. Cadastro ILEGÍVEL (null) nunca destrava — é a diferença que
+   impede uma queda do Dataverse de virar Admin para todo mundo. */
+check(resolverPapeis("qualquer@abbott.com", []).papeis.includes(Role.Admin), "20 cadastro vazio: primeira execução dá Admin");
+check(!resolverPapeis("qualquer@abbott.com", null).papeis.includes(Role.Admin), "20b cadastro ILEGÍVEL não dá Admin");
+check(resolverPapeis("qualquer@abbott.com", null).papeis[0] === Role.Solicitante, "20c cadastro ilegível = Requester");
 check(
-  resolverPapeis(partida, [perfil(partida, [Role.PMO])]).papeis.includes(Role.Admin),
-  "20b admin de partida não perde o Admin por ter outro papel cadastrado",
+  !resolverPapeis("alguem@abbott.com", cadastro).papeis.includes(Role.Admin),
+  "20d com cadastro preenchido, estranho NÃO vira Admin",
 );
+/* Desativar todo mundo NÃO devolve Admin: seria escalada por exclusão. */
 check(
-  !resolverPapeis("alguem@abbott.com", []).papeis.includes(Role.Admin),
-  "20c cadastro vazio NÃO dá Admin a mais ninguém",
+  !resolverPapeis("alguem@abbott.com", [perfil("x@abbott.com", [Role.PMO], [], false)]).papeis.includes(Role.Admin),
+  "20e cadastro com linhas inativas NÃO conta como primeira execução",
 );
 
 console.log(falhas === 0 ? "\nTODOS OS TESTES PASSARAM" : `\n${falhas} FALHAS`);

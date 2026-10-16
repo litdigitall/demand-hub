@@ -1,0 +1,170 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      },
+      "shared_office365": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Quando_o_status_mudar": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 3,
+              "subscriptionRequest/entityname": "intake_demandas",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filteringattributes": "intake_status"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Link_do_app": {
+          "type": "Compose",
+          "inputs": "https://make.powerapps.com",
+          "runAfter": {}
+        },
+        "Foi_decidida": {
+          "type": "If",
+          "expression": {
+            "or": [
+              {
+                "equals": [
+                  "@triggerOutputs()?['body/intake_status']",
+                  506970002
+                ]
+              },
+              {
+                "equals": [
+                  "@triggerOutputs()?['body/intake_status']",
+                  506970005
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Resultado": {
+              "type": "Compose",
+              "inputs": "@if(equals(triggerOutputs()?['body/intake_status'],506970002),'approved and prioritised','rejected')",
+              "runAfter": {}
+            },
+            "Listar_PMO": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "intake_perfils",
+                  "$select": "intake_upn,intake_papeisjson,intake_frentesjson",
+                  "$filter": "intake_ativo eq true and contains(intake_papeisjson,'pmo')"
+                }
+              },
+              "runAfter": {
+                "Resultado": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Enderecos_PMO": {
+              "type": "Select",
+              "inputs": {
+                "from": "@outputs('Listar_PMO')?['body/value']",
+                "select": "@item()?['intake_upn']"
+              },
+              "runAfter": {
+                "Listar_PMO": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Avisar_solicitante": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+                },
+                "parameters": {
+                  "emailMessage/To": "@triggerOutputs()?['body/intake_email']",
+                  "emailMessage/Subject": "[Intake Forms] Decision on @triggerOutputs()?['body/intake_numero']",
+                  "emailMessage/Body": "<p><b>Your request has a decision.</b></p><p>@triggerOutputs()?['body/intake_numero'] — @triggerOutputs()?['body/intake_titulo']</p><p>Area: @triggerOutputs()?['body/intake_areasolicitante']<br>Requester: @triggerOutputs()?['body/intake_solicitante']</p><p>Result: <b>@{outputs('Resultado')}</b></p><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+                }
+              },
+              "runAfter": {
+                "Enderecos_PMO": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Avisar_PMO_da_decisao": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+                },
+                "parameters": {
+                  "emailMessage/To": "@join(body('Enderecos_PMO'), ';')",
+                  "emailMessage/Subject": "[Intake Forms] Decided: @triggerOutputs()?['body/intake_numero']",
+                  "emailMessage/Body": "<p><b>Decision recorded.</b></p><p>@triggerOutputs()?['body/intake_numero'] — @triggerOutputs()?['body/intake_titulo']</p><p>Area: @triggerOutputs()?['body/intake_areasolicitante']<br>Requester: @triggerOutputs()?['body/intake_solicitante']</p><p>Result: <b>@{outputs('Resultado')}</b></p><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+                }
+              },
+              "runAfter": {
+                "Avisar_solicitante": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Nada_a_fazer": {
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Succeeded"
+                },
+                "runAfter": {}
+              }
+            }
+          },
+          "runAfter": {
+            "Link_do_app": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}

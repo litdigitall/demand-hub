@@ -25,7 +25,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconArrowRight, IconPlus } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { demandService } from "../data/demandService";
 import {
   CATEGORIA_COR_VIEW,
@@ -94,7 +94,7 @@ function ColHead({ children, w, ta = "left", from }: {
   return (
     <Text
       fz={10}
-      fw={700}
+      fw={600}
       tt="uppercase"
       lts={0.6}
       c="dimmed"
@@ -131,7 +131,7 @@ function HeaderRow({ acaoLabel }: { acaoLabel: string }) {
       <ColHead w={COL.num} from="sm">
         No.
       </ColHead>
-      <Text fz={10} fw={700} tt="uppercase" lts={0.6} c="dimmed" style={{ flex: 1, minWidth: 0 }}>
+      <Text fz={10} fw={600} tt="uppercase" lts={0.6} c="dimmed" style={{ flex: 1, minWidth: 0 }}>
         Request
       </Text>
       <ColHead w={COL.urgencia} from="lg">
@@ -201,10 +201,10 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
     >
       <Tooltip label={CATEGORIA_VIEW_LABEL[cat]} openDelay={400} withArrow>
         <Box
-          w={7}
-          h={7}
-          bg={`${CATEGORIA_COR_VIEW[cat]}.6`}
-          style={{ borderRadius: "50%", flexShrink: 0 }}
+          w={3}
+          h={18}
+          bg={`${CATEGORIA_COR_VIEW[cat]}.5`}
+          style={{ borderRadius: 2, flexShrink: 0 }}
         />
       </Tooltip>
 
@@ -242,7 +242,7 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
       <Tooltip label={tituloIdade} openDelay={300} withArrow>
         <Text
           fz="xs"
-          fw={tom === "ok" ? 400 : 700}
+          fw={tom === "ok" ? 400 : 600}
           c={corIdade}
           w={COL.idade}
           ta="right"
@@ -261,7 +261,7 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
         fz="xs"
         w={COL.prazo}
         c={atrasada ? "red.7" : "dimmed"}
-        fw={atrasada ? 700 : 400}
+        fw={atrasada ? 600 : 400}
         visibleFrom="xl"
         style={{ flexShrink: 0 }}
       >
@@ -269,7 +269,7 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
       </Text>
 
       <Tooltip label="Priority score" openDelay={400} withArrow>
-        <Text fz="xs" fw={700} c="abbott.7" w={COL.score} ta="right" style={{ flexShrink: 0 }}>
+        <Text fz="xs" fw={600} c="abbott.7" w={COL.score} ta="right" style={{ flexShrink: 0 }}>
           {weightedScore(d.score).toFixed(2)}
         </Text>
       </Tooltip>
@@ -282,10 +282,13 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
           o botão leva ao detalhe em vez de fingir que resolve com um clique. */}
       <Box w={COL.acao} visibleFrom="sm" style={{ flexShrink: 0 }}>
         {acao ? (
+          /* Botão neutro com o rótulo no tom da ação: a coluna inteira de
+             pílulas coloridas competia com urgência e status, e nada
+             sobressaía. A cor fica no texto, o peso visual some. */
           <Button
             size="compact-xs"
-            variant="light"
-            color={acao.cor}
+            variant="default"
+            c={`${acao.cor}.7`}
             loading={busy}
             fullWidth
             onClick={() => onRun(d, acao)}
@@ -295,8 +298,8 @@ function InboxRow({ item, divider, busy, onRun }: RowProps) {
         ) : acaoLabel ? (
           <Button
             size="compact-xs"
-            variant="light"
-            color="gray"
+            variant="default"
+            c="gray.7"
             component={Link}
             to={`/demandas/${d.id}`}
             fullWidth
@@ -342,14 +345,14 @@ function Section({ label, acaoLabel, items, busyId, onRun, footer }: SectionProp
   return (
     <Box>
       <Group gap={8} mb={6}>
-        <Text fz={11} fw={700} tt="uppercase" lts={0.8} c="dimmed">
+        <Text fz={11} fw={600} tt="uppercase" lts={0.8} c="dimmed">
           {label}
         </Text>
-        <Text fz={11} fw={700} c="dimmed">
+        <Text fz={11} fw={600} c="dimmed">
           {items.length}
         </Text>
       </Group>
-      <Card withBorder radius="lg" padding={0} style={{ overflow: "visible" }}>
+      <Card withBorder padding={0} style={{ overflow: "visible" }}>
         <HeaderRow acaoLabel={acaoLabel} />
         {items.map((it, i) => (
           <InboxRow
@@ -545,7 +548,7 @@ export function InboxPage() {
         </Box>
         <Box>
           <Skeleton h={10} w={110} radius="sm" mb={10} />
-          <Card withBorder radius="lg" padding={0}>
+          <Card withBorder padding={0}>
             {[0, 1, 2, 3, 4, 5].map((i) => (
               <Group
                 key={i}
@@ -580,7 +583,6 @@ export function InboxPage() {
     );
   }
 
-  const podeCriar = roles.includes(Role.Solicitante) || roles.includes(Role.Admin);
   const primeiroNome = user.name.split(" ")[0];
   const escondidas = secoes.waiting.length - WAITING_PREVIEW;
   const waitingVisivel =
@@ -601,11 +603,7 @@ export function InboxPage() {
                 } you`}
           </Text>
         </Box>
-        {podeCriar ? (
-          <Button component={Link} to="/demandas/nova" leftSection={<IconPlus size={16} />}>
-            New request
-          </Button>
-        ) : null}
+
       </Group>
 
       <Section

@@ -114,14 +114,14 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
   return (
     <Stack gap="lg">
       {/* ---------- Total + explicação da conta ---------- */}
-      <Card withBorder radius="lg" padding="lg" bg="abbott.0">
+      <Card withBorder padding="lg" bg="abbott.0">
         <Group justify="space-between" align="flex-start" wrap="wrap">
           <div>
-            <Text size="xs" c="dimmed" tt="uppercase" fw={700} lts={1}>
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600} lts={1}>
               Priority score
             </Text>
             <Group gap="sm" align="baseline">
-              <Text fz={44} fw={800} lh={1} c={`${corDoTotal(total)}.7`}>
+              <Text fz={44} fw={600} lh={1} c={`${corDoTotal(total)}.7`}>
                 {total.toFixed(2)}
               </Text>
               <Text c="dimmed" fw={600}>
@@ -186,7 +186,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
               <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <Group gap={8}>
-                    <Text fw={700}>{SCORE_LABELS[criterio]}</Text>
+                    <Text fw={600}>{SCORE_LABELS[criterio]}</Text>
                     <Badge variant="light" color="gray" size="sm">
                       {(peso * 100).toFixed(0)}%
                     </Badge>
@@ -212,7 +212,7 @@ export function ScoringPanel({ demand, roles, ator, onSave }: Props) {
                 </div>
 
                 <Stack gap={4} align="center" w={190}>
-                  <Text fz={30} fw={800} lh={1}>
+                  <Text fz={30} fw={600} lh={1}>
                     {nota}
                   </Text>
                   <Text size="xs" c="dimmed">

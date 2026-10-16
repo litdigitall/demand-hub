@@ -1,0 +1,152 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "tier": "NotSpecified"
+      },
+      "shared_office365": {
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Quando_o_status_mudar": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 3,
+              "subscriptionRequest/entityname": "intake_demandas",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filteringattributes": "intake_status"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Link_do_app": {
+          "type": "Compose",
+          "inputs": "https://make.powerapps.com",
+          "runAfter": {}
+        },
+        "Foi_para_aprovacao": {
+          "type": "If",
+          "expression": {
+            "equals": [
+              "@triggerOutputs()?['body/intake_status']",
+              506970007
+            ]
+          },
+          "actions": {
+            "Frente_da_demanda": {
+              "type": "Compose",
+              "inputs": "@if(equals(triggerOutputs()?['body/intake_clasificacion'],506970000),'infra',if(equals(triggerOutputs()?['body/intake_clasificacion'],506970001),'ia',if(equals(triggerOutputs()?['body/intake_clasificacion'],506970002),'app','otro')))",
+              "runAfter": {}
+            },
+            "Listar_decisores": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "intake_perfils",
+                  "$select": "intake_upn,intake_papeisjson,intake_frentesjson",
+                  "$filter": "intake_ativo eq true and contains(intake_papeisjson,'decisor')"
+                }
+              },
+              "runAfter": {
+                "Frente_da_demanda": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Decisores_da_frente": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Listar_decisores')?['body/value']",
+                "where": "@contains(coalesce(item()?['intake_frentesjson'],''), outputs('Frente_da_demanda'))"
+              },
+              "runAfter": {
+                "Listar_decisores": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Enderecos_decisor": {
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Decisores_da_frente')",
+                "select": "@item()?['intake_upn']"
+              },
+              "runAfter": {
+                "Decisores_da_frente": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Avisar_decisor": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_office365",
+                  "operationId": "SendEmailV2",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365"
+                },
+                "parameters": {
+                  "emailMessage/To": "@join(body('Enderecos_decisor'), ';')",
+                  "emailMessage/Subject": "[Intake Forms] Decision needed: @triggerOutputs()?['body/intake_numero']",
+                  "emailMessage/Body": "<p><b>A request in your track is waiting for your decision.</b></p><p>@triggerOutputs()?['body/intake_numero'] — @triggerOutputs()?['body/intake_titulo']</p><p>Area: @triggerOutputs()?['body/intake_areasolicitante']<br>Requester: @triggerOutputs()?['body/intake_solicitante']</p><p>Score: @triggerOutputs()?['body/intake_scorebusinessimpact'] · Hours: @triggerOutputs()?['body/intake_horasestimadas'] · Team: @triggerOutputs()?['body/intake_time']</p><p><a href=\"@{outputs('Link_do_app')}\">Open Intake Forms</a></p>"
+                }
+              },
+              "runAfter": {
+                "Enderecos_decisor": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Nada_a_fazer": {
+                "type": "Terminate",
+                "inputs": {
+                  "runStatus": "Succeeded"
+                },
+                "runAfter": {}
+              }
+            }
+          },
+          "runAfter": {
+            "Link_do_app": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "schemaVersion": "1.0.0.0"
+}

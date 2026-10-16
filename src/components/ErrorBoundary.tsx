@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <ThemeIcon size={64} radius="xl" color="orange" variant="light">
               <IconAlertTriangle size={32} />
             </ThemeIcon>
-            <Text fw={700} fz="lg">
+            <Text fw={600} fz="lg">
               Algo salió mal en esta pantalla
             </Text>
             <Text c="dimmed" ta="center" size="sm">

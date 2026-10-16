@@ -118,7 +118,7 @@ export function AppLayout() {
         <Group h="100%" px="lg" gap="sm" wrap="nowrap" justify="space-between">
           <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Text fw={800} size="lg" truncate>{pageTitle(loc.pathname)}</Text>
+            <Text fw={600} fz={15} truncate>{pageTitle(loc.pathname)}</Text>
           </Group>
           <Group gap="xs" wrap="nowrap">
             {/* Fluxograma do processo: consulta ocasional, não item de menu. */}
@@ -136,7 +136,7 @@ export function AppLayout() {
               </ActionIcon>
             </Tooltip>
             <Group gap={8} wrap="nowrap" visibleFrom="sm">
-              <Avatar radius="xl" size={34} variant="gradient" gradient={{ from: "abbott.6", to: "grape.6", deg: 60 }}>
+              <Avatar radius="xl" size={34} color="abbott.6">
                 {initialsFromName(user.name)}
               </Avatar>
               <div style={{ minWidth: 0 }}>
@@ -150,18 +150,19 @@ export function AppLayout() {
 
       <AppShell.Navbar
         withBorder={false}
+        /* Superfície neutra com um fio à direita — padrão de Linear e Attio.
+           O bloco de cor da marca competia com o conteúdo e datava a tela; a
+           marca continua no logo e no azul do que é acionável. */
         style={{
-          background:
-            "linear-gradient(180deg, var(--mantine-color-abbott-9) 0%, var(--mantine-color-abbott-8) 55%, #3a1d6e 130%)",
+          background: "var(--app-surface)",
+          borderRight: "1px solid var(--app-border)",
         }}
       >
         <Stack gap={3} p="md" h="100%">
           <div className={classes.brand}>
-            <div className={classes.logoBox}>
-              <img src={abbottLogo} alt="Abbott" className={classes.logoImg} />
-            </div>
+            <img src={abbottLogo} alt="Abbott" className={classes.logoImg} />
             <div className={classes.brand1}>Intake Forms</div>
-            <div className={classes.brandSub}>by LIT Digitall</div>
+            <div className={classes.brandSub}>IT Demand Management</div>
           </div>
 
           {/* Abrir demanda: o formulário mora fora do app de gestão. */}
@@ -189,7 +190,7 @@ export function AppLayout() {
           ))}
 
           <div className={classes.userCard}>
-            <Avatar radius="xl" size={40} variant="gradient" gradient={{ from: "abbott.4", to: "grape.5", deg: 60 }}>
+            <Avatar radius="xl" size={40} color="abbott.6">
               {initialsFromName(user.name)}
             </Avatar>
             <div style={{ minWidth: 0, flex: 1 }}>
@@ -204,7 +205,7 @@ export function AppLayout() {
               onClick={() => { signOut(); window.location.hash = "#/login"; }}
               title="Sign out"
               aria-label="Sign out"
-              style={{ color: "rgba(255,255,255,0.7)" }}
+              c="gray.6"
             >
               <IconLogout size={16} />
             </ActionIcon>

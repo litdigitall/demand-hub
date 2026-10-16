@@ -23,7 +23,7 @@ const dia = (offset: number) => {
   return d.toISOString();
 };
 
-/** nome.sobrenome@litdigitall.com.br a partir do nome do solicitante. */
+/** nome.sobrenome@abbott.com a partir do nome do solicitante. */
 function emailDe(nome: string): string {
   const slug = nome
     .toLowerCase()
@@ -32,7 +32,7 @@ function emailDe(nome: string): string {
     .trim()
     .split(/\s+/)
     .join(".");
-  return slug ? `${slug}@litdigitall.com.br` : "";
+  return slug ? `${slug}@abbott.com` : "";
 }
 
 function base(n: number, extra: Partial<Demand>): Demand {

@@ -67,7 +67,12 @@ function sessionFromPersona(p: Persona): AuthSession {
 /** Sessão a partir da identidade real do host (produção). A identidade vem do
     M365; os PAPÉIS vêm do cadastro em ardx_perfil (Settings → People). Quem
     não está cadastrado é Requester e só enxerga as próprias demandas. */
-function sessionDoHost(nome: string, email: string, perfis: Perfil[]): AuthSession {
+function sessionDoHost(
+  nome: string,
+  email: string,
+  /** `null` = cadastro ilegível; resolverPapeis trata como Requester. */
+  perfis: Perfil[] | null,
+): AuthSession {
   const { papeis, decisorDe } = resolverPapeis(email, perfis);
   return {
     personaId: "host",
@@ -106,14 +111,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let vivo = true;
     /* Identidade e cadastro em paralelo: um não depende do outro, e a tela
        só pode decidir o que mostrar quando tem os dois. */
-    Promise.all([resolveIdentidade(), perfilService.listar()])
+    Promise.all([
+      resolveIdentidade(),
+      /* A falha vira null em vez de derrubar o Promise.all: sem isso, um
+         problema no cadastro impediria até o login de resolver. */
+      perfilService.listar().catch(() => null),
+    ])
       .then(([id, perfis]) => {
         if (!vivo || !id) return;
         setUser(sessionDoHost(id.nome, id.email, perfis));
-      })
-      .catch(() => {
-        /* Falha no cadastro não tranca ninguém do lado de fora: entra como
-           Requester e o módulo administrativo mostra o problema. */
       })
       .finally(() => vivo && setResolvendo(false));
     return () => {

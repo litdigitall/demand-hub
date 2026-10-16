@@ -11,6 +11,7 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   Center,
   Divider,
   Group,
@@ -98,6 +99,15 @@ export function SolicitarPage() {
     faixaValor: 0,
     urgencia: Urgencia.Medio as number,
     deadline: "",
+    /* Contexto (opcional) — espelha a etapa 4 do Canvas "IT Request Form".
+       Ninguém é obrigado a saber, mas quem sabe adianta a avaliação. */
+    sistemasEnvolvidos: "",
+    areasEnvolvidas: "",
+    donoProcesso: "",
+    rce: "",
+    dadosSensiveis: false,
+    impactaSeguranca: false,
+    requerAuditoria: false,
   });
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((s) => ({ ...s, [k]: v }));
 
@@ -155,17 +165,18 @@ export function SolicitarPage() {
         roiEstimado: null,
         urgencia: f.urgencia,
         deadline: f.deadline,
-        sistemasEnvolvidos: "",
+        sistemasEnvolvidos: f.sistemasEnvolvidos,
         integracoesNecessarias: "",
         requisitosPrincipais: "",
         solucaoProposta: "",
         appId: "",
+        rce: f.rce.trim(),
         sponsor: stakeholderDaArea(f.areaSolicitante),
-        donoProcesso: "",
-        areasEnvolvidas: "",
-        dadosSensiveis: false,
-        impactaSeguranca: false,
-        requerAuditoria: false,
+        donoProcesso: f.donoProcesso,
+        areasEnvolvidas: f.areasEnvolvidas,
+        dadosSensiveis: f.dadosSensiveis,
+        impactaSeguranca: f.impactaSeguranca,
+        requerAuditoria: f.requerAuditoria,
         esforcoEstimado: null,
         time: "",
         horasEstimadas: 0,
@@ -181,7 +192,7 @@ export function SolicitarPage() {
     <Box style={{ minHeight: "100vh", background: "var(--mantine-color-gray-1)", padding: "2rem 1rem" }}>
       <Box style={{ maxWidth: 720, margin: "0 auto" }}>
         {/* Cabezal estilo Form */}
-        <Card withBorder radius="lg" p="lg" mb="md" style={{ borderTop: "6px solid var(--mantine-color-abbott-6)" }}>
+        <Card withBorder p="lg" mb="md" style={{ borderTop: "6px solid var(--mantine-color-abbott-6)" }}>
           <Group gap="sm">
             <Box style={{ background: "#fff", borderRadius: 8, padding: "6px 10px" }}>
               <img src={abbottLogo} alt="Abbott" style={{ maxWidth: 96, display: "block" }} />
@@ -196,7 +207,7 @@ export function SolicitarPage() {
         </Card>
 
         {enviado ? (
-          <Card withBorder radius="lg" p="xl">
+          <Card withBorder p="xl">
             <Center>
               <Stack align="center" gap="sm">
                 <ThemeIcon size={64} radius="xl" color="teal" variant="light">
@@ -205,7 +216,7 @@ export function SolicitarPage() {
                 <Title order={3}>Request submitted!</Title>
                 <Text ta="center">
                   Your demand was created with number{" "}
-                  <Text component="span" fw={800} c="abbott.7">
+                  <Text component="span" fw={600} c="abbott.7">
                     {enviado.numero}
                   </Text>
                   . The PMO team will triage it and you'll be able to track its status.
@@ -308,7 +319,7 @@ export function SolicitarPage() {
                   <Text size="sm" fw={600}>
                     Estimated priority
                   </Text>
-                  <Text fw={800} fz="lg">
+                  <Text fw={600} fz="lg">
                     {prioridadeEstimada.toFixed(2)}{" "}
                     <Text component="span" size="sm" c="dimmed">
                       / 5.00
@@ -319,6 +330,60 @@ export function SolicitarPage() {
                   Calculated from reach, urgency and estimated value. The PMO reviews it during triage.
                 </Text>
               </Paper>
+            </FormCard>
+
+            <FormCard title="5. Context (optional)">
+              <Text size="sm" c="dimmed" mb="sm">
+                Nothing here is required. It just saves the technical team a
+                round of questions later.
+              </Text>
+              <Group grow>
+                <TextInput
+                  label="Systems involved"
+                  placeholder="e.g.: SAP, Salesforce"
+                  value={f.sistemasEnvolvidos}
+                  onChange={(e) => set("sistemasEnvolvidos", e.currentTarget.value)}
+                />
+                <TextInput
+                  label="Other areas involved"
+                  placeholder="e.g.: Finance, Supply Chain"
+                  value={f.areasEnvolvidas}
+                  onChange={(e) => set("areasEnvolvidas", e.currentTarget.value)}
+                />
+              </Group>
+              <Group grow mt="sm">
+                <TextInput
+                  label="Process owner"
+                  value={f.donoProcesso}
+                  onChange={(e) => set("donoProcesso", e.currentTarget.value)}
+                />
+                <TextInput
+                  label="RCE"
+                  description="Project number already approved by Management, if any"
+                  value={f.rce}
+                  onChange={(e) => set("rce", e.currentTarget.value)}
+                />
+              </Group>
+              <Text size="xs" c="dimmed" fw={600} tt="uppercase" lts={1} mt="md" mb={6}>
+                Compliance
+              </Text>
+              <Stack gap={6}>
+                <Checkbox
+                  label="Involves personal or sensitive data (LGPD)"
+                  checked={f.dadosSensiveis}
+                  onChange={(e) => set("dadosSensiveis", e.currentTarget.checked)}
+                />
+                <Checkbox
+                  label="Has an information security impact"
+                  checked={f.impactaSeguranca}
+                  onChange={(e) => set("impactaSeguranca", e.currentTarget.checked)}
+                />
+                <Checkbox
+                  label="There is an audit or regulatory requirement"
+                  checked={f.requerAuditoria}
+                  onChange={(e) => set("requerAuditoria", e.currentTarget.checked)}
+                />
+              </Stack>
             </FormCard>
 
             <Alert color="gray" variant="light">
@@ -337,7 +402,7 @@ export function SolicitarPage() {
             </Group>
             <Divider my="xs" />
             <Text ta="center" size="xs" c="dimmed">
-              Intake Forms · LIT Digitall
+              Intake Forms
             </Text>
           </Stack>
         )}
@@ -348,8 +413,8 @@ export function SolicitarPage() {
 
 function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <Card withBorder radius="lg" p="lg">
-      <Text fw={700} mb="sm">
+    <Card withBorder p="lg">
+      <Text fw={600} mb="sm">
         {title}
       </Text>
       {children}

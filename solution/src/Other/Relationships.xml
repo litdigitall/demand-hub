@@ -1,9 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <EntityRelationships xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EntityRelationship Name="business_unit_ardx_demanda" />
-  <EntityRelationship Name="lk_ardx_demanda_createdby" />
-  <EntityRelationship Name="lk_ardx_demanda_modifiedby" />
-  <EntityRelationship Name="owner_ardx_demanda" />
-  <EntityRelationship Name="team_ardx_demanda" />
-  <EntityRelationship Name="user_ardx_demanda" />
+  <EntityRelationship Name="business_unit_intake_demanda" />
+  <EntityRelationship Name="business_unit_intake_perfil" />
+  <EntityRelationship Name="lk_intake_demanda_createdby" />
+  <EntityRelationship Name="lk_intake_demanda_modifiedby" />
+  <EntityRelationship Name="lk_intake_perfil_createdby" />
+  <EntityRelationship Name="lk_intake_perfil_modifiedby" />
+  <EntityRelationship Name="owner_intake_demanda" />
+  <EntityRelationship Name="owner_intake_perfil" />
+  <EntityRelationship Name="team_intake_demanda" />
+  <EntityRelationship Name="team_intake_perfil" />
+  <EntityRelationship Name="user_intake_demanda" />
+  <EntityRelationship Name="user_intake_perfil" />
 </EntityRelationships>
